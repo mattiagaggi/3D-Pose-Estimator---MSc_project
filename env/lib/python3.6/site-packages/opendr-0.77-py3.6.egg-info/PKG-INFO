@@ -1,0 +1,18 @@
+Metadata-Version: 1.1
+Name: opendr
+Version: 0.77
+Summary: opendr
+Home-page: http://github.com/mattloper/opendr
+Author: Matthew Loper
+Author-email: matt.loper@gmail.com
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Multimedia :: Graphics :: 3D Rendering
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: POSIX :: Linux
