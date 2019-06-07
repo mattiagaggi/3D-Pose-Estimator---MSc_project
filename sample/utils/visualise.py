@@ -9,4 +9,4 @@ img=Image.open(h36m_dir+file)
 
 img.show()
 
-print("jdjd")
+print("jdjdkdkdk")
