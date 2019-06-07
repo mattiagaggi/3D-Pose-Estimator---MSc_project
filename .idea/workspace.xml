@@ -1,7 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="91ad7db2-61cf-43d9-8224-6a29a9a4b01b" name="Default" comment="" />
+    <list default="true" id="91ad7db2-61cf-43d9-8224-6a29a9a4b01b" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/code.iml" afterPath="$PROJECT_DIR$/.idea/code.iml" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change beforePath="$PROJECT_DIR$/env/.Python" afterPath="$PROJECT_DIR$/env/.Python" />
+      <change beforePath="$PROJECT_DIR$/env/bin/activate" afterPath="$PROJECT_DIR$/env/bin/activate" />
+      <change beforePath="$PROJECT_DIR$/env/bin/activate.csh" afterPath="$PROJECT_DIR$/env/bin/activate.csh" />
+      <change beforePath="$PROJECT_DIR$/env/bin/activate.fish" afterPath="$PROJECT_DIR$/env/bin/activate.fish" />
+      <change beforePath="$PROJECT_DIR$/env/bin/activate.ps1" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/env/bin/activate.xsh" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/env/bin/activate_this.py" afterPath="$PROJECT_DIR$/env/bin/activate_this.py" />
+      <change beforePath="$PROJECT_DIR$/env/bin/easy_install" afterPath="$PROJECT_DIR$/env/bin/easy_install" />
+      <change beforePath="$PROJECT_DIR$/env/bin/easy_install-3.6" afterPath="$PROJECT_DIR$/env/bin/easy_install-3.6" />
+      <change beforePath="$PROJECT_DIR$/env/bin/pip" afterPath="$PROJECT_DIR$/env/bin/pip" />
+      <change beforePath="$PROJECT_DIR$/env/bin/pip3" afterPath="$PROJECT_DIR$/env/bin/pip3" />
+      <change beforePath="$PROJECT_DIR$/env/bin/pip3.6" afterPath="$PROJECT_DIR$/env/bin/pip3.6" />
+      <change beforePath="$PROJECT_DIR$/env/bin/python3.6" afterPath="$PROJECT_DIR$/env/bin/python3.6" />
+      <change beforePath="$PROJECT_DIR$/env/bin/wheel" afterPath="$PROJECT_DIR$/env/bin/wheel" />
+      <change beforePath="$PROJECT_DIR$/env/include/python3.6m" afterPath="$PROJECT_DIR$/env/include/python3.6m" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/LICENSE.txt" afterPath="" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/__future__.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/__future__.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/_bootlocale.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/_bootlocale.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/_collections_abc.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/_collections_abc.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/_dummy_thread.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/_dummy_thread.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/_weakrefset.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/_weakrefset.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/abc.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/abc.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/base64.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/base64.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/bisect.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/bisect.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/codecs.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/codecs.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/collections" afterPath="$PROJECT_DIR$/env/lib/python3.6/collections" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/config-3.6m-darwin" afterPath="$PROJECT_DIR$/env/lib/python3.6/config-3.6m-darwin" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/copy.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/copy.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/copyreg.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/copyreg.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/distutils/__init__.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/distutils/__init__.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/encodings" afterPath="$PROJECT_DIR$/env/lib/python3.6/encodings" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/enum.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/enum.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/fnmatch.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/fnmatch.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/functools.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/functools.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/genericpath.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/genericpath.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/hashlib.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/hashlib.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/heapq.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/heapq.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/hmac.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/hmac.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/imp.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/imp.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/importlib" afterPath="$PROJECT_DIR$/env/lib/python3.6/importlib" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/io.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/io.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/keyword.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/keyword.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/lib-dynload" afterPath="$PROJECT_DIR$/env/lib/python3.6/lib-dynload" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/linecache.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/linecache.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/locale.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/locale.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/ntpath.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/ntpath.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/operator.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/operator.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/orig-prefix.txt" afterPath="$PROJECT_DIR$/env/lib/python3.6/orig-prefix.txt" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/os.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/os.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/posixpath.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/posixpath.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/random.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/random.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/re.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/re.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/readline.so" afterPath="$PROJECT_DIR$/env/lib/python3.6/readline.so" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/reprlib.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/reprlib.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/rlcompleter.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/rlcompleter.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/shutil.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/shutil.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/site.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/site.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/sre_compile.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/sre_compile.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/sre_constants.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/sre_constants.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/sre_parse.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/sre_parse.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/stat.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/stat.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/struct.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/struct.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/tarfile.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/tarfile.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/tempfile.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/tempfile.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/token.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/token.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/tokenize.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/tokenize.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/types.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/types.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/warnings.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/warnings.py" />
+      <change beforePath="$PROJECT_DIR$/env/lib/python3.6/weakref.py" afterPath="$PROJECT_DIR$/env/lib/python3.6/weakref.py" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -11,14 +84,22 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="bvh.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/bvh.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="135">
+              <caret line="9" column="23" lean-forward="false" selection-start-line="9" selection-start-column="23" selection-end-line="9" selection-end-column="23" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="hello_smpl.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/hello_world/hello_smpl.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="810">
+            <state relative-caret-position="735">
               <caret line="54" column="44" lean-forward="false" selection-start-line="54" selection-start-column="44" selection-end-line="54" selection-end-column="44" />
-              <folding>
-                <element signature="e#1396#1456#0" expanded="true" />
-              </folding>
+              <folding />
             </state>
           </provider>
         </entry>
@@ -26,21 +107,19 @@
       <file leaf-file-name="render_smpl.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/hello_world/render_smpl.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="5" column="13" lean-forward="true" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
+            <state relative-caret-position="150">
+              <caret line="10" column="12" lean-forward="false" selection-start-line="10" selection-start-column="12" selection-end-line="10" selection-end-column="12" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="lbs.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/lbs.py">
+      <file leaf-file-name="README.md" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/README.md">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="515">
-              <caret line="70" column="50" lean-forward="false" selection-start-line="70" selection-start-column="50" selection-end-line="70" selection-end-column="50" />
-              <folding>
-                <element signature="e#860#914#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="210">
+              <caret line="14" column="21" lean-forward="false" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -59,6 +138,9 @@
       <find>dd['joints'</find>
     </findStrings>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
@@ -74,8 +156,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="2" />
-    <option name="y" value="60" />
+    <option name="x" value="22" />
+    <option name="y" value="23" />
     <option name="width" value="1280" />
     <option name="height" value="664" />
   </component>
@@ -110,6 +192,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -120,20 +203,31 @@
             <path>
               <item name="code" type="b2602c69:ProjectViewProjectNode" />
               <item name="code" type="462c0819:PsiDirectoryNode" />
+              <item name="sample" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="code" type="b2602c69:ProjectViewProjectNode" />
+              <item name="code" type="462c0819:PsiDirectoryNode" />
               <item name="utils" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="code" type="b2602c69:ProjectViewProjectNode" />
               <item name="code" type="462c0819:PsiDirectoryNode" />
               <item name="utils" type="462c0819:PsiDirectoryNode" />
-              <item name="smpl" type="462c0819:PsiDirectoryNode" />
+              <item name="bvh-python-master" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="code" type="b2602c69:ProjectViewProjectNode" />
+              <item name="code" type="462c0819:PsiDirectoryNode" />
+              <item name="utils" type="462c0819:PsiDirectoryNode" />
+              <item name="bvh-python-master" type="462c0819:PsiDirectoryNode" />
+              <item name="tests" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="code" type="b2602c69:ProjectViewProjectNode" />
               <item name="code" type="462c0819:PsiDirectoryNode" />
               <item name="utils" type="462c0819:PsiDirectoryNode" />
               <item name="smpl" type="462c0819:PsiDirectoryNode" />
-              <item name="models" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="code" type="b2602c69:ProjectViewProjectNode" />
@@ -155,7 +249,6 @@
         </subPane>
       </pane>
       <pane id="Scratches" />
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -246,20 +339,20 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="2" y="60" width="1280" height="664" extended-state="0" />
+    <frame x="22" y="23" width="1280" height="664" extended-state="0" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2494043" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="DB Browser" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="DB Execution Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.41827768" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -268,6 +361,9 @@
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.md" />
   </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
@@ -279,13 +375,186 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/hello_world/render_smpl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="10" column="12" lean-forward="false" selection-start-line="10" selection-start-column="12" selection-end-line="10" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/bvh.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/hello_world/hello_smpl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="735">
+          <caret line="54" column="44" lean-forward="false" selection-start-line="54" selection-start-column="44" selection-end-line="54" selection-end-column="44" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/hello_world/render_smpl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="10" column="12" lean-forward="false" selection-start-line="10" selection-start-column="12" selection-end-line="10" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="14" column="21" lean-forward="false" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/bvh.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="23" lean-forward="false" selection-start-line="9" selection-start-column="23" selection-end-line="9" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/hello_world/hello_smpl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="735">
+          <caret line="54" column="44" lean-forward="false" selection-start-line="54" selection-start-column="44" selection-end-line="54" selection-end-column="44" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="14" column="21" lean-forward="false" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/hello_world/render_smpl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="10" column="12" lean-forward="false" selection-start-line="10" selection-start-column="12" selection-end-line="10" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/bvh.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="23" lean-forward="false" selection-start-line="9" selection-start-column="23" selection-end-line="9" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/hello_world/hello_smpl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="735">
+          <caret line="54" column="44" lean-forward="false" selection-start-line="54" selection-start-column="44" selection-end-line="54" selection-end-column="44" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="14" column="21" lean-forward="false" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/hello_world/render_smpl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="150">
+          <caret line="10" column="12" lean-forward="false" selection-start-line="10" selection-start-column="12" selection-end-line="10" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/bvh.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="14" column="21" lean-forward="false" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/bvh.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/bvh.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="5" column="46" lean-forward="true" selection-start-line="5" selection-start-column="46" selection-end-line="5" selection-end-column="46" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/bvh.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/bvh.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/bvh.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/hello_world/hello_smpl.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#1396#1456#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -293,7 +562,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="930">
           <caret line="66" column="32" lean-forward="true" selection-start-line="66" selection-start-column="32" selection-end-line="66" selection-end-column="32" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -301,9 +569,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1050">
           <caret line="70" column="57" lean-forward="false" selection-start-line="70" selection-start-column="57" selection-end-line="70" selection-end-column="57" />
-          <folding>
-            <element signature="e#860#914#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -311,7 +576,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="510">
           <caret line="36" column="31" lean-forward="false" selection-start-line="36" selection-start-column="31" selection-end-line="36" selection-end-column="31" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -319,7 +583,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -327,9 +590,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1110">
           <caret line="79" column="68" lean-forward="false" selection-start-line="79" selection-start-column="68" selection-end-line="79" selection-end-column="68" />
-          <folding>
-            <element signature="e#774#792#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -337,7 +597,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -345,7 +604,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="345">
           <caret line="23" column="13" lean-forward="false" selection-start-line="23" selection-start-column="13" selection-end-line="23" selection-end-column="13" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -375,7 +633,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -383,7 +640,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="345">
           <caret line="23" column="13" lean-forward="false" selection-start-line="23" selection-start-column="13" selection-end-line="23" selection-end-column="13" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -391,7 +647,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -399,7 +654,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="237">
           <caret line="36" column="31" lean-forward="false" selection-start-line="36" selection-start-column="31" selection-end-line="36" selection-end-column="31" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -407,9 +661,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-1165">
           <caret line="30" column="4" lean-forward="true" selection-start-line="30" selection-start-column="4" selection-end-line="30" selection-end-column="4" />
-          <folding>
-            <element signature="e#774#792#0" expanded="false" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -417,17 +668,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/hello_world/hello_smpl.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="810">
-          <caret line="54" column="44" lean-forward="false" selection-start-line="54" selection-start-column="44" selection-end-line="54" selection-end-column="44" />
-          <folding>
-            <element signature="e#1396#1456#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -435,16 +675,37 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="515">
           <caret line="70" column="50" lean-forward="false" selection-start-line="70" selection-start-column="50" selection-end-line="70" selection-end-column="50" />
-          <folding>
-            <element signature="e#860#914#0" expanded="true" />
-          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/README.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="14" column="21" lean-forward="false" selection-start-line="14" selection-start-column="21" selection-end-line="14" selection-end-column="21" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/bvh-python-master/bvh.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="23" lean-forward="false" selection-start-line="9" selection-start-column="23" selection-end-line="9" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/hello_world/hello_smpl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="735">
+          <caret line="54" column="44" lean-forward="false" selection-start-line="54" selection-start-column="44" selection-end-line="54" selection-end-column="44" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/utils/smpl/smpl_webuser/hello_world/render_smpl.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" column="13" lean-forward="true" selection-start-line="5" selection-start-column="13" selection-end-line="5" selection-end-column="13" />
+        <state relative-caret-position="150">
+          <caret line="10" column="12" lean-forward="false" selection-start-line="10" selection-start-column="12" selection-end-line="10" selection-end-column="12" />
           <folding />
         </state>
       </provider>
