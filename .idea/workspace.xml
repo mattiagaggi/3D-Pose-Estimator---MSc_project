@@ -2,29 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="59055927-e30e-41ef-90b1-9c84c6a329e6" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/code.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/code.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/activate" beforeDir="false" afterPath="$PROJECT_DIR$/env/bin/activate" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/activate.csh" beforeDir="false" afterPath="$PROJECT_DIR$/env/bin/activate.csh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/activate.fish" beforeDir="false" afterPath="$PROJECT_DIR$/env/bin/activate.fish" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/cygdb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/cython" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/cythonize" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/easy_install" beforeDir="false" afterPath="$PROJECT_DIR$/env/bin/easy_install" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/easy_install-3.6" beforeDir="false" afterPath="$PROJECT_DIR$/env/bin/easy_install-3.6" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/f2py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/f2py3" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/f2py3.6" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/pip" beforeDir="false" afterPath="$PROJECT_DIR$/env/bin/pip" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/pip3" beforeDir="false" afterPath="$PROJECT_DIR$/env/bin/pip3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/pip3.6" beforeDir="false" afterPath="$PROJECT_DIR$/env/bin/pip3.6" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/python" beforeDir="false" afterPath="$PROJECT_DIR$/env/bin/python" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/bin/python3" beforeDir="false" afterPath="$PROJECT_DIR$/env/bin/python3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/pip-selfcheck.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/env/pyvenv.cfg" beforeDir="false" afterPath="$PROJECT_DIR$/env/pyvenv.cfg" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -36,9 +16,9 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="y" value="43" />
-    <option name="width" value="1004" />
-    <option name="height" value="648" />
+    <option name="y" value="31" />
+    <option name="width" value="512" />
+    <option name="height" value="344" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -46,28 +26,23 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
-              <item name="code" type="b2602c69:ProjectViewProjectNode" />
-              <item name="code" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="code" type="b2602c69:ProjectViewProjectNode" />
-              <item name="code" type="462c0819:PsiDirectoryNode" />
-              <item name="env" type="462c0819:PsiDirectoryNode" />
+              <item name="MSc_project" type="b2602c69:ProjectViewProjectNode" />
+              <item name="MSc_project" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/env" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RunDashboard">
@@ -96,15 +71,11 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="43" width="1004" height="648" extended-state="0" />
+    <frame x="0" y="31" width="512" height="344" extended-state="0" />
     <layout>
-      <window_info id="Favorites" side_tool="true" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24974412" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.50309277" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Version Control" />
-      <window_info anchor="bottom" id="Python Console" />
-      <window_info anchor="bottom" id="Terminal" />
-      <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" />
@@ -112,6 +83,10 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Version Control" order="7" />
+      <window_info anchor="bottom" id="Terminal" order="8" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="10" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
