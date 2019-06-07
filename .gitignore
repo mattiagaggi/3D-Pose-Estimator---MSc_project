@@ -1,7 +1,12 @@
 
 data/
-env/
-!env/lib/python3.6/site-packages/
+env/*
+!env/lib
+env/lib/*
+!env/lib/python3.6
+env/lib/python3.6/*
+!env/lib/python3.6/site-packages
+
 
 
 
