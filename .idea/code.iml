@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
+<<<<<<< HEAD
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/env" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.6 (MSc_project)" jdkType="Python SDK" />
+=======
+    <content url="file://$MODULE_DIR$" />
+    <orderEntry type="jdk" jdkName="Python 3.6 (env)" jdkType="Python SDK" />
+>>>>>>> a6adedca9baa85a620f186032787a82697a3d484
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">
