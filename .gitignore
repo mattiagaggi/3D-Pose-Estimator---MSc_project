@@ -1,4 +1,5 @@
 data/
 env/
+sample/OpenPose3D/
 .idea/
 *DS_Store
