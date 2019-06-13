@@ -25,7 +25,7 @@ H36M_CONF = edict({
         'ids': [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
     },
     'joints': {
-        'number': 18,
+        'number': 17,
         'root_idx': 0,
         'l_shoulder_idx': 11,
         'r_shoulder_idx': 14,

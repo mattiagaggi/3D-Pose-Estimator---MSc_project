@@ -47,19 +47,6 @@ from sample.utils.transformations import bounding_box_pixel
 
 
 
-sample_metadata=sio.loadmat(h36m_location+subdirfile+"h36m_meta.mat")
-joints_world=sample_metadata['pose3d_world'][100]
-print(joints_world.shape)
-l_shoulder = joints_world[H36M_CONF.joints.l_shoulder_idx]
-r_shoulder = joints_world[H36M_CONF.joints.r_shoulder_idx]
-thorax = (l_shoulder + r_shoulder * 0.5).reshape([1, -1])
-joints_world = np.concatenate([joints_world, thorax], axis=0)
-
-im=cv2.imread(h36m_location+subdirfile+file)
-img = im[:H36M_CONF.max_size, :H36M_CONF.max_size]
-img = img.astype(np.float32)
-img /= 256
-#img -= 0.5
 
 
 
@@ -67,48 +54,6 @@ img /= 256
 
 
 
-joint_px, center= world_to_pixel(
-    joints_world,
-    H36M_CONF.joints.root_idx,
-    H36M_CONF.joints.number,
-    sample_metadata['R'],
-    sample_metadata['T'],
-    sample_metadata['f'],
-    sample_metadata['c']
-)
-
-
-
-#jointspixel2cam(pixel_coord, f, c)
-
-
-
-
-print(joint_px[0,0],joint_px[0,1])
-plt.scatter(joint_px[:-1,0],joint_px[:-1,1])
-print('smnsan',joint_px[1,:])
-plt.imshow(img)
-
-bbox=bounding_box_pixel(joints_world,  H36M_CONF.joints.root_idx,sample_metadata['R'],
-    sample_metadata['T'],
-    sample_metadata['f'],
-    sample_metadata['c'])
-
-plt.scatter([bbox[0],bbox[2]+bbox[0]],[bbox[1],bbox[1]])
-plt.scatter([bbox[0],bbox[2]+bbox[0]],[bbox[3]+bbox[1],bbox[3]+bbox[1]])
-
-plt.show()
-
-
-
-
-
-
-
-HOST_NAME = socket.gethostname()
-MPL_MODE = 'agg'#TkAgg'
-if socket.gethostname() == 'training':
-    MPL_MODE = 'agg'
 
 
 import logging
@@ -117,7 +62,7 @@ import cv2
 import numpy as np
 import matplotlib as mpl
 import utils
-mpl.use(MPL_MODE)
+
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
@@ -148,55 +93,28 @@ class Style(Flag):
 
 
 import matplotlib
-matplotlib.use('TkAgg')
+
 
 #just *before*
 
-import numpy as np
+
 import matplotlib.pyplot as plt
 
 
-class Drawer():
+class Drawer:
     """Class specifing visualization parameters"""
 
-    _LIMB_COLOR = [0, 1, 2, 0, 3, 4, 5, 6, 7, 7, 5, 5, 8, 9, 9]
-    _LIMBS = [[0, 1], [1, 2], [2, 3], [0, 4], [4, 5], [5, 6], [1, 7], [7, 8],
-              [8, 9], [9, 10], [7, 11], [4, 11], [11, 12], [12, 13]]
 
-    _COLORS = [[0, 0, 255], [0, 100, 0], [0, 255, 0], [0, 165, 255],
-               [0, 255, 255], [255, 255, 0], [100, 0, 0], [255, 0, 0],
-               [130, 0, 75], [255, 0, 255], [0, 0, 0]]
+    def __init__(self, line=1, marker=2):
 
-    def __init__(self, code=Style.PLANE_OFF, line=1, marker=1):
-        """Initialization
+        self.LIMBS_NAMES=[]
+        self._LIMB_COLOR = [0, 1, 2, 0, 3, 4, 5, 6, 7, 7, 5, 5, 8, 9, 5, 5,10,11,7]
+        self._LIMBS = [[0, 1], [1, 2], [2, 3], [0, 4], [4, 5], [5, 6], [1, 7], [7, 8],
+                  [8, 9], [9, 10], [7, 11], [4, 7], [11, 12], [12, 13], [7,14], [14,11], [14,15],[15,16], [0,7]]
 
-        Arguments:
-            code {Style} -- style of drawing (e.g. Style.BG_WHITE | Style.PLANE_OFF)
-
-        Keyword Arguments:
-            line {int} -- line width (default: {1})
-            marker {int} -- joint size (default: {1})
-        """
-
-        super().__init__()
-        self._logger = logging.getLogger(self.__class__.__name__)
-
-        self.bg_dark = False
-        if bool(code & Style.BG_BLACK):
-            plt.style.use('dark_background')
-            self.bg_dark = True
-
-        self.planes = True
-        if bool(code & Style.PLANE_OFF):
-            self.planes = False
-
-        self.colors = _COLORS
-        if bool(code & Style.SAME_COLOR):
-            self.colors = '#ff0000'
-
-        self.equal_axes = False
-        if bool(code & Style.EQ_AXES):
-            self.equal_axes = True
+        self._COLORS = [[255, 255, 100], [0, 100, 0], [0, 255, 0], [0, 165, 255],
+                   [0, 255, 255], [255, 255, 0], [100, 0, 0], [255, 0, 0],
+                   [130, 0, 75], [255, 0, 255], [0, 0, 255],[0, 0, 150]]
 
         # dual pose plot
         self.col_preds = '#ff0000'
@@ -206,20 +124,9 @@ class Drawer():
         self.marker = marker
 
     def _get_color(self, limb_id):
-        """Get color depending on limb id
 
-        Arguments:
-            limb_id {int} -- limb ID
+        color = self._COLORS[self._LIMB_COLOR[limb_id]]
 
-        Returns:
-            str -- color
-        """
-
-        if isinstance(self.colors, str):
-            return self.colors
-
-        rgb = self.colors[self._LIMB_COLOR[limb_id]]
-        color = '#{:02x}{:02x}{:02x}'.format(*rgb)
         return color
 
     def _scale_plot(self, pose, ax):
@@ -256,11 +163,6 @@ class Drawer():
         ax.set_zticklabels([])
 
         # Get rid of the panes
-        if not self.bg_dark:
-            bck_color = (1.0, 1.0, 1.0, 0.0)
-        else:
-            bck_color = (0.0, 0.0, 0.0, 0.0)
-            ax.w_zaxis.set_pane_color((0.54, 0.48, 0.48, 1.0))
 
         ax.w_xaxis.set_pane_color(bck_color)
         ax.w_yaxis.set_pane_color(bck_color)
@@ -291,23 +193,16 @@ class Drawer():
         return new_img
 
     def pose_2d(self, image, pose, visibility=None):
-        """Plot pose 2D
 
-        Arguments:
-            image {numpy array} -- RGB image
-            pose {numpy array} -- format (N_JOINTS x 2)
-
-        Keyword Arguments:
-            visibility {list} -- list of bools where True if
-                                    joint is visible (default: {None})
-        """
 
         # standardize image type
         img = image.copy()
         if img.dtype == np.float32:
+            print("not else")
             img = self._clip_to_max(img, max_value=1.0)
             img *= 255
         else:
+            print("else")
             img = self._clip_to_max(img, max_value=255)
 
         ubyte_img = img.astype(np.uint8)
@@ -319,7 +214,7 @@ class Drawer():
             visibility = [True] * pose.shape[0]
 
         # plot joints over image
-        for lid, (p0, p1) in enumerate(self.LIMBS):
+        for lid, (p0, p1) in enumerate(self._LIMBS):
             x0, y0 = pose[p0].astype(np.int)
             x1, y1 = pose[p1].astype(np.int)
 
@@ -334,6 +229,7 @@ class Drawer():
             if visibility[p0] and visibility[p1]:
                 cv2.line(img, (x0, y0), (x1, y1),
                          self._get_color(lid), self.line, 16)
+        return img
 
     def pose_3d(self, pose, plot=False):
         """Plot 3D pose
@@ -453,14 +349,79 @@ class Drawer():
         return fig
 
 
+
+
+
+
+
+
+sample_metadata=sio.loadmat(h36m_location+subdirfile+"h36m_meta.mat")
+joints_world=sample_metadata['pose3d_world'][100]
+im=cv2.imread(h36m_location+subdirfile+file)
+
+
+
+#img = im[:H36M_CONF.max_size, :H36M_CONF.max_size]
+#img = img.astype(np.float32)
+#img /= 256
+#img -= 0.5
+
+
+
+
+
+
+
+joint_px, center= world_to_pixel(
+    joints_world,
+    H36M_CONF.joints.root_idx,
+    H36M_CONF.joints.number,
+    sample_metadata['R'],
+    sample_metadata['T'],
+    sample_metadata['f'],
+    sample_metadata['c']
+)
+
+
+
+#jointspixel2cam(pixel_coord, f, c)
+
+#16,15,14 right arm up down
+
+#13, 12, 11 left arm down up
+
+
+#10,9,8 spine up down
+
+
+#4,5,6 left leg up down
+
+#1 2 3 right leg up down
+
+
+#11 14
+
+#7 14
+
+#16 15
+
+#15 14
+
+#11-4 chaneg to 4-7
+
+
+print(joint_px[0,0],joint_px[0,1])
+plt.scatter(joint_px[10,0],joint_px[10,1])
+plt.scatter(joint_px[7,0],joint_px[7,1])
+
+print('smnsan',joint_px[1,:])
 a=Drawer()
-a.pose_3d(joints_world)
+img=a.pose_2d(img,joint_px[:,:-1])
+
+plt.imshow(img)
 
 
-
-
-
-
+plt.show()
 
 
 
