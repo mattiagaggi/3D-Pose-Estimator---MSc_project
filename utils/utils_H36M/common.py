@@ -5,18 +5,6 @@ from easydict import EasyDict as edict
 
 
 H36M_CONF = edict({
-    'train': {
-        'sid': [1, 5, 6, 8],
-        'sampling': 5
-    },
-    'test': {
-        'sid': [9, 11],
-        'sampling': 64
-    },
-    'val': {
-        'sid': [7],
-        'sampling': 64
-    },
     'action': {
         'names': ['Directions', 'Discussion', 'Eating',
                   'Greeting', 'Phoning', 'Posing', 'Purchases',

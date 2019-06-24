@@ -1,23 +1,19 @@
+
+
 import numpy as np
-from sample.utils.common import H36M_CONF
+from matplotlib import pyplot as plt
 
 
-
+from utils.utils_H36M.common import H36M_CONF
 
 
 def cam2pixel(cam_coord, f, c):
 
-    """From camera coordinates to pixels
-
-    Arguments:
-        cam_coord {numpy array} -- format (N_JOINTS x 3)
-        f {numpy array} -- focal length
-        c {numpy array} -- original coordinates
-
-    Returns:
-        numpy array -- u coordinates
-        numpy array -- v coordinates
-        numpy array -- z coordinates
+    """
+    :param cam_coord: Nx3 camera coord
+    :param f:
+    :param c:
+    :return: NX3 pixel coords
     """
     assert cam_coord.shape[-1] == 3
     assert f.shape == (1,2)
@@ -38,15 +34,11 @@ def cam2pixel(cam_coord, f, c):
 
 
 def pixel2cam(pixel_coord, f, c):
-    """Pixel to coordinates
-
-    Arguments:
-        pixel_coord {numpy arrat} -- pixels
-        f {numpy array} -- focal length
-        c {numy array} -- camera origin
-
-    Returns:
-        numpy array -- coordinates in cam coordinate
+    """
+    :param pixel_coord: Nx3 pixel coord
+    :param f:
+    :param c:
+    :return: Nx3 camera coords
     """
     assert pixel_coord.shape[-1] == 3
     assert f.shape == (1,2)
@@ -64,14 +56,28 @@ def pixel2cam(pixel_coord, f, c):
 
 
 def world_to_camera(joints, n_joints, rot, t):
+    """
+    :param joints: 17x3 world joints
+    :param n_joints: number of joints (17)
+    :param rot: rotation matrix 3x3
+    :param t: translation 1x3
+    :return: 17x3 in camera coordinates
+    """
 
     assert joints.shape == (n_joints, 3)
     assert t.shape == (1,3)
     assert rot.shape == (3, 3)
-    return np.dot(joints - t, rot.T )
+    return np.dot(joints - t, rot.T)
 
 
 def camera_to_world(joints, n_joints, rot, t):
+    """
+    :param joints: 17x3 joints in camera coord
+    :param n_joints: number of joints
+    :param rot: rotation 3x3
+    :param t: translation 1x3
+    :return: joints in world coordinates
+    """
     assert joints.shape == (n_joints, 3)
     assert t.shape == (1, 3)
     assert rot.shape == (3, 3)
@@ -79,6 +85,15 @@ def camera_to_world(joints, n_joints, rot, t):
 
 
 def bounding_box_pixel(joints, root_idx,rot, t, f, c):
+    """
+    :param joints: joints in world coord
+    :param root_idx: index of root joint which is centered in world coordinates
+    :param rot: rotation
+    :param t: translation
+    :param f: intrinsic f
+    :param c: intrinsic c
+    :return: bounding box in pixel coors
+    """
 
     assert f.shape == (1,2)
     assert c.shape == (1,2)
@@ -102,18 +117,18 @@ def bounding_box_pixel(joints, root_idx,rot, t, f, c):
     temp = cam2pixel(bbox3d_rb, f, c)
     bbox2d_r, bbox2d_b = temp[..., 0], temp[..., 1]
 
-    bbox = np.array([bbox2d_l,
-                     bbox2d_t,
-                     bbox2d_r - bbox2d_l+1,
-                     bbox2d_b-bbox2d_t+1])
+    bbox = np.array([bbox2d_l,  #x start
+                     bbox2d_t, #y start
+                     bbox2d_r - bbox2d_l,#width
+                     bbox2d_b-bbox2d_t]) #height
     return bbox
 
 
-def plot_bounding_box(ax,joints, root_idx,rot, t, f, c):
-    bbox=bounding_box_pixel(joints, root_idx,rot, t, f, c)
-    ax.scatter([bbox[0], bbox[2] + bbox[0]], [bbox[1], bbox[1]])
-    ax.scatter([bbox[0], bbox[2] + bbox[0]], [bbox[3] + bbox[1], bbox[3] + bbox[1]])
-    return ax
+def plot_bounding_box(fig,joints, root_idx,rot, t, f, c):
+    bbox = bounding_box_pixel(joints, root_idx,rot, t, f, c)
+    plt.scatter([bbox[0], bbox[2] + bbox[0]], [bbox[1], bbox[1]])
+    plt.scatter([bbox[0], bbox[2] + bbox[0]], [bbox[3] + bbox[1], bbox[3] + bbox[1]])
+    return fig
 
 
 
@@ -144,9 +159,7 @@ def world_to_pixel(joints, root_idx, n_joints, rot, t, f, c):
 
     # joints in camera reference system
     joint_cam = world_to_camera(joints, n_joints, rot, t)
-
     center_cam = joint_cam[root_idx]
-
     # joint in pixel coordinates
     joint_px = cam2pixel(joint_cam, f, c)
 
