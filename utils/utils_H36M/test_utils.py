@@ -8,9 +8,9 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-subdirfile="s_01_act_05_subact_02_ca_01/"
-file="s_01_act_05_subact_02_ca_01_000120.jpg"
-from utils.utils_H36M.transformations import world_to_pixel
+subdirfile="s_01_act_07_subact_02_ca_03/"
+file="s_01_act_07_subact_02_ca_03_000120.jpg"
+from utils.utils_H36M.transformations import world_to_pixel,world_to_camera
 from utils.utils_H36M.visualise import Drawer
 
 
@@ -41,9 +41,16 @@ joint_px, center= world_to_pixel(
     sample_metadata['c']
 )
 
+joint_cam= world_to_camera(
+    joints_world,
+    H36M_CONF.joints.number,
+    sample_metadata['R'],
+    sample_metadata['T']
+)
 
 
-from utils.utils_H36M.transformations import plot_bounding_box,bounding_box_pixel
+
+from utils.utils_H36M.transformations import plot_bounding_box,bounding_box_pixel,rotate_x, rotate_y
 a=Drawer()
 fig=plt.figure()
 fig=a.pose_2d(fig,img,joint_px[:,:-1])
@@ -53,7 +60,17 @@ fig=plot_bounding_box(fig,joints_world, 0,sample_metadata['R'], sample_metadata[
 plt.imshow(img)
 plt.show()
 print(bbpx_px[0]+bbpx_px[2]/2,bbpx_px[1]+bbpx_px[3]/2)
-print(joint_px[0,:])
+print(sample_metadata['T'],joint_cam[0,:])
+
+
+a=joint_cam @ rotate_y(np.arctan(-joint_cam[0,0]/joint_cam[0,2])).T
+b= a @ rotate_x( np.arctan(a[0,1]/a[0,2])).T
+
+print("cam",joint_cam[0,:])
+print("angle 1",joint_cam[0,0]/joint_cam[0,2]/np.pi*180 )
+print("angle 2",joint_cam[0,1]/joint_cam[0,2]/np.pi*180 )
+print("a", a[0,:])
+print("b",b[0,:])
 
 
 #######################################################################
@@ -66,6 +83,13 @@ from utils.utils_H36M.preprocess import  Data_Base_class
 #data.save_index_file()
 #data.load_index_file()
 #print(data.index_file[0])
+
+
+#TO DO
+
+#rotation of principal axis
+
+#crop image function
 
 
 

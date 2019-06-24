@@ -117,11 +117,12 @@ def bounding_box_pixel(joints, root_idx,rot, t, f, c):
     temp = cam2pixel(bbox3d_rb, f, c)
     bbox2d_r, bbox2d_b = temp[..., 0], temp[..., 1]
 
-    bbox = np.array([bbox2d_l,  #x start
+    bbox_pixel = np.array([bbox2d_l,  #x start
                      bbox2d_t, #y start
                      bbox2d_r - bbox2d_l,#width
                      bbox2d_b-bbox2d_t]) #height
-    return bbox
+
+    return bbox_pixel
 
 
 def plot_bounding_box(fig,joints, root_idx,rot, t, f, c):
@@ -164,4 +165,19 @@ def world_to_pixel(joints, root_idx, n_joints, rot, t, f, c):
     joint_px = cam2pixel(joint_cam, f, c)
 
     return joint_px, center_cam
+
+
+def rotate_x(angle_rad):
+
+    return np.array([[1,                 0,                 0],
+                     [0, np.cos(angle_rad),-np.sin(angle_rad)],
+                     [0, np.sin(angle_rad), np.cos(angle_rad)]])
+
+
+def rotate_y(angle_rad):
+
+    return np.array([[np.cos(angle_rad), 0, np.sin(angle_rad)],
+                     [0,                 1,                 0],
+                     [-np.sin(angle_rad),0, np.cos(angle_rad)]])
+
 

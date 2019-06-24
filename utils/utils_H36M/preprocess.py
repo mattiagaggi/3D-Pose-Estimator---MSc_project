@@ -32,27 +32,10 @@ class Data_Base_class:
             self._logger.error("Argument to Data class must be 0 or 1 or 2 (train,val,test)")
 
 
-
-    def load_index_file(self):
-
-        self._logger.info('Extract index file ...')
-        file_path = os.path.join(self.h_36_loc, self.index_location)
-        if not file_exists(file_path):
-            self._logger.warning("index file to load does not exist")
-        self.index_file = pkl.load(open( file_path, "rb" ))
-
-    def save_index_file(self):
-
-        if self.index_file is None:
-            self._logger.error("File to save is None")
-        self._logger.info('Saving index file...')
-        file_path = os.path.join(self.h_36_loc, self.index_location)
-        if file_exists(file_path):
-            self._logger.error("Overwriting previous file")
-        pkl.dump(self.index_file, open(file_path, "wb"))
+    ################################ INDEX/DATA LOADING FUNCTIONS #############################
 
 
-    def get_all_content(selfself,name):
+    def get_all_content(self,name):
         res = name.split('_')
         return int(res[1]), int(res[3]), int(res[5]), int(res[7]), int(res[9])
 
@@ -78,9 +61,11 @@ class Data_Base_class:
         name="s_%s_act_%s_subact_%s_ca_%s_%s.jpg" % ('{:02d}'.format(s), '{:02d}'.format(act),
                                                      '{:02d}'.format(sub),'{:02d}'.format(ca),
                                                      '{:06d}'.format(fno))
-        path=os.path.join(self.h_36_loc, subdir,name)
+        path=os.path.join(self.h_36_loc, subdir, name)
+        if not file_exists(path):
+            self._logger.error("file found by path %s does not exist" % path)
 
-        return path,name
+        return path, name
 
     def create_index_file_subject(self, subj_list, sampling):
 
@@ -106,6 +91,25 @@ class Data_Base_class:
                 index.append(file_details)
         self.index_file = index
 
+    def load_index_file(self):
+
+        self._logger.info('Extract index file ...')
+        file_path = os.path.join(self.h_36_loc, self.index_location)
+        if not file_exists(file_path):
+            self._logger.warning("index file to load does not exist")
+        self.index_file = pkl.load(open( file_path, "rb" ))
+
+    def save_index_file(self):
+
+        if self.index_file is None:
+            self._logger.error("File to save is None")
+        self._logger.info('Saving index file...')
+        file_path = os.path.join(self.h_36_loc, self.index_location)
+        if file_exists(file_path):
+            self._logger.error("Overwriting previous file")
+        pkl.dump(self.index_file, open(file_path, "wb"))
+
+
     def load_metadata(self, subdir):
         path = os.path.join(self.h_36_loc, subdir)
         if not os.path.exists(path):
@@ -122,6 +126,7 @@ class Data_Base_class:
         metadata['img_widths'] = data['img_widths']
         metadata['img_heights'] = data['img_heights']
         return metadata
+
 
 
 
