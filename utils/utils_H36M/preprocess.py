@@ -3,8 +3,12 @@ import os
 import pickle as pkl
 import scipy.io as sio
 
+import cv2
+import numpy as np
+
 
 from data.directories_location import h36m_location
+from utils.utils_H36M.common import H36M_CONF
 from utils.io import get_sub_dirs,get_files,file_exists
 from logger.console_logger import ConsoleLogger
 
@@ -110,22 +114,33 @@ class Data_Base_class:
         pkl.dump(self.index_file, open(file_path, "wb"))
 
 
-    def load_metadata(self, subdir):
-        path = os.path.join(self.h_36_loc, subdir)
+    def load_metadata(self, subdir_path):
+        path = os.path.join(subdir_path,"h36m_meta.mat")
         if not os.path.exists(path):
             self._logger.error('File %s not loaded', path)
             exit()
         metadata = {}
         data = sio.loadmat(path)
-
         metadata['joint_world'] = data['pose3d_world']
         metadata['R'] = data['R']
         metadata['T'] = data['T']
         metadata['c'] = data['c'],
         metadata['f'] = data['f'],
-        metadata['img_widths'] = data['img_widths']
-        metadata['img_heights'] = data['img_heights']
+        metadata['img_widths'] = data['img_width']
+        metadata['img_heights'] = data['img_height']
         return metadata
+    #############################################################
+    ########IMAGE FUNCTIONS #####################################
+
+    def extract_image(self, path):
+        im = cv2.imread(path)
+        im=im[:H36M_CONF.max_size, :H36M_CONF.max_size, :]
+        im = im.astype(np.float32)
+        im /= 256
+        return im
+
+
+
 
 
 

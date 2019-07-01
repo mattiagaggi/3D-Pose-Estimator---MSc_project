@@ -4,6 +4,7 @@ from easydict import EasyDict as edict
 
 
 
+
 H36M_CONF = edict({
     'action': {
         'names': ['Directions', 'Discussion', 'Eating',

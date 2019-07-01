@@ -2,8 +2,7 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
-
-
+import cv2
 from utils.utils_H36M.common import H36M_CONF
 
 
@@ -11,8 +10,8 @@ def cam2pixel(cam_coord, f, c):
 
     """
     :param cam_coord: Nx3 camera coord
-    :param f:
-    :param c:
+    :param f: focal length
+    :param c: image center
     :return: NX3 pixel coords
     """
     assert cam_coord.shape[-1] == 3
@@ -135,23 +134,18 @@ def plot_bounding_box(fig,joints, root_idx,rot, t, f, c):
 
 
 def world_to_pixel(joints, root_idx, n_joints, rot, t, f, c):
-    """Project from world coordinates to the camera space
-
-    Arguments:
-        joints {numpy arrat} -- format (N_JOINTS x 3)
-        root_idx {int} -- root joint index
-        n_joints {int} -- N_JOINTS
-        rot {numpy array} -- rotation matrix
-        t {numpy array} -- translation matrix
-        f {numpy array} -- focal length (format [1,2])
-        c {numpy array} -- optical center (format [1,2])
-
-    Returns:
-        numpy array -- joints in pixel coordinates
-        numpy array -- joints in camera coordinates
-        numpy array -- camera center
     """
+    Project from world coordinates to the camera space
+    :param joints:  format (N_JOINTS x 3)
+    :param root_idx: 0
+    :param n_joints: 17
+    :param rot: rotation 3x3
+    :param t: translation
+    :param f: f intrinsic
+    :param c: camera center intrinsics
+    :return: Nx3 camera coords, root in camera coords
 
+    """
     assert joints.shape == (n_joints,3)
     assert t.shape == (1,3)
     assert f.shape == (1,2)
@@ -168,6 +162,11 @@ def world_to_pixel(joints, root_idx, n_joints, rot, t, f, c):
 
 
 def rotate_x(angle_rad):
+    """
+    rotation around x axis in 3D
+    :param angle_rad: angle in radiants
+    :return: rotation matrix
+    """
 
     return np.array([[1,                 0,                 0],
                      [0, np.cos(angle_rad),-np.sin(angle_rad)],
@@ -175,9 +174,170 @@ def rotate_x(angle_rad):
 
 
 def rotate_y(angle_rad):
+    """
+    rotation around y axis in 3D
+    :param angle_rad: angle in radiants
+    :return: rotation matrix
+    """
 
     return np.array([[np.cos(angle_rad), 0, np.sin(angle_rad)],
                      [0,                 1,                 0],
                      [-np.sin(angle_rad),0, np.cos(angle_rad)]])
+
+
+def cam_pointing_root(world_joints, root_idx, n_joints, rot, t):
+    """
+    rotation matrix so that the camera coordinates have z axis pointing at root index
+    :param world_joints: Nx3 joints
+    :param root_idx: 0
+    :param n_joints: 17 joints
+    :param rot: rotation matrix
+    :param t: tranlation
+    :return:
+    """
+
+    assert world_joints.shape == (n_joints, 3)
+    assert rot.shape == (3, 3)
+    assert t.shape == (1, 3)
+    #reshape for matrix multiplication
+    root_joint_world = world_joints[root_idx,:].reshape(1,3)
+    root_joint_cam = np.dot(root_joint_world - t, rot.T)
+    #need a rotation around the y coordinate of angle -x/z because of array indexing
+    angle_y = np.arctan(- root_joint_cam[0, 0]/root_joint_cam[0, 2])
+    rot_y = rotate_y(angle_y)
+    root_joint_cam_y = np.dot( root_joint_cam, rot_y.T)
+    # need a rotation around the x coordinate of angle y/z because of array indexing
+    angle_x = np.arctan( root_joint_cam_y[0,1] / root_joint_cam_y[0,2])
+    rot_x = rotate_x(angle_x)
+    #the order is important here we first rotate y then x
+    return np.dot(rot_x, rot_y)
+
+
+
+def get_patch_image(img, bbox, target_shape):
+    """
+    :param img: numpy array
+    :param bbox: bounding box [x, y, width, height] array
+    :param target_shape: target  [width, height]
+    :return: transformed image, transformation 2x3 array
+    """
+
+    assert len(bbox) == 4
+    assert len(target_shape) == 2
+
+    bb_c_x = float(bbox[0] + 0.5*bbox[2])
+    bb_c_y = float(bbox[1] + 0.5*bbox[3])
+    bb_width = float(bbox[2])
+    bb_height = float(bbox[3])
+
+    trans = get_affine(bb_c_x, bb_c_y,
+                               bb_width, bb_height,
+                               target_shape[1],
+                               target_shape[0],
+                               inv=False)
+    img_patch = cv2.warpAffine(img, trans,
+                               (int(target_shape[1]), int(target_shape[0])),
+                               flags=cv2.INTER_LINEAR)
+
+    return img_patch, trans
+
+
+def get_affine(c_x, c_y, src_width, src_height, dst_width, dst_height, inv=False):
+    """
+    get affine tranformation
+    :param c_x: center x
+    :param c_y: center y
+    :param src_width: source width
+    :param src_height: source height
+    :param dst_width: target width
+    :param dst_height: target height
+    :param inv: True if inverse
+    :return: np array 2x3
+    """
+
+
+    # augment size with scale
+    src_center = np.array([c_x, c_y], dtype=np.float32)
+
+    dst_center = np.array([dst_width * 0.5, dst_height * 0.5],
+                          dtype=np.float32)
+    dst_downdir = np.array([0, dst_height * 0.5],
+                           dtype=np.float32)
+    dst_rightdir = np.array([dst_width * 0.5, 0],
+                            dtype=np.float32)
+
+    src = np.zeros((3, 2), dtype=np.float32)
+    src[0, :] = src_center
+    src[1, :] = src_center + [0, src_height * 0.5]
+    src[2, :] = src_center + [src_width * 0.5, 0]
+
+    dst = np.zeros((3, 2), dtype=np.float32)
+    dst[0, :] = dst_center
+    dst[1, :] = dst_center + dst_downdir
+    dst[2, :] = dst_center + dst_rightdir
+
+    if inv:
+        trans = cv2.getAffineTransform(np.float32(dst), np.float32(src))
+    else:
+        trans = cv2.getAffineTransform(np.float32(src), np.float32(dst))
+
+    return trans
+
+
+
+
+def transform_2d_joints(joints_px, transformation):
+
+    """
+    :param joints_px: Nx3 joint in pixel coords
+    :param transformation: 2x3 affine
+    :return: transformerd Nx3 pixel,visibility
+    """
+
+    vis = np.ones(len(joints_px), dtype=bool)
+    concatenated_ones=np.concatenate( [joints_px[:,:2],np.ones(shape=(joints_px.shape[0],1))], axis=1)
+    joints_px[:,:2]=np.dot(concatenated_ones,transformation.T)
+    # rescale points to output size
+    scaling_factor = 1 # check
+    joints_px[:, :2] /= scaling_factor
+    joints_px[:, 2] *= H36M_CONF.depth_dim
+
+    return joints_px, vis
+
+
+
+def warp_joints_bbox(joints, bbox, cam_center,
+                     src_shape, src_depth, trg_depth):
+    """Warp joints normalized according to the 2D bounding
+    box back to their original version (bbox independent)
+
+    Arguments:
+        joints {numpy array} -- vecotor of joints or matrix
+        bbox {numpy array} -- [x, y, width, height]
+        cam_center {numpy array} -- format [2]
+        src_shape {int} -- output resolution of the heatmaps
+        src_depth {int} -- source depth
+        trg_depth {int} -- source depth
+
+    Returns:
+        numpy array -- unnormalized joints
+    """
+
+    if joints.ndim == 1:
+        joints = joints.reshape([-1, 3])
+
+    p3d = np.zeros_like(joints)
+    p3d[:, 0] = joints[:, 0] / src_shape * bbox[2]
+    p3d[:, 1] = joints[:, 1] / src_shape * bbox[3]
+    p3d[:, 0] += bbox[0]
+    p3d[:, 1] += bbox[1]
+    p3d[:, 2] = joints[:, 2] / src_depth - 0.5
+    p3d[:, 2] *= trg_depth / 2.0
+    p3d[:, 2] += cam_center[2]
+
+    return p3d
+
+
+
 
 

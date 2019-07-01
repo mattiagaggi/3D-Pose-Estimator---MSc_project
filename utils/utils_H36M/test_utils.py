@@ -7,23 +7,23 @@ import cv2
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import pickle as pkl
 
-subdirfile="s_01_act_07_subact_02_ca_03/"
-file="s_01_act_07_subact_02_ca_03_000120.jpg"
-from utils.utils_H36M.transformations import world_to_pixel,world_to_camera
-from utils.utils_H36M.visualise import Drawer
-
+subdirfile="s_01_act_06_subact_02_ca_04/"
+file="s_01_act_06_subact_02_ca_04_000010.jpg"
 
 
 
 #######################################################################
 #test data loadinf
 #######################################################################
+from utils.utils_H36M.transformations import world_to_pixel,world_to_camera
 sample_metadata=sio.loadmat(h36m_location+subdirfile+"h36m_meta.mat")
-joints_world=sample_metadata['pose3d_world'][100]
+joints_world=sample_metadata['pose3d_world'][10]
 im=cv2.imread(h36m_location+subdirfile+file)
 img = im#[:H36M_CONF.max_size, :H36M_CONF.max_size]
 img = img.astype(np.float32)
+img=img[:H36M_CONF.max_size,:H36M_CONF.max_size,:]
 img /= 256
 
 
@@ -49,34 +49,54 @@ joint_cam= world_to_camera(
 )
 
 
+#######################################################################
+#test visualisation
+#######################################################################
+from utils.utils_H36M.transformations import plot_bounding_box,bounding_box_pixel,cam_pointing_root
+from utils.utils_H36M.visualise import Drawer
+from utils.utils_H36M.transformations import get_patch_image
 
-from utils.utils_H36M.transformations import plot_bounding_box,bounding_box_pixel,rotate_x, rotate_y
-a=Drawer()
+m = pkl.load(open(os.path.join(h36m_location, "backgrounds.pkl"), "rb"))
 fig=plt.figure()
-fig=a.pose_2d(fig,img,joint_px[:,:-1])
-bbpx_px=bounding_box_pixel(joints_world, 0,sample_metadata['R'], sample_metadata['T'], sample_metadata['f'], sample_metadata['c'])
+a=Drawer()
+fig=a.pose_2d(fig,img-m[3],joint_px[:,:-1])
+print("look this",np.sum(img-m[3]))
 fig=plot_bounding_box(fig,joints_world, 0,sample_metadata['R'], sample_metadata['T'], sample_metadata['f'], sample_metadata['c'])
 #fig=a.pose_3d(fig,joints_world)
-plt.imshow(img)
+#plt.show()
+
+
+
+from utils.utils_H36M.transformations import get_patch_image,transform_2d_joints
+bbpx_px=bounding_box_pixel(joints_world, 0,sample_metadata['R'], sample_metadata['T'], sample_metadata['f'], sample_metadata['c'])
+print(bbpx_px)
+imwarped,trans = get_patch_image(img, bbpx_px, (512,512))
+trsf_joints, vis = transform_2d_joints(joint_px,trans)
+fig1=plt.figure()
+b=Drawer()
+plt.imshow(imwarped)
+fig1 = b.pose_2d(fig1,imwarped,trsf_joints[:,:-1])
+print(trsf_joints)
 plt.show()
-print(bbpx_px[0]+bbpx_px[2]/2,bbpx_px[1]+bbpx_px[3]/2)
-print(sample_metadata['T'],joint_cam[0,:])
 
 
-a=joint_cam @ rotate_y(np.arctan(-joint_cam[0,0]/joint_cam[0,2])).T
-b= a @ rotate_x( np.arctan(a[0,1]/a[0,2])).T
 
-print("cam",joint_cam[0,:])
-print("angle 1",joint_cam[0,0]/joint_cam[0,2]/np.pi*180 )
-print("angle 2",joint_cam[0,1]/joint_cam[0,2]/np.pi*180 )
-print("a", a[0,:])
-print("b",b[0,:])
+#######################################################################
+#test rotation
+#######################################################################
 
+
+#new_rot = cam_pointing_root(joints_world,0,17,sample_metadata['R'], sample_metadata['T'])
+#new_coords = joint_cam @ new_rot.T
+#print("root in new coords",new_coords[0,:])
 
 #######################################################################
 #test data class
 #######################################################################
-from utils.utils_H36M.preprocess import  Data_Base_class
+
+
+
+#from utils.utils_H36M.preprocess import  Data_Base_class
 #data=Data_Base_class()
 #data.create_index_file_subject([1],60)
 #print(data.get_name(1,2,1,1,1))
@@ -85,11 +105,7 @@ from utils.utils_H36M.preprocess import  Data_Base_class
 #print(data.index_file[0])
 
 
-#TO DO
 
-#rotation of principal axis
-
-#crop image function
 
 
 

@@ -107,21 +107,24 @@ class Drawer:
         color = '#{:02x}{:02x}{:02x}'.format(*rgb)
         return color
 
-    def pose_2d(self,fig, img, pose):
-
-
+    def plot_image(self, fig, img):
         if img.dtype == np.float32:
-            print("not else")
             img = self._clip_to_max(img, max_value=1.0)
             img *= 255
         else:
-            print("else")
             img = self._clip_to_max(img, max_value=255)
 
         ubyte_img = img.astype(np.uint8)
         img = cv2.cvtColor(ubyte_img,
                            cv2.COLOR_BGR2RGB)
+        plt.imshow(img)
+        return fig
 
+
+
+    def pose_2d(self,fig, img, pose):
+
+        fig = self.plot_image(fig,img)
         # plot joints over image
         for lid, (p0, p1) in enumerate(self._limbs):
             x0, y0 = pose[p0].astype(np.int)
@@ -138,7 +141,6 @@ class Drawer:
             if self.visibility[p0] and self.visibility[p1]:
                 cv2.line(img, (x0, y0), (x1, y1),
                          self._get_color(lid), self.line, 16)
-        plt.imshow(img)
         return fig
 
     def pose_3d(self, fig, pose):
