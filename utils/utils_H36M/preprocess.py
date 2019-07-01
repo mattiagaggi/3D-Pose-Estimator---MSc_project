@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 
 
-from data.directories_location import h36m_location
+from data.directories_location import index_location,h36m_location
 from utils.utils_H36M.common import H36M_CONF
 from utils.io import get_sub_dirs,get_files,file_exists
 from logger.console_logger import ConsoleLogger
@@ -16,9 +16,9 @@ from logger.console_logger import ConsoleLogger
 
 class Data_Base_class:
 
-    def __init__(self, train_val_test=0, location=h36m_location):
+    def __init__(self, train_val_test=0, location=index_location):
 
-        self.h_36_loc = location
+        self.index_file_loc= location
         self.sampling=10
 
         logger_name = '{}'.format(self.__class__.__name__)
@@ -65,7 +65,7 @@ class Data_Base_class:
         name="s_%s_act_%s_subact_%s_ca_%s_%s.jpg" % ('{:02d}'.format(s), '{:02d}'.format(act),
                                                      '{:02d}'.format(sub),'{:02d}'.format(ca),
                                                      '{:06d}'.format(fno))
-        path=os.path.join(self.h_36_loc, subdir, name)
+        path=os.path.join(h36m_location, subdir, name)
         if not file_exists(path):
             self._logger.error("file found by path %s does not exist" % path)
 
@@ -76,7 +76,7 @@ class Data_Base_class:
         self._logger.info('Indexing dataset...')
         index = []
         # get list of sequences
-        names, paths = get_sub_dirs(self.h_36_loc)
+        names, paths = get_sub_dirs(self.index_file_loc)
         for name, path in zip(names, paths):
             # check data to load
             sid = self.get_content(name, 's')
@@ -98,7 +98,7 @@ class Data_Base_class:
     def load_index_file(self):
 
         self._logger.info('Extract index file ...')
-        file_path = os.path.join(self.h_36_loc, self.index_location)
+        file_path = os.path.join(self.index_file_loc, self.index_location)
         if not file_exists(file_path):
             self._logger.warning("index file to load does not exist")
         self.index_file = pkl.load(open( file_path, "rb" ))
@@ -108,7 +108,7 @@ class Data_Base_class:
         if self.index_file is None:
             self._logger.error("File to save is None")
         self._logger.info('Saving index file...')
-        file_path = os.path.join(self.h_36_loc, self.index_location)
+        file_path = os.path.join(self.index_file_loc, self.index_location)
         if file_exists(file_path):
             self._logger.error("Overwriting previous file")
         pkl.dump(self.index_file, open(file_path, "wb"))
@@ -124,8 +124,8 @@ class Data_Base_class:
         metadata['joint_world'] = data['pose3d_world']
         metadata['R'] = data['R']
         metadata['T'] = data['T']
-        metadata['c'] = data['c'],
-        metadata['f'] = data['f'],
+        metadata['c'] = data['c']
+        metadata['f'] = data['f']
         metadata['img_widths'] = data['img_width']
         metadata['img_heights'] = data['img_height']
         return metadata

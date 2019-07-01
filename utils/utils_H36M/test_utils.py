@@ -9,8 +9,7 @@ import os
 import matplotlib.pyplot as plt
 import pickle as pkl
 
-subdirfile="s_01_act_06_subact_02_ca_04/"
-file="s_01_act_06_subact_02_ca_04_000010.jpg"
+
 
 
 
@@ -18,13 +17,33 @@ file="s_01_act_06_subact_02_ca_04_000010.jpg"
 #test data loadinf
 #######################################################################
 from utils.utils_H36M.transformations import world_to_pixel,world_to_camera
-sample_metadata=sio.loadmat(h36m_location+subdirfile+"h36m_meta.mat")
-joints_world=sample_metadata['pose3d_world'][10]
-im=cv2.imread(h36m_location+subdirfile+file)
-img = im#[:H36M_CONF.max_size, :H36M_CONF.max_size]
-img = img.astype(np.float32)
-img=img[:H36M_CONF.max_size,:H36M_CONF.max_size,:]
-img /= 256
+from utils.utils_H36M.preprocess import Data_Base_class
+from utils.io import *
+from data.directories_location import backgrounds_location
+
+d=Data_Base_class()
+subjlist=[1,2,3,4,5,6,7,8,9,10]
+d.create_index_file_subject(subjlist,64)
+path,name=d.get_name(1,2,2,2,64)
+path2,_=d.get_name(1,9,1,2,64)
+
+
+
+sample_metadata=d.load_metadata(get_parent(path))
+img=d.extract_image(path)
+
+sample_metadata2=d.load_metadata(get_parent(path2))
+img2=d.extract_image(path2)
+
+print(sample_metadata['R'])
+print(sample_metadata2['R'])
+
+
+
+
+
+
+joints_world=sample_metadata['joint_world'][64]
 
 
 
@@ -56,27 +75,40 @@ from utils.utils_H36M.transformations import plot_bounding_box,bounding_box_pixe
 from utils.utils_H36M.visualise import Drawer
 from utils.utils_H36M.transformations import get_patch_image
 
-m = pkl.load(open(os.path.join(h36m_location, "backgrounds.pkl"), "rb"))
-fig=plt.figure()
-a=Drawer()
-fig=a.pose_2d(fig,img-m[3],joint_px[:,:-1])
-print("look this",np.sum(img-m[3]))
-fig=plot_bounding_box(fig,joints_world, 0,sample_metadata['R'], sample_metadata['T'], sample_metadata['f'], sample_metadata['c'])
+#m = pkl.load(open(os.path.join(backgrounds_location, "backgrounds.pkl"), "rb"))
+#fig=plt.figure()
+#a=Drawer()
+#fig=a.pose_2d(fig,img-m[3],joint_px[:,:-1])
+
+#fig=plot_bounding_box(fig,joints_world, 0,sample_metadata['R'], sample_metadata['T'], sample_metadata['f'], sample_metadata['c'])
 #fig=a.pose_3d(fig,joints_world)
 #plt.show()
 
 
 
+
+
+
+fig=plt.figure()
+d=Drawer()
+d.plot_image(fig,img)
+
+fig2=plt.figure()
+d.plot_image(fig2,img2)
+plt.show()
+
+
+
+
 from utils.utils_H36M.transformations import get_patch_image,transform_2d_joints
+
 bbpx_px=bounding_box_pixel(joints_world, 0,sample_metadata['R'], sample_metadata['T'], sample_metadata['f'], sample_metadata['c'])
-print(bbpx_px)
 imwarped,trans = get_patch_image(img, bbpx_px, (512,512))
 trsf_joints, vis = transform_2d_joints(joint_px,trans)
 fig1=plt.figure()
 b=Drawer()
 plt.imshow(imwarped)
 fig1 = b.pose_2d(fig1,imwarped,trsf_joints[:,:-1])
-print(trsf_joints)
 plt.show()
 
 

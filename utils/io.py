@@ -125,6 +125,15 @@ def get_dir(path):
 
     return path
 
+def get_parent(path):
+    assert isinstance(path, str)
+    sep='/'
+    split_name= path.split(sep)
+    print("st",split_name)
+    name=sep.join(split_name[:-1])
+    return name
+
+
 
 def remove_files(paths):
     """Delete files
