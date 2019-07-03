@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 
 
-from data.directories_location import index_location,h36m_location
+from data.directories_location import index_location, h36m_location, backgrounds_location
 from utils.utils_H36M.common import H36M_CONF
 from utils.io import get_sub_dirs,get_files,file_exists,get_parent
 from logger.console_logger import ConsoleLogger
@@ -16,33 +16,43 @@ from logger.console_logger import ConsoleLogger
 
 class Data_Base_class:
 
-    def __init__(self, train_val_test=0, sampling=64, max_epochs=1, index_location = index_location, h36m_location = h36m_location):
+    def __init__(self, train_val_test=0,
+                 sampling=64,
+                 max_epochs=1,
+                 index_location = index_location,
+                 h36m_location = h36m_location,
+                 background_location = backgrounds_location):
 
         self._max_epochs=max_epochs
-        self._current_epoch = None
-        self.current_metadata = None
-        self.current_background= None
-        self.index_file_loc= index_location
-        self.h_36m_loc= h36m_location
+
+        self.index_file_loc = index_location
+        self.h_36m_loc = h36m_location
+        self.background_location = background_location
         self.sampling = sampling
 
         logger_name = '{}'.format(self.__class__.__name__)
-        self._logger=ConsoleLogger(logger_name)
+        self._logger = ConsoleLogger(logger_name)
 
+
+
+        self._current_epoch = None
+        self.current_metadata = None
+        self.current_background= None
+
+        #once we create the index file we keep track of the current image being looked at
+        #using  lists self.s_tot.... and indices in list self.current_s
         self.index_file = None
-
         self.s_tot, self.act_tot, self.subact_tot, self.ca_tot, self.fno_tot = \
             None, None, None, None, None
-
         self.current_s, self.current_act, self.current_subact, self.current_ca, self.current_fno = \
             None, None, None, None, None
 
         if train_val_test == 0:
-            self.index_location = "index_train.pkl"
+            self.index_name = "index_train.pkl"
         elif train_val_test == 1:
-            self.index_location = "index_val.pkl"
+            self.index_name = "index_val.pkl"
         elif train_val_test == 2:
-            self.index_location = "index_test.pkl"
+            self.index_name = "index_test.pkl"
         else:
             self._logger.error("Argument to Data class must be 0 or 1 or 2 (train,val,test)")
 
@@ -129,14 +139,14 @@ class Data_Base_class:
             self.index_file[s] = {act: {
                                     subact: {
                                         ca: {
-                                            fno: path
-            }}}}
+                                            fno: path}
+                                    }}}
         else:
             if act not in self.index_file[s].keys():
                 self.index_file[s][act] = {subact: {
                                                 ca: {
-                                                    fno: path
-                }}}
+                                                    fno: path}
+                }}
             else:
                 if subact not in self.index_file[s][act].keys():
                     self.index_file[s][act][subact] = {ca: {fno: path}}
@@ -155,10 +165,10 @@ class Data_Base_class:
 
     def create_index_file(self, content,content_list):
         """
+        creates nested dictionary from function above self.index_file[s][act][subact][ca][fno]=path
         :param content: one of: 's', 'act', 'subact' ,'ca', 'fno'
         :param content_list: list of contents
         :param sampling: sampling of fno
-        :return: nested dictionary from function above
         """
 
         self._logger.info('Indexing dataset...')
@@ -170,8 +180,7 @@ class Data_Base_class:
             if self.get_content(name, content) not in content_list:
                 continue
             _, file_names = get_files(path, 'jpg')
-            #add only sequences sampled
-            for name in file_names:
+            for name in file_names:  # add only sequences sampled
                 s, act, subact, ca, fno = self.get_all_content_file_name(name, file=True)
                 if fno % self.sampling != 1: # starts from 1
                     continue
@@ -180,8 +189,7 @@ class Data_Base_class:
     def load_index_file(self):
 
         self._logger.info('Extract index file ... Note sampling might not correspond')
-
-        file_path = os.path.join(self.index_file_loc, self.index_location)
+        file_path = os.path.join(self.index_file_loc, self.index_name)
         if not file_exists(file_path):
             self._logger.warning("index file to load does not exist")
         self.index_file = pkl.load(open( file_path, "rb" ))
@@ -191,7 +199,7 @@ class Data_Base_class:
         if self.index_file is None:
             self._logger.error("File to save is None")
         self._logger.info('Saving index file...')
-        file_path = os.path.join(self.index_file_loc, self.index_location)
+        file_path = os.path.join(self.index_file_loc, self.index_name)
         if file_exists(file_path):
             self._logger.info("Overwriting previous file")
         pkl.dump(self.index_file, open(file_path, "wb"))
@@ -199,6 +207,10 @@ class Data_Base_class:
 
 
     def reset(self, type):
+        """
+        resetting the tracking variables in the nested dictionary
+        :param type: s, act, subact.....
+        """
         if type=='s':
             self._logger.info("New Epoch")
             self.s_tot=list(self.index_file.keys())
@@ -300,7 +312,7 @@ class Data_Base_class:
                    self.ca_tot[self.current_ca],\
                    self.fno_tot[self.current_fno]
 
-    def return_current_status(self):
+    def return_current_file(self):
         if self._current_epoch is None:
             self._logger.error("Can't return status if iterations not initialised")
         else:
@@ -310,7 +322,7 @@ class Data_Base_class:
                    self.ca_tot[self.current_ca], \
                    self.fno_tot[self.current_fno]
 
-    def next_content(self):
+    def next_file_content(self):
 
         s,act,subact,ca,fno= self.increase_fno()
         return s,act,subact,ca,fno
@@ -333,12 +345,23 @@ class Data_Base_class:
         return metadata
 
 
-    ####LOAD BACKGROUNDSSSSS
+    def load_background(self,s):
+        """
+
+        loads backgrounds obtained in get_background file
+        :param s: subject
+        :return: array shape [4,L,W,3]
+        """
+        path=os.path.join(self.background_location, "background_subject%s.npy" % s)
+        if not os.path.exists(path):
+            self._logger.error('File %s not loaded', path)
+            exit()
+        return np.load(path)
+
 
     def load_metadata_backgrounds_image(self,s, act, subact, ca, fno, same_metadata=False, same_backgrounds=False):
         path = self.index_file[s][act][subact][ca][fno]
         parent = get_parent(path)
-        #load image rotate, cropped return cropping rotations
         if same_metadata:
             metadata=self.current_metadata
         else:
@@ -369,13 +392,13 @@ class Data_Base_class:
         same_backgrounds, same_metadata = False, False
         if self._current_epoch is None:
             self.iteration_start()
-            s, act, subact, ca, fno = self.return_current_status()
+            s, act, subact, ca, fno = self.return_current_file()
         elif self._current_epoch >= self._max_epochs:
             self._logger.info("max epochs reached")
             return None
         else:
-            s_prev, act_prev, subact_prev, ca_prev,fno_prev = self.return_current_status()
-            s, act, subact, ca, fno = self.next_content()
+            s_prev, act_prev, subact_prev, ca_prev,fno_prev = self.return_current_file()
+            s, act, subact, ca, fno = self.next_file_content()
             if s == s_prev:
                 same_backgrounds=True
                 if act == act_prev and subact == subact_prev and ca == ca_prev:

@@ -87,11 +87,11 @@ joint_px, center= world_to_pixel(
 )
 
 bbpx_px=bounding_box_pixel(joints_world, 0, sample_metadata['R'], sample_metadata['T'], sample_metadata['f'], sample_metadata['c'])
-imwarped,trans = get_patch_image(img, bbpx_px, (512,512), np.pi/4) # in degrees rotation around z axis
+imwarped,trans = get_patch_image(img, bbpx_px, (256,256), np.pi/4) # in degrees rotation around z axis
 trsf_joints, vis = transform_2d_joints(joint_px, trans)
 b=Drawer()
-fig=plt.figure()
-fig=b.pose_2d(fig,imwarped,trsf_joints[:,:-1])
+ax=plt.subplot()
+ax=b.pose_2d(ax,imwarped,trsf_joints[:,:-1])
 plt.show()
 
 

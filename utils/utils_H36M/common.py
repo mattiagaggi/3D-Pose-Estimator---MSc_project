@@ -2,6 +2,11 @@ from easydict import EasyDict as edict
 
 
 
+ENCODER_DECODER_PARAMS = edict({
+    'background':{
+        'sampling': 32
+    }
+})
 
 
 
