@@ -9,22 +9,33 @@ import numpy as np
 
 from data.directories_location import index_location,h36m_location
 from utils.utils_H36M.common import H36M_CONF
-from utils.io import get_sub_dirs,get_files,file_exists
+from utils.io import get_sub_dirs,get_files,file_exists,get_parent
 from logger.console_logger import ConsoleLogger
 
 
 
 class Data_Base_class:
 
-    def __init__(self, train_val_test=0, location=index_location):
+    def __init__(self, train_val_test=0, sampling=64, max_epochs=1, index_location = index_location, h36m_location = h36m_location):
 
-        self.index_file_loc= location
-        self.sampling=10
+        self._max_epochs=max_epochs
+        self._current_epoch = None
+        self.current_metadata = None
+        self.current_background= None
+        self.index_file_loc= index_location
+        self.h_36m_loc= h36m_location
+        self.sampling = sampling
 
         logger_name = '{}'.format(self.__class__.__name__)
         self._logger=ConsoleLogger(logger_name)
 
         self.index_file = None
+
+        self.s_tot, self.act_tot, self.subact_tot, self.ca_tot, self.fno_tot = \
+            None, None, None, None, None
+
+        self.current_s, self.current_act, self.current_subact, self.current_ca, self.current_fno = \
+            None, None, None, None, None
 
         if train_val_test == 0:
             self.index_location = "index_train.pkl"
@@ -36,68 +47,140 @@ class Data_Base_class:
             self._logger.error("Argument to Data class must be 0 or 1 or 2 (train,val,test)")
 
 
+
     ################################ INDEX/DATA LOADING FUNCTIONS #############################
 
 
-    def get_all_content(self,name):
-        res = name.split('_')
-        return int(res[1]), int(res[3]), int(res[5]), int(res[7]), int(res[9])
+    def get_all_content_file_name(self, name, file = True):
+        """
+        :param name: string name of subdirectory or file
+        :param file: true if file otherwise subdirectory
+        :return: int content
+        """
 
-    def get_content(self, name, content):
+        res = name.split('_')
+        if file:
+            return int(res[1]), int(res[3]), int(res[5]), int(res[7]), int(res[8])
+        else:
+            return int(res[1]), int(res[3]), int(res[5]), int(res[7])
+
+
+    def get_content(self, name, content, file=True):
+        """
+        :param name: string name of subdirectory or file
+        :param content: type of content
+        :param file: true if file otherwise subdirectory
+        :return: int content
+        """
 
         res = name.split('_')
         if content == 's':
             return int(res[1])
-        if content == 'act':
+        elif content == 'act':
             return int(res[3])
-        if content == 'subact':
+        elif content == 'subact':
             return int(res[5])
-        if content == 'ca':
+        elif content == 'ca':
             return int(res[7])
-        if content == 'fno':
-            return int(res[9])
+        elif file and content == 'fno':
+            return int(res[8])
+        else:
+            self._logger.error("Error in parsing %s for content %s" % (name, content))
+
 
     def get_name(self,s,act,sub,ca,fno):
+        """
+        :param s: subject
+        :param act: act
+        :param sub: subact
+        :param ca: camera
+        :param fno: sequence number
+        :return: path of the file and file name as strings
+        """
 
         '{:04d}'.format(act)
-        subdir="s_%s_act_%s_subact_%s_ca_%s/" % ('{:02d}'.format(s), '{:02d}'.format(act),
+        subdir="s_%s_act_%s_subact_%s_ca_%s" % ('{:02d}'.format(s), '{:02d}'.format(act),
                                                      '{:02d}'.format(sub),'{:02d}'.format(ca))
         name="s_%s_act_%s_subact_%s_ca_%s_%s.jpg" % ('{:02d}'.format(s), '{:02d}'.format(act),
                                                      '{:02d}'.format(sub),'{:02d}'.format(ca),
                                                      '{:06d}'.format(fno))
-        path=os.path.join(h36m_location, subdir, name)
+
+        parent_path=os.path.join(h36m_location, subdir)
+        path=os.path.join(parent_path,name)
+
+        return path, name, parent_path
+
+
+    def append_index(self, dictionary, s, act, subact, ca, fno):
+        """
+        transform self.index_file in nested dictionary such that
+        self.index_file[s][act][subact][ca][fno]=path
+        :param s: subject
+        :param act: act
+        :param subact: ...
+        :param ca: ...
+        :param fno: sequence number
+        :return:
+        """
+        path, _, _ = self.get_name(s, act, subact, ca, fno)
         if not file_exists(path):
             self._logger.error("file found by path %s does not exist" % path)
+        if s not in self.index_file.keys():
+            self.index_file[s] = {act: {
+                                    subact: {
+                                        ca: {
+                                            fno: path
+            }}}}
+        else:
+            if act not in self.index_file[s].keys():
+                self.index_file[s][act] = {subact: {
+                                                ca: {
+                                                    fno: path
+                }}}
+            else:
+                if subact not in self.index_file[s][act].keys():
+                    self.index_file[s][act][subact] = {ca: {fno: path}}
+                else:
+                    if ca not in self.index_file[s][act][subact].keys():
+                        self.index_file[s][act][subact][ca] = {fno: path}
+                    else:
+                        if fno not in self.index_file[s][act][subact][ca].keys():
+                            self.index_file[s][act][subact][ca][fno] = path
+                        else:
+                            self._logger.error(" adding path %s twice " % path)
+        return dictionary
 
-        return path, name
 
-    def create_index_file_subject(self, subj_list, sampling):
+
+
+    def create_index_file(self, content,content_list):
+        """
+        :param content: one of: 's', 'act', 'subact' ,'ca', 'fno'
+        :param content_list: list of contents
+        :param sampling: sampling of fno
+        :return: nested dictionary from function above
+        """
 
         self._logger.info('Indexing dataset...')
-        index = []
+        self.index_file = {}
         # get list of sequences
-        names, paths = get_sub_dirs(self.index_file_loc)
+        names, paths = get_sub_dirs(self.h_36m_loc)
         for name, path in zip(names, paths):
             # check data to load
-            sid = self.get_content(name, 's')
-            if sid not in subj_list:
+            if self.get_content(name, content) not in content_list:
                 continue
-            f_data, _ = get_files(path, 'jpg')
+            _, file_names = get_files(path, 'jpg')
             #add only sequences sampled
-            for fid, f_path in enumerate(f_data):
-                if fid % sampling != 0:
+            for name in file_names:
+                s, act, subact, ca, fno = self.get_all_content_file_name(name, file=True)
+                if fno % self.sampling != 1: # starts from 1
                     continue
-                file_details = {
-                    'path': f_path,
-                    'fid_sequence': fid,
-                    'sequence_name': name
-                }
-                index.append(file_details)
-        self.index_file = index
+                self.index_file=self.append_index(self.index_file,s, act, subact, ca, fno)
 
     def load_index_file(self):
 
-        self._logger.info('Extract index file ...')
+        self._logger.info('Extract index file ... Note sampling might not correspond')
+
         file_path = os.path.join(self.index_file_loc, self.index_location)
         if not file_exists(file_path):
             self._logger.warning("index file to load does not exist")
@@ -110,8 +193,127 @@ class Data_Base_class:
         self._logger.info('Saving index file...')
         file_path = os.path.join(self.index_file_loc, self.index_location)
         if file_exists(file_path):
-            self._logger.error("Overwriting previous file")
+            self._logger.info("Overwriting previous file")
         pkl.dump(self.index_file, open(file_path, "wb"))
+
+
+
+    def reset(self, type):
+        if type=='s':
+            self._logger.info("New Epoch")
+            self.s_tot=list(self.index_file.keys())
+            self.current_s = 0
+            self.reset('act')
+            if self._current_epoch  is not None: #meaning this is not the first reset
+                self._current_epoch +=1
+        elif type=='act':
+            self.act_tot = list(self.index_file[self.s_tot[self.current_s]].keys())
+            self.current_act = 0
+            self.reset('subact')
+        elif type == 'subact':
+            self.subact_tot = list(self.index_file[
+                                       self.s_tot[self.current_s]][
+                                       self.act_tot[self.current_act]].keys())
+            self.current_subact = 0
+            self.reset('ca')
+        elif type == 'ca':
+            self.ca_tot = list(self.index_file[
+                                   self.s_tot[self.current_s]][
+                                   self.act_tot[self.current_act]][
+                                   self.subact_tot[self.current_subact]].keys())
+            self.current_ca = 0
+            self.reset('fno')
+        elif type == 'fno':
+            self.fno_tot = list(self.index_file[
+                                self.s_tot[self.current_s]][
+                                self.act_tot[self.current_act]][
+                                self.subact_tot[self.current_subact]][
+                                self.ca_tot[self.current_ca]].keys())
+            self.current_fno = 0
+        else:
+            self._logger.error("Reset type not understood %s" % type)
+
+
+    def iteration_start(self):
+        if self.index_file is None:
+            self._logger.error("Can't start iteration if index file is None ")
+        self.reset('s')
+        self._current_epoch=0
+
+    def increase_s(self):
+        self.current_s += 1
+        if self.current_s >= len(self.s_tot):
+            self.reset('s')
+        else:
+            self.reset('act')
+        return self.s_tot[self.current_s], \
+               self.act_tot[self.current_act], \
+               self.subact_tot[self.current_subact], \
+               self.ca_tot[self.current_ca], \
+               self.fno_tot[self.current_fno]
+
+    def increase_act(self):
+        self.current_act += 1
+        if self.current_act >= len(self.act_tot):
+            return self.increase_s()
+        else:
+            self.reset('subact')
+            return self.s_tot[self.current_s], \
+                   self.act_tot[self.current_act], \
+                   self.subact_tot[self.current_subact], \
+                   self.ca_tot[self.current_ca], \
+                   self.fno_tot[self.current_fno]
+
+    def increase_subact(self):
+        self.current_subact +=1
+        if self.current_subact >= len(self.subact_tot):
+            return self.increase_act()
+        else:
+            self.reset('ca')
+            return self.s_tot[self.current_s], \
+                   self.act_tot[self.current_act], \
+                   self.subact_tot[self.current_subact], \
+                   self.ca_tot[self.current_ca], \
+                   self.fno_tot[self.current_fno]
+
+    def increase_camera(self):
+        self.current_ca +=1
+        if self.current_ca >= len(self.ca_tot):
+            return self.increase_subact()
+        else:
+            self.reset('fno')
+            return self.s_tot[self.current_s],\
+                   self.act_tot[self.current_act],\
+                   self.subact_tot[self.current_subact],\
+                   self.ca_tot[self.current_ca],\
+                   self.fno_tot[self.current_fno]
+
+
+    def increase_fno(self):
+        self.current_fno += 1
+        if self.current_fno >= len(self.fno_tot):
+            return self.increase_camera()
+        else:
+            return self.s_tot[self.current_s],\
+                   self.act_tot[self.current_act],\
+                   self.subact_tot[self.current_subact],\
+                   self.ca_tot[self.current_ca],\
+                   self.fno_tot[self.current_fno]
+
+    def return_current_status(self):
+        if self._current_epoch is None:
+            self._logger.error("Can't return status if iterations not initialised")
+        else:
+            return self.s_tot[self.current_s], \
+                   self.act_tot[self.current_act], \
+                   self.subact_tot[self.current_subact], \
+                   self.ca_tot[self.current_ca], \
+                   self.fno_tot[self.current_fno]
+
+    def next_content(self):
+
+        s,act,subact,ca,fno= self.increase_fno()
+        return s,act,subact,ca,fno
 
 
     def load_metadata(self, subdir_path):
@@ -129,6 +331,25 @@ class Data_Base_class:
         metadata['img_widths'] = data['img_width']
         metadata['img_heights'] = data['img_height']
         return metadata
+
+
+    ####LOAD BACKGROUNDSSSSS
+
+    def load_metadata_backgrounds_image(self,s, act, subact, ca, fno, same_metadata=False, same_backgrounds=False):
+        path = self.index_file[s][act][subact][ca][fno]
+        parent = get_parent(path)
+        #load image rotate, cropped return cropping rotations
+        if same_metadata:
+            metadata=self.current_metadata
+        else:
+            metadata=self.load_metadata(parent)
+        if same_backgrounds:
+            backgrounds = self.current_background
+        else:
+            backgrounds= self.load_backgrounds(s)
+        return metadata, backgrounds
+
+
     #############################################################
     ########IMAGE FUNCTIONS #####################################
 
@@ -138,6 +359,48 @@ class Data_Base_class:
         im = im.astype(np.float32)
         im /= 256
         return im
+
+
+
+
+
+
+    def __next__(self):
+        same_backgrounds, same_metadata = False, False
+        if self._current_epoch is None:
+            self.iteration_start()
+            s, act, subact, ca, fno = self.return_current_status()
+        elif self._current_epoch >= self._max_epochs:
+            self._logger.info("max epochs reached")
+            return None
+        else:
+            s_prev, act_prev, subact_prev, ca_prev,fno_prev = self.return_current_status()
+            s, act, subact, ca, fno = self.next_content()
+            if s == s_prev:
+                same_backgrounds=True
+                if act == act_prev and subact == subact_prev and ca == ca_prev:
+                    same_metadata=True
+        metadata, backgrounds = self.load_metadata_backgrounds(s, act, subact, ca, fno, same_metadata, same_backgrounds)
+        #get image, rotate crop
+        #get pther camera
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    #cropping function(
+
+
 
 
 

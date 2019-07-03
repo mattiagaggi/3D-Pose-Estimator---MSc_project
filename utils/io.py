@@ -129,7 +129,6 @@ def get_parent(path):
     assert isinstance(path, str)
     sep='/'
     split_name= path.split(sep)
-    print("st",split_name)
     name=sep.join(split_name[:-1])
     return name
 
@@ -207,7 +206,7 @@ def get_files(path, file_format):
             files = [f for f in os.listdir(path)
                      if re.match(r'.*\.{}'.format(f_format), f)]
         else:
-            files = os.listdir(path)
+            files = os.listdirg(path)
         files.sort()
 
         file_names.extend([f.replace('.{}'.format(f_format), '')

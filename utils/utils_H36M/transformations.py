@@ -104,10 +104,12 @@ def bounding_box_pixel(joints, root_idx,rot, t, f, c):
                                bbox_3d[1] / 2,
                                0])
     #center cam in camera coord
+
     center_cam = np.dot(rot, joints[root_idx] - t.flatten())
 
     bbox3d_lt = center_cam - bbox_3d_center
     bbox3d_rb = center_cam + bbox_3d_center
+
 
     # back-project 3D BBox to 2D image
     temp = cam2pixel(bbox3d_lt, f, c)
@@ -122,6 +124,9 @@ def bounding_box_pixel(joints, root_idx,rot, t, f, c):
                      bbox2d_b-bbox2d_t]) #height
 
     return bbox_pixel
+
+
+
 
 
 def plot_bounding_box(fig,joints, root_idx,rot, t, f, c):
@@ -184,6 +189,19 @@ def rotate_y(angle_rad):
                      [0,                 1,                 0],
                      [-np.sin(angle_rad),0, np.cos(angle_rad)]])
 
+def rotate_z(angle_rad):
+    """
+    rotation around z axis in 3D
+    :param angle_rad: angle in radiants
+    :return: rotation matrix
+    """
+
+    return np.array([[np.cos(angle_rad), -np.sin(angle_rad), 0],
+                     [np.sin(angle_rad), np.cos(angle_rad), 0],
+                     [0,                 0,                 1]])
+
+#def in_plane_rotation
+
 
 def cam_pointing_root(world_joints, root_idx, n_joints, rot, t):
     """
@@ -212,9 +230,19 @@ def cam_pointing_root(world_joints, root_idx, n_joints, rot, t):
     #the order is important here we first rotate y then x
     return np.dot(rot_x, rot_y)
 
+def rotation_xy(cx,cy,angle):
+    """
+    :param image:
+    :param joints_px:
+    :param angle:
+    :return:
+    """
+
+    rot_mat = cv2.getRotationMatrix2D((cx,cy), angle, 1.0)
+    return rot_mat
 
 
-def get_patch_image(img, bbox, target_shape):
+def get_patch_image(img, bbox, target_shape, rotation_angle=45):
     """
     :param img: numpy array
     :param bbox: bounding box [x, y, width, height] array
@@ -234,7 +262,7 @@ def get_patch_image(img, bbox, target_shape):
                                bb_width, bb_height,
                                target_shape[1],
                                target_shape[0],
-                               inv=False)
+                               False,rotation_angle)
     img_patch = cv2.warpAffine(img, trans,
                                (int(target_shape[1]), int(target_shape[0])),
                                flags=cv2.INTER_LINEAR)
@@ -242,7 +270,7 @@ def get_patch_image(img, bbox, target_shape):
     return img_patch, trans
 
 
-def get_affine(c_x, c_y, src_width, src_height, dst_width, dst_height, inv=False):
+def get_affine(c_x, c_y, src_width, src_height, dst_width, dst_height, inv=False, rotation_angle=None):
     """
     get affine tranformation
     :param c_x: center x
@@ -275,6 +303,12 @@ def get_affine(c_x, c_y, src_width, src_height, dst_width, dst_height, inv=False
     dst[0, :] = dst_center
     dst[1, :] = dst_center + dst_downdir
     dst[2, :] = dst_center + dst_rightdir
+    if rotation_angle is not None:
+        # negative rotation because z axis is pointing at image not out of the image
+        rotation = rotation_xy(dst_center[0],dst_center[1], - rotation_angle*180/np.pi)
+        ones=np.ones((dst.shape[0],1))
+        dst=np.concatenate([dst,ones], axis=1)
+        dst = np.dot(dst, rotation.T)
 
     if inv:
         trans = cv2.getAffineTransform(np.float32(dst), np.float32(src))
@@ -282,6 +316,8 @@ def get_affine(c_x, c_y, src_width, src_height, dst_width, dst_height, inv=False
         trans = cv2.getAffineTransform(np.float32(src), np.float32(dst))
 
     return trans
+
+
 
 
 
@@ -294,15 +330,14 @@ def transform_2d_joints(joints_px, transformation):
     :return: transformerd Nx3 pixel,visibility
     """
 
+    transformed_joints = np.copy(joints_px)
     vis = np.ones(len(joints_px), dtype=bool)
-    concatenated_ones=np.concatenate( [joints_px[:,:2],np.ones(shape=(joints_px.shape[0],1))], axis=1)
-    joints_px[:,:2]=np.dot(concatenated_ones,transformation.T)
+    concatenated_ones=np.concatenate( [transformed_joints[:,:2],np.ones(shape=(transformed_joints.shape[0],1))], axis=1)
+    transformed_joints[:,:2]=np.dot(concatenated_ones,transformation.T)
     # rescale points to output size
-    scaling_factor = 1 # check
-    joints_px[:, :2] /= scaling_factor
-    joints_px[:, 2] *= H36M_CONF.depth_dim
+    transformed_joints[:, 2] *= H36M_CONF.depth_dim
 
-    return joints_px, vis
+    return transformed_joints, vis
 
 
 

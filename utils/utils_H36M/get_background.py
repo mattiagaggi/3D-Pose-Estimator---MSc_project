@@ -19,8 +19,8 @@ class Backgrounds(Data_Base_class):
 
     def get_index_backgrounds(self):
         subj_list=[1]
-        sampling = 1024
-        self.create_index_file_subject(subj_list,sampling)
+        sampling = 16
+        self.create_index_file(subj_list,sampling)
 
     def get_backgrounds(self,camera_number):
         lst_indices=[]
@@ -30,7 +30,7 @@ class Backgrounds(Data_Base_class):
         print("length",len(lst_indices))
         backgrounds=np.zeros((len(lst_indices),1000,1000,3),dtype=np.float64)
         for i,n in enumerate(lst_indices):
-            if i %50 == 0:
+            if i % 50 == 0:
                 print("iter %s" % i)
             backgrounds[i, :, :, :] = self.extract_image(self.index_file[n]['path'])
         return np.median(backgrounds, axis=0)
