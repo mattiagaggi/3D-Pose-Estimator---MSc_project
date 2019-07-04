@@ -36,8 +36,9 @@ class Data_Base_class:
 
 
         self._current_epoch = None
-        self.current_metadata = None
-        self.current_background= None
+        self.previous_chache = None
+        self.previous_metadata = None
+        self.previous_background= None
 
         #once we create the index file we keep track of the current image being looked at
         #using  lists self.s_tot.... and indices in list self.current_s
@@ -345,7 +346,7 @@ class Data_Base_class:
         return metadata
 
 
-    def load_background(self,s):
+    def load_backgrounds(self,s):
         """
 
         loads backgrounds obtained in get_background file
@@ -363,14 +364,15 @@ class Data_Base_class:
         path = self.index_file[s][act][subact][ca][fno]
         parent = get_parent(path)
         if same_metadata:
-            metadata=self.current_metadata
+            meta = self.previous_metadata
         else:
-            metadata=self.load_metadata(parent)
+            meta = self.load_metadata(parent)
         if same_backgrounds:
-            backgrounds = self.current_background
+            back = self.previous_background
         else:
-            backgrounds= self.load_backgrounds(s)
-        return metadata, backgrounds
+            back=self.load_backgrounds(s)
+        return meta, back
+
 
 
     #############################################################
@@ -382,6 +384,14 @@ class Data_Base_class:
         im = im.astype(np.float32)
         im /= 256
         return im
+
+    def load_image(self,s,act, subact, ca, fno):
+        path = self.index_file[s][act][subact][ca][fno]
+        if not file_exists(path):
+            self._logger.error("path not loaded %s" % path)
+        else:
+            return self.extract_image(path)
+
 
 
 

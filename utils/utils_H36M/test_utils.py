@@ -25,7 +25,9 @@ from data.directories_location import backgrounds_location
 d=Data_Base_class()
 subjlist=[1,2,3,4,5,6,7,8,9,10]
 d.create_index_file('s',[1])
+print(d.index_file)
 path=d.index_file[1][2][1][1][65]
+
 path2=d.index_file[1][5][1][1][65]
 sample_metadata=d.load_metadata(get_parent(path))
 img=d.extract_image(path)

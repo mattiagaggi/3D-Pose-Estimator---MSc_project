@@ -20,6 +20,7 @@ class Drawer:
         self._limb_color = [0, 1, 2, 0, 3, 4, 5, 6, 7, 7, 5, 5, 8, 9, 5, 5,10,11,7]
         self._limbs = [[0, 1], [1, 2], [2, 3], [0, 4], [4, 5], [5, 6], [1, 7], [7, 8],
                   [8, 9], [9, 10], [7, 11], [4, 7], [11, 12], [12, 13], [7,14], [14,11], [14,15],[15,16], [0,7]]
+                                    #d11      #d                         # dd       #dd
 
         self._colors = [[255, 255, 100], [0, 100, 0], [0, 255, 0], [0, 165, 255],
                    [0, 255, 255], [255, 255, 0], [100, 0, 0], [255, 0, 0],
@@ -109,7 +110,7 @@ class Drawer:
 
     def get_image(self, img):
         im_new = np.copy(img)
-        if img.dtype == np.float:
+        if img.dtype == np.float64 or img.dtype == np.float32:
             im_new = self._clip_to_max(im_new, max_value=1.0)
             im_new *= 255
         else:
@@ -123,9 +124,7 @@ class Drawer:
 
 
     def pose_2d(self,ax,img, pose):
-        print("into pose", img)
         img=self.get_image(img)
-        print("out pose", img)
         # plot joints over image
         for lid, (p0, p1) in enumerate(self._limbs):
             x0, y0 = pose[p0].astype(np.int)
