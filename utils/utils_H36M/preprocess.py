@@ -37,12 +37,12 @@ class Data_Base_class:
 
         self._current_epoch = None
         self.previous_chache = None
-        self.previous_metadata = None
         self.previous_background= None
 
         #once we create the index file we keep track of the current image being looked at
         #using  lists self.s_tot.... and indices in list self.current_s
-        self.index_file = None
+        self.index_file = {}
+        self.all_metadata = {}
         self.s_tot, self.act_tot, self.subact_tot, self.ca_tot, self.fno_tot = \
             None, None, None, None, None
         self.current_s, self.current_act, self.current_subact, self.current_ca, self.current_fno = \
@@ -122,7 +122,7 @@ class Data_Base_class:
         return path, name, parent_path
 
 
-    def append_index(self, dictionary, s, act, subact, ca, fno):
+    def append_index(self, s, act, subact, ca, fno):
         """
         transform self.index_file in nested dictionary such that
         self.index_file[s][act][subact][ca][fno]=path
@@ -159,10 +159,54 @@ class Data_Base_class:
                             self.index_file[s][act][subact][ca][fno] = path
                         else:
                             self._logger.error(" adding path %s twice " % path)
-        return dictionary
 
 
 
+    def load_metadata(self, subdir_path):
+        path = os.path.join(subdir_path,"h36m_meta.mat")
+        if not os.path.exists(path):
+            self._logger.error('File %s not loaded', path)
+            exit()
+        metadata = {}
+        data = sio.loadmat(path)
+        metadata['joint_world'] = data['pose3d_world']
+        metadata['R'] = data['R']
+        metadata['T'] = data['T']
+        metadata['c'] = data['c']
+        metadata['f'] = data['f']
+        metadata['img_widths'] = data['img_width']
+        metadata['img_heights'] = data['img_height']
+        return metadata
+
+    def append_metadata(self, s, act, subact, ca, fno):
+        """
+        transform self.all_metadata in nested dictionary such that
+        self.all_metadata[s][act][subact][ca] = metadata
+        :param s: subject
+        :param act: act
+        :param subact: ...
+        :param ca: ...
+
+        :return:
+        """
+        _, _, path = self.get_name(s, act, subact, ca, fno)
+        metadata = self.load_metadata(path)
+        if s not in self.all_metadata.keys():
+            self.all_metadata[s] = {act: {
+                                    subact: {
+                                        ca: metadata
+                                    }}}
+        else:
+            if act not in self.all_metadata[s].keys():
+                self.all_metadata[s][act] = {subact: {
+                                                ca: metadata
+                }}
+            else:
+                if subact not in self.all_metadata[s][act].keys():
+                    self.all_metadata[s][act][subact] = {ca: metadata}
+                else:
+                    if ca not in self.all_metadata[s][act][subact].keys():
+                        self.all_metadata[s][act][subact][ca] = metadata
 
     def create_index_file(self, content,content_list):
         """
@@ -173,19 +217,22 @@ class Data_Base_class:
         """
 
         self._logger.info('Indexing dataset...')
-        self.index_file = {}
+        self.index_file, self.all_metadata = {}, {}
         # get list of sequences
         names, paths = get_sub_dirs(self.h_36m_loc)
         for name, path in zip(names, paths):
             # check data to load
+
             if self.get_content(name, content) not in content_list:
                 continue
+            s,act,subact,ca = self.get_all_content_file_name(name, file = False)
+            self.append_metadata(s,act,subact,ca, 0)
             _, file_names = get_files(path, 'jpg')
             for name in file_names:  # add only sequences sampled
                 s, act, subact, ca, fno = self.get_all_content_file_name(name, file=True)
                 if fno % self.sampling != 1: # starts from 1
                     continue
-                self.index_file=self.append_index(self.index_file,s, act, subact, ca, fno)
+                self.append_index(s, act, subact, ca, fno)
 
     def load_index_file(self):
 
@@ -193,7 +240,9 @@ class Data_Base_class:
         file_path = os.path.join(self.index_file_loc, self.index_name)
         if not file_exists(file_path):
             self._logger.warning("index file to load does not exist")
-        self.index_file = pkl.load(open( file_path, "rb" ))
+        file_indices=pkl.load(open(file_path, "rb"))
+        self.index_file = file_indices[0]
+        self.all_metadata = file_indices[1]
 
     def save_index_file(self):
 
@@ -203,7 +252,8 @@ class Data_Base_class:
         file_path = os.path.join(self.index_file_loc, self.index_name)
         if file_exists(file_path):
             self._logger.info("Overwriting previous file")
-        pkl.dump(self.index_file, open(file_path, "wb"))
+        file_indices =[self.index_file, self.all_metadata]
+        pkl.dump(file_indices, open(file_path, "wb"))
 
 
 
@@ -329,21 +379,6 @@ class Data_Base_class:
         return s,act,subact,ca,fno
 
 
-    def load_metadata(self, subdir_path):
-        path = os.path.join(subdir_path,"h36m_meta.mat")
-        if not os.path.exists(path):
-            self._logger.error('File %s not loaded', path)
-            exit()
-        metadata = {}
-        data = sio.loadmat(path)
-        metadata['joint_world'] = data['pose3d_world']
-        metadata['R'] = data['R']
-        metadata['T'] = data['T']
-        metadata['c'] = data['c']
-        metadata['f'] = data['f']
-        metadata['img_widths'] = data['img_width']
-        metadata['img_heights'] = data['img_height']
-        return metadata
 
 
     def load_backgrounds(self,s):
@@ -359,19 +394,23 @@ class Data_Base_class:
             exit()
         return np.load(path)
 
-
-    def load_metadata_backgrounds_image(self,s, act, subact, ca, fno, same_metadata=False, same_backgrounds=False):
+    def load_backgrounds_image(self,s, act, subact, ca, fno, same_backgrounds=False):
         path = self.index_file[s][act][subact][ca][fno]
-        parent = get_parent(path)
-        if same_metadata:
-            meta = self.previous_metadata
+        if not same_backgrounds:
+            back = self.load_backgrounds(s)
         else:
-            meta = self.load_metadata(parent)
-        if same_backgrounds:
             back = self.previous_background
+        return back
+
+
+    def load_memory_backgrounds_image(self,s, act, subact, ca, fno, same_backgrounds=False):
+        if self.previous_background is None:
+            same_background_= False
         else:
-            back=self.load_backgrounds(s)
-        return meta, back
+            same_background_=same_backgrounds
+        self.previous_background = self.load_backgrounds_image(s, act, subact, ca, fno, same_background_)
+
+
 
 
 
@@ -396,42 +435,6 @@ class Data_Base_class:
 
 
 
-
-
-    def __next__(self):
-        same_backgrounds, same_metadata = False, False
-        if self._current_epoch is None:
-            self.iteration_start()
-            s, act, subact, ca, fno = self.return_current_file()
-        elif self._current_epoch >= self._max_epochs:
-            self._logger.info("max epochs reached")
-            return None
-        else:
-            s_prev, act_prev, subact_prev, ca_prev,fno_prev = self.return_current_file()
-            s, act, subact, ca, fno = self.next_file_content()
-            if s == s_prev:
-                same_backgrounds=True
-                if act == act_prev and subact == subact_prev and ca == ca_prev:
-                    same_metadata=True
-        metadata, backgrounds = self.load_metadata_backgrounds(s, act, subact, ca, fno, same_metadata, same_backgrounds)
-        #get image, rotate crop
-        #get pther camera
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    #cropping function(
 
 
 
