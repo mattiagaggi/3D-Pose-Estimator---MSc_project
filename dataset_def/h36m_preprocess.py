@@ -9,7 +9,7 @@ import numpy as np
 
 from data.directories_location import index_location, h36m_location, backgrounds_location
 from utils.utils_H36M.common import H36M_CONF
-from utils.io import get_sub_dirs,get_files,file_exists,get_parent
+from utils.io import get_sub_dirs,get_files,file_exists
 from logger.console_logger import ConsoleLogger
 
 
@@ -32,8 +32,6 @@ class Data_Base_class:
 
         logger_name = '{}'.format(self.__class__.__name__)
         self._logger = ConsoleLogger(logger_name)
-
-
 
         self._current_epoch = None
         self.previous_chache = None
@@ -394,8 +392,8 @@ class Data_Base_class:
             exit()
         return np.load(path)
 
-    def load_backgrounds_image(self,s, act, subact, ca, fno, same_backgrounds=False):
-        path = self.index_file[s][act][subact][ca][fno]
+    def load_backgrounds_image(self,s,same_backgrounds=False):
+
         if not same_backgrounds:
             back = self.load_backgrounds(s)
         else:
@@ -403,14 +401,12 @@ class Data_Base_class:
         return back
 
 
-    def load_memory_backgrounds_image(self,s, act, subact, ca, fno, same_backgrounds=False):
+    def load_memory_backgrounds_image(self,s, same_backgrounds=False):
         if self.previous_background is None:
             same_background_= False
         else:
             same_background_=same_backgrounds
-        self.previous_background = self.load_backgrounds_image(s, act, subact, ca, fno, same_background_)
-
-
+        self.previous_background = self.load_backgrounds_image(s, same_background_)
 
 
 
@@ -430,6 +426,17 @@ class Data_Base_class:
             self._logger.error("path not loaded %s" % path)
         else:
             return self.extract_image(path)
+
+    def extract_info(self,metadata, background,s, act, subact, ca, fno):
+
+        background = background[ca-1,...]
+        R = metadata['R']
+        T = metadata['T']
+        f = metadata['f']
+        c = metadata['c']
+        joints_world = metadata['joint_world'][fno-1]
+        im = self.load_image(s, act, subact,ca, fno)
+        return im, joints_world, R, T, f, c, background
 
 
 

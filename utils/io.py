@@ -1,7 +1,7 @@
 import re
 import os
 import warnings
-
+import json
 
 
 def get_checkpoint(resume_dir):
@@ -214,3 +214,40 @@ def get_files(path, file_format):
         file_paths.extend([os.path.join(path, f) for f in files])
 
     return file_paths, file_names
+
+
+
+def write_json(path, data):
+    """Save data into a json file
+
+    Arguments:
+        path {str} -- path where to save the file
+        data {serializable} -- data to be stored
+    """
+
+    assert isinstance(path, str)
+    with open(path, 'w') as out_file:
+        json.dump(data, out_file, indent=2)
+
+
+def read_from_json(path):
+    """Read data from json file
+
+    Arguments:
+        path {str} -- path to json file
+
+    Raises:
+        IOError -- File not found
+
+    Returns:
+        dict -- dictionary containing data
+    """
+
+    assert isinstance(path, str)
+    if '.json' not in path:
+        raise IOError('Path does not point to a json file')
+
+    with open(path, 'r') as in_file:
+        data = json.load(in_file)
+
+    return data
