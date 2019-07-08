@@ -4,7 +4,6 @@ import torch
 
 
 
-# if padding is zero how is this possible you need padding!!!!!!!!
 class unetConv2(nn.Module):
     def __init__(self, in_size, out_size, is_batchnorm = False, padding = 1):
         super(unetConv2, self).__init__()
@@ -38,7 +37,7 @@ class unetUpNoSKip(nn.Module):
             self.up = nn.ConvTranspose2d(in_size, out_size, kernel_size=2, stride=2)
         else:
             self.up = nn.Sequential(
-                             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
+                             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True), #scale factor
                              nn.Conv2d(in_size, out_size, 3, stride=1, padding=1),
                              nn.BatchNorm2d(out_size),
                              nn.ReLU()

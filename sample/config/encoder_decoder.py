@@ -11,7 +11,7 @@ import torch
 
 ENCODER_DECODER_PARAMS = edict({
     'background':{
-        'sampling': 32
+        'sampling': 10
     },
     'encoder_decoder':{
         'sampling':64,

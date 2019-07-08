@@ -197,7 +197,8 @@ class Data_Encoder_Decoder(Data_Base_class):
 
     def group_batches(self,n_batches,im1, rot1, backgroundT, imT, joints1,
                       im2, rot2, backgroundT2, imT2, joints2):
-        assert n_batches % 2 != 0
+        assert n_batches == len(im1)
+        assert n_batches == len(im2)
         dic = {
                 'im_in': np.transpose(np.stack(im1+im2,axis=0), axes=[0,3,1,2]),
                 'im_target' : np.transpose(np.stack(imT+imT2,axis=0), axes=[0,3,1,2]),

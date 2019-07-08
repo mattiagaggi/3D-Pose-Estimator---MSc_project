@@ -12,7 +12,7 @@ import collections
 from torch.autograd import Variable
 import torch
 import numpy as np
-from logger.model_logger import ModelLogger
+from sample.base import ModelLogger
 import utils.io as io
 from utils import is_model_parallel
 from sample.base.base_logger import *
