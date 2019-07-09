@@ -18,9 +18,10 @@ outfile = TemporaryFile()
 
 
 from data.directories_location import backgrounds_location,h36m_location
-from utils.utils_H36M.preprocess import Data_Base_class
+from dataset_def.h36m_preprocess import Data_Base_class
 from utils.utils_H36M.visualise import Drawer
-from utils.utils_H36M.common import H36M_CONF, ENCODER_DECODER_PARAMS
+from utils.utils_H36M.common import H36M_CONF
+from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
 from utils.io import file_exists
 
 
@@ -32,7 +33,7 @@ class Backgrounds(Data_Base_class):
                  sampling = ENCODER_DECODER_PARAMS.background.sampling,
                  max_epochs = 1):
 
-        super().__init__(train_val_test,sampling, max_epochs)
+        super().__init__(train_val_test,sampling, max_epochs, index_as_dict=False)
 
     def get_index_backgrounds(self,subject):
         """
@@ -47,19 +48,19 @@ class Backgrounds(Data_Base_class):
         :return: median for one camera
         """
 
-        self.iteration_start()
-        s, act, subact, ca, fno = self.return_current_file()
+        self.current_iter = 0
+        s, act, subact, ca, fno = self.index_file[self.current_iter]
         backgrounds=[]
         count=0
-        while self._current_epoch < 1:
+        while self.current_iter < len(self.index_file):
             if camera_number == ca:
                 print(s, act, subact, ca, fno)
                 print("image appended %s" % count)
-                path=self.index_file[s][act][subact][ca][fno]
-                print(path)
+                path,_,_=self.get_name(s, act, subact, ca, fno)
                 backgrounds.append(self.extract_image(path))
                 count += 1
-            s, act, subact, ca, fno = self.next_file_content()
+            self.current_iter += 1
+            s, act, subact, ca, fno = self.index_file[self.current_iter]
         print("out while loop")
         backgrounds = np.stack(backgrounds, axis=0)
         return np.median(backgrounds, axis=0)
@@ -87,15 +88,15 @@ class Backgrounds(Data_Base_class):
 
 
 
-import copy
+
 
 if __name__=="__main__":
 
     b=Backgrounds()
-    b.save_backgrounds([1])
-    path=os.path.join(backgrounds_location,"background_subject1.npy")
-
-    m= np.load(path)
+    #b.save_backgrounds([1])
+    path=os.path.join(backgrounds_location,"background_subject2.npy")
+    b.get_index_backgrounds(1)
+    m= b.get_backgrounds(2)
     d=Drawer()
     for i in range(m.shape[0]):
         plt.figure()

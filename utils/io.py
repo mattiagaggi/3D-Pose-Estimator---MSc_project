@@ -251,3 +251,21 @@ def read_from_json(path):
         data = json.load(in_file)
 
     return data
+
+
+
+def is_model_parallel(checkpoint):
+    """Check if a model has been saved as parallel
+
+    Arguments:
+        checkpoint {dict} -- dictionary saved according to
+                             the base_trainer format
+
+    Returns:
+        bool -- True if it is saved as parallel
+    """
+
+    saved_name = list(checkpoint['state_dict'].keys())[0]
+    parallel = len(re.findall('module.*', saved_name))
+
+    return bool(parallel)

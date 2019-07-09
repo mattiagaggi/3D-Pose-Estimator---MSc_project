@@ -8,14 +8,15 @@ Base trainer class
 import os
 import math
 import shutil
-import collections
 from torch.autograd import Variable
 import torch
+import torch.nn
 import numpy as np
-from sample.base import ModelLogger
+from logger.model_logger import ModelLogger
 import utils.io as io
-from utils import is_model_parallel
-from sample.base.base_logger import *
+from utils.io import is_model_parallel
+from sample.base.base_logger import FrameworkClass
+from collections import OrderedDict
 
 
 class BaseTrainer(FrameworkClass):
@@ -30,6 +31,7 @@ class BaseTrainer(FrameworkClass):
         """Init class"""
 
         super().__init__()
+
 
         self.model = model
         self.loss = loss
@@ -46,11 +48,8 @@ class BaseTrainer(FrameworkClass):
         self.min_loss = math.inf
         self.start_epoch = 0
         self.start_iteration = 0
-        self.model_logger = ModelLogger(
-            os.path.join(self.save_dir,
-                         self.training_name,
-                         'log'),
-            self.training_name)
+        path=os.path.join(self.save_dir,self.training_name,'log')
+        self.model_logger = ModelLogger(path,self.training_name)
         self.training_info = None
         self.eval_epoch = eval_epoch
         self.reset = reset
@@ -203,16 +202,17 @@ class BaseTrainer(FrameworkClass):
             resume_path = io.get_checkpoint(resume_path)
 
         self._logger.info("Loading checkpoint: %s ...", resume_path)
+        print(resume_path)
         checkpoint = torch.load(resume_path)
         trained_dict = checkpoint['state_dict']
 
         if is_model_parallel(checkpoint):
             if self.single_gpu:
-                trained_dict = collections.OrderedDict((k.replace('module.', ''), val)
+                trained_dict = OrderedDict((k.replace('module.', ''), val)
                                                        for k, val in checkpoint['state_dict'].items())
         else:
             if not self.single_gpu:
-                trained_dict = collections.OrderedDict(('module.{}'.format(k), val)
+                trained_dict = OrderedDict(('module.{}'.format(k), val)
                                                        for k, val in checkpoint['state_dict'].items())
 
         self.model.load_state_dict(trained_dict)

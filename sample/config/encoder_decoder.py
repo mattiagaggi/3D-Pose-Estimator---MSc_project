@@ -13,9 +13,15 @@ ENCODER_DECODER_PARAMS = edict({
     'background':{
         'sampling': 10
     },
-    'encoder_decoder':{
-        'sampling':64,
+    'encoder_decoder' : {
+        'batch_size': 10,
+        'sampling': 64,
         'im_size' : 128,
-        'device' : torch.device('cpu') #torch.device('cuda')
+        'device_type' : 'cpu'
     }
 })
+
+if ENCODER_DECODER_PARAMS['encoder_decoder']['device_type'] == 'cpu':
+    ENCODER_DECODER_PARAMS['encoder_decoder']['device'] = torch.device('cpu')
+else:
+    ENCODER_DECODER_PARAMS['encoder_decoder']['device'] = torch.device('cuda:0')

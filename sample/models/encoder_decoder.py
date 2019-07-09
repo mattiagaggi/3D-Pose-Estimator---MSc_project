@@ -25,6 +25,9 @@ class Encoder(BaseModel):
         self.dimension_L_3D = 200*3
         self.latent_dropout = 0.3
 
+
+        #try encoding one more
+
         ##################################
         self.encoder_resolution = input_im_size // (2 ** (num_encoding_layers - 1))
         self.encoder_output_features = self.encoder_resolution ** 2 * self.filters[num_encoding_layers - 1]
@@ -43,8 +46,9 @@ class Encoder(BaseModel):
                                     nn.Dropout(inplace=True, p=self.latent_dropout)  # removing dropout degrades results
 
                                     )
+
     def forward(self, x):
-        shape=list(x.size())
+        shape = list(x.size())
         assert shape[0] == self.batch_size
         assert shape[2] == self.input_im_size
         assert shape[3] == self.input_im_size
@@ -129,9 +133,9 @@ class Decoder(BaseModel):
                                    nn.ReLU(inplace=False))
 
         self.conv1 = unetUpNoSKip(in_size = self.decoded_channels_L, out_size = self.decoded_channels_L ,is_deconv = False)
-        self.conv2 = unetUpNoSKip(in_size = self.decoded_channels_L, out_size = self.decoded_channels_L,is_deconv = True)
-        #self.conv3 = unetUpNoSKip(in_size = self.decoded_channels_L//4, out_size = self.decoded_channels_L//8,is_deconv=True)
-        self.conv4 = unetUpNoSKip(in_size = self.decoded_channels_L, out_size = self.decoded_channels_L,is_deconv=True)
+        self.conv2 = unetUpNoSKip(in_size = self.decoded_channels_L, out_size = self.decoded_channels_L//2,is_deconv = True)
+        self.conv3 = unetUpNoSKip(in_size = self.decoded_channels_L//2, out_size = self.decoded_channels_L//4,is_deconv=True)
+        self.conv4 = unetConv2(in_size = self.decoded_channels_L//4, out_size = self.decoded_channels_L//8)
 
     def forward(self, dic):
 
@@ -150,9 +154,10 @@ class Decoder(BaseModel):
         L = torch.cat((L_app, L_3d_conv), dim=1)
 
 
+
         out = self.conv1(L)
         out = self.conv2(out)
-        #out = self.conv3(out)
+        out = self.conv3(out)
         out = self.conv4(out)
 
         return out
@@ -178,7 +183,7 @@ class Encoder_Decoder(BaseModel):
         self.encoder_resolution = self.encoder.encoder_resolution #im size
         self.rotation = Rotation(self.batch_size,self.dimension_L_3D)
         self.decoder = Decoder(self.batch_size, self.dimension_L_3D )
-        self.final_linear = nn.Conv2d(self.filters[-1]+3, 3, 1)
+        self.final_linear = nn.Conv2d(self.filters[0]+3, 3, 1)
 
         #self.to_pose = MLP.MLP_fromLatent(d_in=self.dimension_3d, d_hidden=2048, d_out=51, n_hidden=n_hidden_to3Dpose,
         #                                  dropout=0.5)
@@ -200,7 +205,6 @@ class Encoder_Decoder(BaseModel):
         background = dic['background_target']
         dic_dec = { "L_3d": L_3d_rotated, "L_app" : L_app_swapped}
         decoded = self.decoder(dic_dec)
-        print(decoded.size(),background.size())
         concatenated = torch.cat((decoded,background), dim=1)
         out_image = self.final_linear(concatenated)
 
