@@ -20,6 +20,11 @@ class BaseModel(nn.Module):
     def forward(self, x):
         raise NotImplementedError
 
+    def return_n_parameters(self):
+        model_parameters = filter(lambda p: p.requires_grad, self.parameters())
+        params = np.sum([np.prod(p.size()) for p in model_parameters])
+        return params
+
     def summary(self):
         """Summary of the model"""
 

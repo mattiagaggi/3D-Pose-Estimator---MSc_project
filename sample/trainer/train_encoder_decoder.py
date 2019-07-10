@@ -1,6 +1,7 @@
 
 
 import datetime
+import numpy as np
 from sample.base.base_trainer import BaseTrainer
 from tqdm import tqdm
 import torchvision.utils as vutils
@@ -50,6 +51,8 @@ class Trainer_Enc_Dec(BaseTrainer):
             self.test_log_step = 10 * self.train_log_step
         self.img_log_step = self.train_log_step*100
 
+        self.parameters_show = self.train_log_step*300
+
         #self.val_log_step = args.val_log_step
 
         self.len_trainset = len(self.data_loader)
@@ -59,9 +62,14 @@ class Trainer_Enc_Dec(BaseTrainer):
         # load model
         #self._resume_checkpoint(args.resume)
 
-
+        self.encoder_parameters = self.model.encoder.return_n_parameters()
+        self.decoder_parameters = self.model.decoder.return_n_parameters()
+        self.rotation_parameters = self.model.rotation.return_n_parameters()
         # setting drawer
         #self.drawer = Drawer(Style.EQ_AXES)
+
+
+
 
     def _summary_info(self):
         """Summary file to differentiate
@@ -99,7 +107,15 @@ class Trainer_Enc_Dec(BaseTrainer):
             loss = self.loss(out_im, dic_out['im_target'])
             loss.backward()
             self.optimizer.step()
-
+            if bid % self.parameters_show ==0:
+                for name,parameters in self.model.named_parameters():
+                    self.model_logger.train.add_histogram(name, parameters.clone().cpu().data.numpy(), self.global_step)
+                encoder_gradients = np.sum(np.array([np.sum(x.grad.cpu().data.numpy()) for x in self.model.encoder.parameters()]))
+                decoder_gradients = np.sum(np.array([np.sum(x.grad.cpu().data.numpy()) for x in self.model.decoder.parameters()]))
+                rotation_gradients = np.sum(np.array([np.sum(x.grad.cpu().data.numpy()) for x in self.model.rotation.parameters()]))
+                self.model_logger.train.add_scalar('rotation gradients '+str(self.rotation_parameters), rotation_gradients, self.global_step)
+                self.model_logger.train.add_scalar('encoder gradients '+str((self.encoder_parameters)),encoder_gradients ,self.global_step)
+                self.model_logger.train.add_scalar('decoder gradients '+str(self.decoder_parameters), decoder_gradients, self.global_step)
             if (bid % self.verbosity_iter == 0) & (self.verbosity == 2):
                 pbar.set_description(' Epoch {} Loss {:.3f}'.format(
                     epoch, loss.item()
