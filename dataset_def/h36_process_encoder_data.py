@@ -18,18 +18,16 @@ class Data_Encoder_Decoder(Data_Base_class):
                  sampling ,
                  batch_size,
                  index_file_content,
-                 index_file_list,
-                 create_index_file = True):
+                 index_file_list):
 
         super().__init__(sampling)
 
         self.batch_size = batch_size
         assert batch_size % 2 == 0
 
-        if create_index_file:
-            self.create_index_file(index_file_content, index_file_list)
-        else:
-            self.load_index_file()
+        self.create_index_file(index_file_content, index_file_list)
+        self.index_file_content = index_file_content
+        self.index_file_list = index_file_list
         self.index_file_cameras =[]
         for i in self.index_file:
             s,act,subact,ca,fno = i

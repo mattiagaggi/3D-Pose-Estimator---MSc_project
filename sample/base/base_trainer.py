@@ -27,7 +27,7 @@ class BaseTrainer(FrameworkClass):
     def __init__(self, model, loss, metrics, optimizer, epochs,
                  name, output, save_freq, no_cuda, verbosity,
                  train_log_step, verbosity_iter,
-                 reset=False, eval_epoch=False, **kwargs):
+                  eval_epoch,reset=False, **kwargs):
         """Init class"""
 
         super().__init__()
@@ -45,13 +45,14 @@ class BaseTrainer(FrameworkClass):
         self.verbosity = verbosity
         self.verbosity_iter = verbosity_iter
         self.train_log_step = train_log_step
+        self.eval_epoch = eval_epoch
         self.min_loss = math.inf
         self.start_epoch = 0
         self.start_iteration = 0
         path=os.path.join(self.save_dir,self.training_name,'log')
         self.model_logger = ModelLogger(path,self.training_name)
         self.training_info = None
-        self.eval_epoch = eval_epoch
+
         self.reset = reset
         self.single_gpu = True
         self.global_step = 0
@@ -111,7 +112,7 @@ class BaseTrainer(FrameworkClass):
                     metric.log_res(logger=self.model_logger.val,
                                    iter=self.global_step,
                                    error=epoch_val_metrics[i])
-                    self._save_checkpoint(epoch, self.global_step, epoch_loss)
+            self._save_checkpoint(epoch, self.global_step, epoch_loss)
 
     def _dump_summary_info(self):
         """Save training summary"""
@@ -204,7 +205,6 @@ class BaseTrainer(FrameworkClass):
             resume_path = io.get_checkpoint(resume_path)
 
         self._logger.info("Loading checkpoint: %s ...", resume_path)
-        print(resume_path)
         checkpoint = torch.load(resume_path)
         trained_dict = checkpoint['state_dict']
 

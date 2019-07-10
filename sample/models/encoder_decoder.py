@@ -61,6 +61,7 @@ class Encoder(BaseModel):
         #print(4)
         out3=self.conv4(out2)
         #print("5")
+
         out4=out3.view(self.batch_size, -1)
         #print("61")
         #print(out3.size(),self.batch_size)

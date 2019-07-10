@@ -52,8 +52,8 @@ class ConsoleLogger():
         console_log = logging.StreamHandler()
         console_log.setLevel(logging.INFO)
         console_log.setFormatter(formatter)
-
-        self._logger.addHandler(console_log)
+        if not (len(self._logger.handlers)):
+            self._logger.addHandler(console_log)
 
     def info(self, *args, **kwargs):
         """info"""

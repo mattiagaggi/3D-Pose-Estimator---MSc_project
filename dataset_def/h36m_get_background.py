@@ -17,9 +17,8 @@ from tempfile import TemporaryFile
 outfile = TemporaryFile()
 
 
-from data.directories_location import backgrounds_location,h36m_location
+from data.directories_location import backgrounds_location
 from dataset_def.h36m_preprocess import Data_Base_class
-from utils.utils_H36M.visualise import Drawer
 from utils.utils_H36M.common import H36M_CONF
 from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
 from utils.io import file_exists
@@ -90,19 +89,19 @@ class Backgrounds(Data_Base_class):
 
 
 
-if __name__=="__main__":
-
-    b=Backgrounds()
-    b.save_backgrounds([1])
-    s=1
-    path=os.path.join(backgrounds_location,"background_subject%s.npy"%s)
-    m=np.load(path)
-    d=Drawer()
-    for i in range(m.shape[0]):
-        plt.figure()
-        im=d.get_image(m[i,...])
-        plt.imshow(im)
-    plt.show()
+# if __name__=="__main__":
+#
+#     b=Backgrounds()
+#     b.save_backgrounds([1])
+#     s=1
+#     path=os.path.join(backgrounds_location,"background_subject%s.npy"%s)
+#     m=np.load(path)
+#     d=Drawer()
+#     for i in range(m.shape[0]):
+#         plt.figure()
+#         im=d.get_image(m[i,...])
+#         plt.imshow(im)
+#     plt.show()
 
 
 

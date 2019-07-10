@@ -9,11 +9,18 @@ import matplotlib.pyplot as plt
 
 
 
-
 data_train = Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
                             sampling = ENCODER_DECODER_PARAMS.encoder_decoder.sampling,
                             index_file_content =['s','act'],
-                            index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]])
+                            index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9]])
+
+
+
+data_test=Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
+                           sampling = ENCODER_DECODER_PARAMS.encoder_decoder.sampling,
+                            index_file_content =['s','act'],
+                            index_file_list=[[1],[10,11,12]])
+
 
 
 
@@ -27,10 +34,9 @@ loss = torch.nn.MSELoss()
 
 
 
-train_data_loader = DataLoader(data_train,shuffle=True)
+train_data_loader = DataLoader(data_train,shuffle=True, num_workers=2)
 
 metr=[]
-
 
     # Trainer instance
 trainer = Trainer_Enc_Dec(
@@ -38,40 +44,16 @@ trainer = Trainer_Enc_Dec(
         loss,
         metrics=metr,
         optimizer=optimizer,
-        data_loader=data_train
+        data_loader=data_train,
+        data_test = data_test
 )
 
-
+trainer.train()
 
     # Start training!
-trainer._resume_checkpoint("sample/checkpoints/enc_dec")
-
-model=trainer.model
-
-i=0
-
-inp,out=data_train[i]
-out_im=model(inp)
-outtot=out_im.cpu().data.numpy()[0]
-outtot2=out['im_target'].cpu().data.numpy()[0]
+#trainer._resume_checkpoint("sample/checkpoints/enc_dec")
 
 
-outtot = np.transpose(outtot,(1,2,0))
-outtot=np.reshape(outtot,(128,128,3))
-outtot2 = np.transpose(outtot2,(1,2,0))
-outtot2=np.reshape(outtot2,(128,128,3))
-plt.imshow(outtot)
-plt.figure()
-plt.imshow(outtot2)
-plt.show()
-#trainer.train()
-
-
-#things to do: CHANGE SAVE MODEL
-
-#INSTALL TENSORBOARD
-
-#RESNET FEATURES
 
 
 

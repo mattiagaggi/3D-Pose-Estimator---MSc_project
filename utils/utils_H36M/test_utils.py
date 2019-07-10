@@ -20,19 +20,19 @@ from utils.utils_H36M.transformations import world_to_pixel,world_to_camera
 from utils.utils_H36M.preprocess import Data_Base_class
 from utils.io import *
 from data.directories_location import backgrounds_location
-
-
-d=Data_Base_class()
-subjlist=[1,2,3,4,5,6,7,8,9,10]
-d.create_index_file('s',[1])
-print(d.index_file)
-path=d.index_file[1][2][1][1][65]
-
-path2=d.index_file[1][5][1][1][65]
-sample_metadata=d.load_metadata(get_parent(path))
-img=d.extract_image(path)
-sample_metadata2=d.load_metadata(get_parent(path2))
-img2=d.extract_image(path2)
+#
+#
+# d=Data_Base_class()
+# subjlist=[1,2,3,4,5,6,7,8,9,10]
+# d.create_index_file('s',[1])
+# print(d.index_file)
+# path=d.index_file[1][2][1][1][65]
+#
+# path2=d.index_file[1][5][1][1][65]
+# sample_metadata=d.load_metadata(get_parent(path))
+# img=d.extract_image(path)
+# sample_metadata2=d.load_metadata(get_parent(path2))
+# img2=d.extract_image(path2)
 #print(sample_metadata['R'])
 #print(sample_metadata2['R'])
 
@@ -76,16 +76,16 @@ from utils.utils_H36M.visualise import Drawer
 #######################################################################
 from utils.utils_H36M.transformations import get_patch_image,transform_2d_joints
 
-joints_world=sample_metadata['joint_world'][64]
-joint_cam=world_to_camera(joints_world, 17, sample_metadata['R'], sample_metadata['T'])
-joint_px, center= world_to_pixel(
-   joints_world,
-   H36M_CONF.joints.root_idx,
-   H36M_CONF.joints.number,
-   sample_metadata['R'],
-  sample_metadata['T'],
-   sample_metadata['f'],
-   sample_metadata['c']
+# joints_world=sample_metadata['joint_world'][64]
+# joint_cam=world_to_camera(joints_world, 17, sample_metadata['R'], sample_metadata['T'])
+# joint_px, center= world_to_pixel(
+#    joints_world,
+#    H36M_CONF.joints.root_idx,
+#    H36M_CONF.joints.number,
+#    sample_metadata['R'],
+#   sample_metadata['T'],
+#    sample_metadata['f'],
+#    sample_metadata['c']
 )
 
 bbpx_px=bounding_box_pixel(joints_world, 0, sample_metadata['R'], sample_metadata['T'], sample_metadata['f'], sample_metadata['c'])
@@ -105,9 +105,9 @@ plt.show()
 #######################################################################
 
 from utils.utils_H36M.transformations import cam_pointing_root
-new_rot = cam_pointing_root(joints_world,0,17,sample_metadata['R'], sample_metadata['T'])
-new_coords = joint_cam @ new_rot.T
-print("root in new coords",new_coords[0,:])
+# new_rot = cam_pointing_root(joints_world,0,17,sample_metadata['R'], sample_metadata['T'])
+# new_coords = joint_cam @ new_rot.T
+# print("root in new coords",new_coords[0,:])
 
 #######################################################################
 #test data class
