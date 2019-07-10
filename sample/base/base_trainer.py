@@ -64,8 +64,10 @@ class BaseTrainer(FrameworkClass):
             if self.verbosity:
                 self._logger.info("Let's use %d GPUs!",
                                   torch.cuda.device_count())
-            self.single_gpu = False
-            self.model = torch.nn.DataParallel(self.model)
+
+            #parallelise
+            #self.single_gpu = False
+            #self.model = torch.nn.DataParallel(self.model)
 
         io.ensure_dir(os.path.join(self.save_dir,
                                    self.training_name))
@@ -210,12 +212,20 @@ class BaseTrainer(FrameworkClass):
             if self.single_gpu:
                 trained_dict = OrderedDict((k.replace('module.', ''), val)
                                                        for k, val in checkpoint['state_dict'].items())
+            #############
+            self.model.cuda()
+            ###########
         else:
             if not self.single_gpu:
                 trained_dict = OrderedDict(('module.{}'.format(k), val)
                                                        for k, val in checkpoint['state_dict'].items())
 
+
         self.model.load_state_dict(trained_dict)
+
+        #############
+        self.model.cuda()
+        ###########
 
         if not self.reset:
             self.start_iteration = checkpoint['iter'] + 1

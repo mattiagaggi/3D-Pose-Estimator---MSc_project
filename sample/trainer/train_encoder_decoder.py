@@ -22,7 +22,7 @@ class Trainer_Enc_Dec(BaseTrainer):
                  metrics,
                  optimizer,
                  data_loader,
-                 epochs = 4,
+                 epochs = 2,
                  name="enc_dec",
                  output = "sample/checkpoints/",
                  save_freq = 1000,
@@ -34,10 +34,7 @@ class Trainer_Enc_Dec(BaseTrainer):
         super().__init__(model,loss,metrics,
                          optimizer,epochs,name,
                          output,save_freq,no_cuda,
-                         verbosity, verbosity_iter, train_log_step
-
-                         )
-
+                         verbosity, verbosity_iter, train_log_step)
         #self.batch_size = args.batch_size
         self.data_loader = data_loader
 

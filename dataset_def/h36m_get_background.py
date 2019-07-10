@@ -29,11 +29,11 @@ from utils.io import file_exists
 
 class Backgrounds(Data_Base_class):
 
-    def __init__(self,train_val_test = 0,
+    def __init__(self,
                  sampling = ENCODER_DECODER_PARAMS.background.sampling,
                  max_epochs = 1):
 
-        super().__init__(train_val_test,sampling, max_epochs, index_as_dict=False)
+        super().__init__(sampling, max_epochs, index_as_dict=False)
 
     def get_index_backgrounds(self,subject):
         """
@@ -59,8 +59,8 @@ class Backgrounds(Data_Base_class):
                 path,_,_=self.get_name(s, act, subact, ca, fno)
                 backgrounds.append(self.extract_image(path))
                 count += 1
-            self.current_iter += 1
             s, act, subact, ca, fno = self.index_file[self.current_iter]
+            self.current_iter+=1
         print("out while loop")
         backgrounds = np.stack(backgrounds, axis=0)
         return np.median(backgrounds, axis=0)
@@ -93,10 +93,10 @@ class Backgrounds(Data_Base_class):
 if __name__=="__main__":
 
     b=Backgrounds()
-    #b.save_backgrounds([1])
-    path=os.path.join(backgrounds_location,"background_subject2.npy")
-    b.get_index_backgrounds(1)
-    m= b.get_backgrounds(2)
+    b.save_backgrounds([1])
+    s=1
+    path=os.path.join(backgrounds_location,"background_subject%s.npy"%s)
+    m=np.load(path)
     d=Drawer()
     for i in range(m.shape[0]):
         plt.figure()

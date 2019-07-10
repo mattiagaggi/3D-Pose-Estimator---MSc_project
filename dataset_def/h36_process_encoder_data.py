@@ -17,9 +17,9 @@ class Data_Encoder_Decoder(Data_Base_class):
     def __init__(self,
                  sampling ,
                  batch_size,
-                 create_index_file = True,
-                 index_file_content = 's',
-                 index_file_list = [1]):
+                 index_file_content,
+                 index_file_list,
+                 create_index_file = True):
 
         super().__init__(sampling)
 
@@ -36,8 +36,6 @@ class Data_Encoder_Decoder(Data_Base_class):
             for ca2 in range(1,5):
                 if ca2 != ca:
                     self.index_file_cameras.append([s,act,subact,ca,fno,ca2])
-
-
         self.elements_taken=0
         self._current_epoch=0
 

@@ -228,7 +228,7 @@ class Data_Base_class(BaseDataset):
 
 
 
-    def create_index_file(self, content,content_list):
+    def create_index_file(self, contents,content_lists):
         """
         creates nested dictionary from function above self.index_file[s][act][subact][ca][fno]=path
         :param content: one of: 's', 'act', 'subact' ,'ca', 'fno'
@@ -246,8 +246,12 @@ class Data_Base_class(BaseDataset):
         names, paths = get_sub_dirs(self.h_36m_loc)
         for name, path in zip(names, paths):
             # check data to load
-
-            if self.get_content(name, content) not in content_list:
+            breaking = False
+            for i,content in enumerate(contents):
+                if self.get_content(name, content) not in content_lists[i]:
+                    breaking = True
+                    continue
+            if breaking:
                 continue
             s,act,subact,ca = self.get_all_content_file_name(name, file = False)
             self.append_metadata(s,act,subact,ca, 0)

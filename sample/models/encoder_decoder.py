@@ -48,17 +48,26 @@ class Encoder(BaseModel):
                                     )
 
     def forward(self, x):
-        shape = list(x.size())
-        assert shape[0] == self.batch_size
-        assert shape[2] == self.input_im_size
-        assert shape[3] == self.input_im_size
+        #shape = list(x.size())
+        #assert shape[0] == self.batch_size
+        #assert shape[2] == self.input_im_size
+        #assert shape[3] == self.input_im_size
+        #print("1")
         out=self.conv1(x)
-        out=self.conv2(out)
-        out=self.conv3(out)
-        out=self.conv4(out)
-        out = out.view(self.batch_size,-1)
-        L_3d = self.to_L3d(out)
-        L_app= self.to_Lapp(out)
+        #print("2")
+        out1=self.conv2(out)
+        #print(3)
+        out2=self.conv3(out1)
+        #print(4)
+        out3=self.conv4(out2)
+        #print("5")
+        out4=out3.view(self.batch_size, -1)
+        #print("61")
+        #print(out3.size(),self.batch_size)
+        L_3d = self.to_L3d(out4)
+        #print("62")
+        L_app= self.to_Lapp(out4)
+        #print("63")
         outputs = {'L_3d':L_3d, 'L_app':L_app} #flattened
         return outputs
 
@@ -93,12 +102,14 @@ class Rotation(BaseModel):
 
         L_3d=dic["L_3d"]
         rotation_input = dic["R"]
-        shape=list(L_3d.size())
-        assert shape[0] == self.batch_size
-        assert shape[1] == self.dimension_3d
+
+        #shape=list(L_3d.size())
+        #assert shape[0] == self.batch_size
+        #assert shape[1] == self.dimension_3d
 
         rotation_input = rotation_input.view(self.batch_size,9)
         angle = self.encode_angle(rotation_input)
+        #print("3")
         concatenated = torch.cat((angle,L_3d), dim=1)
         L_3d_rotated = self.rotate_implicitely(concatenated)
 
@@ -190,9 +201,9 @@ class Encoder_Decoder(BaseModel):
 
     def forward(self, dic):
 
+
         im, index_invert = dic['im_in'], dic['invert_segments']
         encode = self.encoder(im)
-
         L_3d = encode['L_3d']
         L_app= encode['L_app']
 
@@ -201,7 +212,7 @@ class Encoder_Decoder(BaseModel):
 
         L_3d_rotated = self.rotation(dic_rot)
         L_app_swapped = torch.index_select(L_app, dim=0, index=index_invert)
-
+        #print("3")
         background = dic['background_target']
         dic_dec = { "L_3d": L_3d_rotated, "L_app" : L_app_swapped}
         decoded = self.decoder(dic_dec)
