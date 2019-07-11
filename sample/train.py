@@ -11,15 +11,17 @@ import matplotlib.pyplot as plt
 
 data_train = Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
                             sampling = ENCODER_DECODER_PARAMS.encoder_decoder.sampling,
-                            index_file_content =['s','act'],
-                            index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9]])
+                            index_file_content =['s'],
+                            index_file_list=[[1, 5, 6, 7]])
+                            #index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9]])
 
 
 
 data_test=Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
                            sampling = ENCODER_DECODER_PARAMS.encoder_decoder.sampling,
-                            index_file_content =['s','act'],
-                            index_file_list=[[1],[10,11,12]])
+                            index_file_content =['s'],
+                            index_file_list=[[8, 9]])
+                           # index_file_list=[[1],[10,11,12]])
 
 
 

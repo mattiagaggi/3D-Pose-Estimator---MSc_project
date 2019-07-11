@@ -78,8 +78,12 @@ class Trainer_Enc_Dec(BaseTrainer):
         info = dict()
         info['creation'] = str(datetime.datetime.now())
         info['size_dataset'] = len(self.data_loader)
-        info['index_file_list'] = self.data_loader.index_file_list
-        info['index_file_content'] = self.data_loader.index_file_content
+        string=""
+        for number,contents in enumerate(self.data_loader.index_file_list):
+            string += " %s content :" % self.data_loader.index_file_content[number]
+            for elements in contents:
+                string += " %s," % elements
+        info['details'] = self.data_loader.index_file_list
         return info
 
 
