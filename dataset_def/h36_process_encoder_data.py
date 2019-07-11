@@ -79,8 +79,13 @@ class Data_Encoder_Decoder(Data_Base_class):
                                           rotation_angle)
         return imwarped, background_warped, trans
 
-    def extract_all_info(self, metadata, background,s, act, subact, ca, fno, rotation_angle=None):
 
+    def get_angle(self):
+        rad=np.ramdom.normal(scale=np.pi/6)
+        return rad * 180/np.pi
+
+    def extract_all_info(self, metadata, background,s, act, subact, ca, fno, rotation_angle=None):
+        rotation_angle = self.get_angle()
         im, joints_world, R, T, f, c, background = self.extract_info(metadata, background, s, act, subact,ca, fno)
         bbpx = bounding_box_pixel(joints_world,H36M_CONF.joints.root_idx, R, T, f,c)
         im, background, trans = self.patch_images(im,background,bbpx, rotation_angle)
