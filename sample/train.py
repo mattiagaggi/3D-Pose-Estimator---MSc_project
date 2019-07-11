@@ -45,7 +45,7 @@ trainer = Trainer_Enc_Dec(
         metrics=metr,
         optimizer=optimizer,
         data_loader=data_train,
-        data_test = data_test
+        data_test = data_test, name ="enc_dec_pi_10_std_rot_more", epochs=2
 )
 
 trainer.train()

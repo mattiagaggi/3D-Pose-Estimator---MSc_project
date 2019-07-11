@@ -1,6 +1,7 @@
 
 import numpy as np
 from numpy.random import randint
+from numpy.random import normal
 
 from utils.utils_H36M.common import H36M_CONF
 from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
@@ -15,10 +16,10 @@ from matplotlib import pyplot as plt
 class Data_Encoder_Decoder(Data_Base_class):
 
     def __init__(self,
-                 sampling ,
-                 batch_size,
-                 index_file_content,
-                 index_file_list):
+                 sampling =10,
+                 batch_size = 10,
+                 index_file_content=['s'],
+                 index_file_list=[[1]]):
 
         super().__init__(sampling)
 
@@ -81,9 +82,8 @@ class Data_Encoder_Decoder(Data_Base_class):
 
 
     def get_angle(self):
-        rad=np.ramdom.normal(scale=np.pi/6)
-        return rad * 180/np.pi
-
+        rad = normal(scale=np.pi/10)
+        return rad
     def extract_all_info(self, metadata, background,s, act, subact, ca, fno, rotation_angle=None):
         rotation_angle = self.get_angle()
         im, joints_world, R, T, f, c, background = self.extract_info(metadata, background, s, act, subact,ca, fno)
@@ -213,7 +213,7 @@ class Data_Encoder_Decoder(Data_Base_class):
             im1, rot1, backgroundT, imT, joints1 = all_b[0]
             im2, rot2, backgroundT2, imT2, joints2 = all_b[1]
             im1_tot.append(im1)
-            im2_tot.append(im1)
+            im2_tot.append(im2)
             rot1_tot.append(rot1)
             rot2_tot.append(rot2)
             backgroundT_tot.append(backgroundT)
@@ -265,19 +265,30 @@ if __name__=="__main__":
 
     def final_check():
         d = Data_Encoder_Decoder()
+        print(len(d))
         for i in range(len(d)):
             print(i)
             dic1,dic2= d[i]
             if i == 10:
                 for k in dic1.keys():
                     if k != 'invert_segments' and dic1[k].shape[2] == 128:
-                        print("k is ",k)
+
+                        plt.figure()
+                        plt.title("k is "+ k)
                         plt.imshow(np.transpose(dic1[k][0, ...], axes=[1, 2, 0]))
-                        plt.show()
+                        #print(dic1[k].shape)
+                        plt.figure()
+                        plt.title("k app is "+k)
+                        plt.imshow(np.transpose(dic1[k][5, ...], axes=[1, 2, 0]))
                 for k in dic2.keys():
                     if k != 'invert_segments' and dic2[k].shape[2] == 128:
-                        print("k is ",k)
+
+                        plt.figure()
+                        plt.title("k is " + k)
                         plt.imshow(np.transpose(dic2[k][0, ...], axes=[1, 2, 0]))
-                        plt.show()
+                        plt.figure()
+                        plt.title("k app is " + k)
+                        plt.imshow(np.transpose(dic2[k][5, ...], axes=[1, 2, 0]))
+                plt.show()
 
     #final_check()

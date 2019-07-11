@@ -83,27 +83,24 @@ class Trainer_Enc_Dec(BaseTrainer):
         return info
 
 
-    def log_grid(self,image_in, image_out, ground_truth):
+    def log_grid(self,image_in, image_out, ground_truth, string):
 
         scale, norm, nrow = True, True, 3
         grid = vutils.make_grid(image_in, nrow=nrow, normalize=norm, scale_each=scale)
-        self.model_logger.train.add_image("1 Image in", grid, self.global_step)
+        self.model_logger.train.add_image("1 Image in "+str(string), grid, self.global_step)
         grid1 = vutils.make_grid(image_out, nrow=nrow, normalize=norm, scale_each=scale)
-        self.model_logger.train.add_image("2 Model Output", grid1, self.global_step)
+        self.model_logger.train.add_image("2 Model Output "+str(string), grid1, self.global_step)
         grid2 = vutils.make_grid(ground_truth, nrow=nrow, normalize=norm, scale_each=scale)
-        self.model_logger.train.add_image("3 Ground Truth", grid2, self.global_step)
+        self.model_logger.train.add_image("3 Ground Truth "+str(string), grid2, self.global_step)
 
 
 
     def get_gradients(self):
         for name, parameters in self.model.named_parameters():
             self.model_logger.train.add_histogram(name, parameters.clone().cpu().data.numpy(), self.global_step)
-        encoder_gradients = np.sum(
-            np.array([np.sum(x.grad.cpu().data.numpy()) for x in self.model.encoder.parameters()]))
-        decoder_gradients = np.sum(
-            np.array([np.sum(x.grad.cpu().data.numpy()) for x in self.model.decoder.parameters()]))
-        rotation_gradients = np.sum(
-            np.array([np.sum(x.grad.cpu().data.numpy()) for x in self.model.rotation.parameters()]))
+        encoder_gradients = np.sum(np.array([np.sum(np.absolute(x.grad.cpu().data.numpy())) for x in self.model.encoder.parameters()]))
+        decoder_gradients = np.sum(np.array([np.sum(np.absolute(x.grad.cpu().data.numpy())) for x in self.model.decoder.parameters()]))
+        rotation_gradients = np.sum(np.array([np.sum(np.absolute(x.grad.cpu().data.numpy())) for x in self.model.rotation.parameters()]))
         return encoder_gradients,rotation_gradients,decoder_gradients
 
     def log_gradients(self):
@@ -157,7 +154,7 @@ class Trainer_Enc_Dec(BaseTrainer):
             self.model_logger.train.add_scalar('loss/iterations', val,
                                                self.global_step)
             if bid % self.img_log_step:
-                self.log_grid(dic_in['im_in'], out_im, dic_out['im_target'])
+                self.log_grid(dic_in['im_in'], out_im, dic_out['im_target'], 'train')
         return loss, pbar
 
 
@@ -171,7 +168,7 @@ class Trainer_Enc_Dec(BaseTrainer):
                                          self.global_step)
 
         if bid % self.img_log_step == 0:
-            self.log_grid(in_test_dic['im_in'], out_test, out_test_dic['im_target'])
+            self.log_grid(in_test_dic['im_in'], out_test, out_test_dic['im_target'], 'test')
         # self.model.train()
 
     def _train_epoch(self, epoch):
