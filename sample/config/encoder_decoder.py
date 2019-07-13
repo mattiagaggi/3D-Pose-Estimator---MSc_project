@@ -14,7 +14,7 @@ ENCODER_DECODER_PARAMS = edict({
         'sampling': 64
     },
     'encoder_decoder' : {
-        'batch_size': 10,
+        'batch_size': 64,
         'sampling': 64,
         'im_size' : 128,
         'device_type' : 'gpu'

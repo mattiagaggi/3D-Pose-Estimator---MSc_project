@@ -24,7 +24,8 @@ class Data_Base_class(BaseDataset):
                  index_as_dict = False,
                  index_location = index_location,
                  h36m_location = h36m_location,
-                 background_location = backgrounds_location):
+                 background_location = backgrounds_location,
+                 get_intermediate_frames = False):
 
         super().__init__()
 
@@ -35,6 +36,7 @@ class Data_Base_class(BaseDataset):
         self.background_location = background_location
         self.sampling = sampling
         self.subset = subset
+        self.get_intermediate_frames = get_intermediate_frames
 
 
 
@@ -195,7 +197,7 @@ class Data_Base_class(BaseDataset):
         metadata['img_heights'] = data['img_height']
         return metadata
 
-    def append_metadata(self, s, act, subact, ca, fno):
+    def append_metadata(self, s, act, subact, ca):
         """
         transform self.all_metadata in nested dictionary such that
         self.all_metadata[s][act][subact][ca] = metadata
@@ -206,7 +208,7 @@ class Data_Base_class(BaseDataset):
 
         :return:
         """
-
+        fno = 0 # not used only needed for get_name()
         _, _, path = self.get_name(s, act, subact, ca, fno)
         metadata = self.load_metadata(path)
         if s not in self.all_metadata.keys():
@@ -254,12 +256,16 @@ class Data_Base_class(BaseDataset):
             if breaking:
                 continue
             s,act,subact,ca = self.get_all_content_file_name(name, file = False)
-            self.append_metadata(s,act,subact,ca, 0)
+            self.append_metadata(s,act,subact,ca)
             _, file_names = get_files(path, 'jpg')
             for name in file_names:  # add only sequences sampled
                 s, act, subact, ca, fno = self.get_all_content_file_name(name, file=True)
-                if fno % self.sampling != 1: # starts from 1
-                    continue
+                if not self.get_intermediate_frames:
+                    if fno % self.sampling != 1: # starts from 1
+                        continue
+                else:
+                    if (fno+ self.sampling//2) % self.sampling != 1: # starts from 1
+                        continue
                 if self.index_as_dict:
                     self.append_index_to_dic(s, act, subact, ca, fno)
                 else:

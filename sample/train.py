@@ -7,7 +7,7 @@ from sample.trainer.train_encoder_decoder import Trainer_Enc_Dec
 
 
 
-data_train = Data_Encoder_Decoder(batch_size= 64,
+data_train = Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
                             sampling = ENCODER_DECODER_PARAMS.encoder_decoder.sampling,
                             index_file_content =['s','act','ca'],
                             #index_file_list=[[1, 5, 6, 7],[1,2]])
@@ -15,11 +15,12 @@ data_train = Data_Encoder_Decoder(batch_size= 64,
 
 
 
-data_test=Data_Encoder_Decoder(batch_size= 64,
+data_test=Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
                            sampling = ENCODER_DECODER_PARAMS.encoder_decoder.sampling,
                             index_file_content =['s','act','ca'],
                            # index_file_list=[[8, 9],[1,2]])
-                            index_file_list=[[1],[10,11,12],[1,2]])
+                            index_file_list=[[1],[10,11,12],[1,2]],
+                               get_intermediate_frames=False)
 
 
 

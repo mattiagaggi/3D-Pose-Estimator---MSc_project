@@ -21,9 +21,10 @@ class Data_Encoder_Decoder(Data_Base_class):
                  batch_size = 10,
                  index_file_content=['s'],
                  index_file_list=[[1]],
-                 randomise=True):
+                 randomise=True,
+                 get_intermediate_frames = False):
 
-        super().__init__(sampling)
+        super().__init__(sampling,get_intermediate_frames=get_intermediate_frames)
 
         self.batch_size = batch_size
         assert batch_size % 2 == 0
