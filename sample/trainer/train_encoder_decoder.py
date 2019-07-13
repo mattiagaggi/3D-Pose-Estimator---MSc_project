@@ -172,8 +172,7 @@ class Trainer_Enc_Dec(BaseTrainer):
         loss_test = self.loss(out_test, out_test_dic['im_target'])
         self.model_logger.val.add_scalar('loss/iterations', loss_test.item(),
                                          self.global_step)
-        if bid % self.img_log_step == 0:
-            self.log_grid(in_test_dic['im_in'], out_test, out_test_dic['im_target'], 'test')
+        self.log_grid(in_test_dic['im_in'], out_test, out_test_dic['im_target'], 'test')
 
 
     def _train_epoch(self, epoch):
