@@ -82,7 +82,7 @@ class Trainer_Enc_Dec(BaseTrainer):
         for number,contents in enumerate(self.data_loader.index_file_list):
             string += "\n content :" + self.data_loader.index_file_content[number]
             for elements in contents:
-                string += "numbers: "
+                string += "\n numbers: "
                 string += " %s," % elements
         info['details'] = string
         return info

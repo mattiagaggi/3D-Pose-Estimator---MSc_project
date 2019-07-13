@@ -33,8 +33,8 @@ class Data_Encoder_Decoder(Data_Base_class):
         self.index_file_content = index_file_content
         self.index_file_list = index_file_list
         self.randomise= randomise
-        if self.randomise:
-            self.index_file_cameras =[]
+
+        self.index_file_cameras =[]
         self._logger.info("Warning you changed cameras here")
         for i in self.index_file:
             s,act,subact,ca,fno = i

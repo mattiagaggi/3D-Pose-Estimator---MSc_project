@@ -14,7 +14,6 @@ data_train = Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_dec
                             index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9],[1,2]]) #8,9
 
 
-
 data_test=Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
                            sampling = ENCODER_DECODER_PARAMS.encoder_decoder.sampling,
                             index_file_content =['s','act','ca'],
@@ -47,7 +46,7 @@ trainer = Trainer_Enc_Dec(
         optimizer=optimizer,
         data_loader=data_train,
         data_test = data_test,
-        name ="enc_dec_no_rot", epochs=1000
+        name ="enc_dec_test1", epochs=1000
 )
 
 trainer.train()
