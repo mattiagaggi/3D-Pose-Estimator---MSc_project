@@ -4,31 +4,29 @@ from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
 import torch.nn
 from torch.utils.data import DataLoader
 from sample.trainer.train_encoder_decoder import Trainer_Enc_Dec
-import numpy as np
-import matplotlib.pyplot as plt
 
 
 
-data_train = Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
+data_train = Data_Encoder_Decoder(batch_size= 64,
                             sampling = ENCODER_DECODER_PARAMS.encoder_decoder.sampling,
-                            index_file_content =['s'],
-                            index_file_list=[[1, 5, 6, 7]])
-                            #index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9]])
+                            index_file_content =['s','act','ca'],
+                            #index_file_list=[[1, 5, 6, 7],[1,2]])
+                            index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9],[1,2]]) #8,9
 
 
 
-data_test=Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
+data_test=Data_Encoder_Decoder(batch_size= 64,
                            sampling = ENCODER_DECODER_PARAMS.encoder_decoder.sampling,
-                            index_file_content =['s'],
-                            index_file_list=[[8, 9]])
-                           # index_file_list=[[1],[10,11,12]])
+                            index_file_content =['s','act','ca'],
+                           # index_file_list=[[8, 9],[1,2]])
+                            index_file_list=[[1],[10,11,12],[1,2]])
 
 
 
 
 #sguffling only shuffles subelements
 
-model = Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
+model = Encoder_Decoder(batch_size= 64,
                  input_im_size= ENCODER_DECODER_PARAMS.encoder_decoder.im_size)
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -47,7 +45,8 @@ trainer = Trainer_Enc_Dec(
         metrics=metr,
         optimizer=optimizer,
         data_loader=data_train,
-        data_test = data_test, name ="enc_dec_pi_10_std_rot_more", epochs=2
+        data_test = data_test,
+        name ="enc_dec_no_rot", epochs=1000
 )
 
 trainer.train()

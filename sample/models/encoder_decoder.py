@@ -48,27 +48,16 @@ class Encoder(BaseModel):
                                     )
 
     def forward(self, x):
-        #shape = list(x.size())
-        #assert shape[0] == self.batch_size
-        #assert shape[2] == self.input_im_size
-        #assert shape[3] == self.input_im_size
-        #print("1")
-        out=self.conv1(x)
-        #print("2")
-        out1=self.conv2(out)
-        #print(3)
-        out2=self.conv3(out1)
-        #print(4)
-        out3=self.conv4(out2)
-        #print("5")
 
-        out4=out3.view(self.batch_size, -1)
-        #print("61")
-        #print(out3.size(),self.batch_size)
-        L_3d = self.to_L3d(out4)
-        #print("62")
-        L_app= self.to_Lapp(out4)
-        #print("63")
+        out=self.conv1(x)
+        out=self.conv2(out)
+        out=self.conv3(out)
+        out=self.conv4(out)
+
+
+        out=out.view(self.batch_size, -1)
+        L_3d = self.to_L3d(out)
+        L_app= self.to_Lapp(out)
         outputs = {'L_3d':L_3d, 'L_app':L_app} #flattened
         return outputs
 
@@ -77,43 +66,42 @@ class Rotation(BaseModel):
     def __init__(self,
                  batch_size,
                  dimensions_3d,
-                 rotation_encoding_dimension = 128):
+                 rotation_encoding_dimension = 128, implicit_rotation = False):
 
         super().__init__()
-        self.batch_size=batch_size
-        self.dimension_3d = dimensions_3d
-        self.rotation_encoding_dimension = rotation_encoding_dimension
-        self.latent_dropout = 0.3
+
+        self.implicit_rotation = implicit_rotation
+        self.batch_size = batch_size
+        if self.implicit_rotation:
+            self.dimension_3d = dimensions_3d
+            self.rotation_encoding_dimension = rotation_encoding_dimension
+            self.latent_dropout = 0.3
 
 
 
-        self.encode_angle = nn.Sequential(nn.Linear(3 * 3, rotation_encoding_dimension // 2),
-                                          nn.Dropout(inplace=True, p=self.latent_dropout),
-                                          nn.ReLU(inplace=False),
-                                          nn.Linear(rotation_encoding_dimension // 2, rotation_encoding_dimension),
-                                          nn.Dropout(inplace=True, p=self.latent_dropout),
-                                          nn.ReLU(inplace=False),
-                                          nn.Linear(rotation_encoding_dimension, rotation_encoding_dimension),
-                                          )
-        self.rotate_implicitely = nn.Sequential(nn.Linear(self.dimension_3d + rotation_encoding_dimension, self.dimension_3d),
-                                                nn.Dropout(inplace=True, p=self.latent_dropout),
-                                                nn.ReLU(inplace=False))
+            self.encode_angle = nn.Sequential(nn.Linear(3 * 3, rotation_encoding_dimension // 2),
+                                              nn.Dropout(inplace=True, p=self.latent_dropout),
+                                              nn.ReLU(inplace=False),
+                                              nn.Linear(rotation_encoding_dimension // 2, rotation_encoding_dimension),
+                                              nn.Dropout(inplace=True, p=self.latent_dropout),
+                                              nn.ReLU(inplace=False),
+                                              nn.Linear(rotation_encoding_dimension, rotation_encoding_dimension),
+                                              )
+            self.rotate_implicitely = nn.Sequential(nn.Linear(self.dimension_3d + rotation_encoding_dimension, self.dimension_3d),
+                                                    nn.Dropout(inplace=True, p=self.latent_dropout),
+                                                    nn.ReLU(inplace=False))
 
     def forward(self,dic):
-
         L_3d=dic["L_3d"]
         rotation_input = dic["R"]
-
-        #shape=list(L_3d.size())
-        #assert shape[0] == self.batch_size
-        #assert shape[1] == self.dimension_3d
-
-        rotation_input = rotation_input.view(self.batch_size,9)
-        angle = self.encode_angle(rotation_input)
-        #print("3")
-        concatenated = torch.cat((angle,L_3d), dim=1)
-        L_3d_rotated = self.rotate_implicitely(concatenated)
-
+        if self.implicit_rotation:
+            rotation_input = rotation_input.view(self.batch_size,9)
+            angle = self.encode_angle(rotation_input)
+            concatenated = torch.cat((angle,L_3d), dim=1)
+            L_3d_rotated = self.rotate_implicitely(concatenated)
+        else:
+            L_3d_rotated = torch.bmm(L_3d.view(self.batch_size,-1,3), rotation_input.transpose(1,2))
+            L_3d_rotated = L_3d_rotated.view_as(L_3d)
         return L_3d_rotated
 
 
@@ -144,10 +132,11 @@ class Decoder(BaseModel):
                                    nn.Dropout(inplace=True, p=self.latent_dropout),
                                    nn.ReLU(inplace=False))
 
-        self.conv1 = unetUpNoSKip(in_size = self.decoded_channels_L, out_size = self.decoded_channels_L ,is_deconv = False)
-        self.conv2 = unetUpNoSKip(in_size = self.decoded_channels_L, out_size = self.decoded_channels_L//2,is_deconv = True)
-        self.conv3 = unetUpNoSKip(in_size = self.decoded_channels_L//2, out_size = self.decoded_channels_L//4,is_deconv=True)
-        self.conv4 = unetConv2(in_size = self.decoded_channels_L//4, out_size = self.decoded_channels_L//8)
+        self.conv1 = unetUpNoSKip(in_size = self.decoded_channels_L, out_size = self.decoded_channels_L//2 ,is_deconv = True)
+        self.conv2 = unetUpNoSKip(in_size = self.decoded_channels_L//2, out_size = self.decoded_channels_L//4,is_deconv = True)
+        self.conv3 = unetUpNoSKip(in_size = self.decoded_channels_L//4, out_size = self.decoded_channels_L//8,is_deconv=True)
+        self.conv4 = unetConv2(in_size = self.decoded_channels_L//8, out_size = self.decoded_channels_L//8)
+        #self.conv4 = unetUpNoSKip(in_size=self.decoded_channels_L // 4, out_size=self.decoded_channels_L // 8, is_deconv=True)
 
     def forward(self, dic):
 
@@ -207,13 +196,11 @@ class Encoder_Decoder(BaseModel):
         encode = self.encoder(im)
         L_3d = encode['L_3d']
         L_app= encode['L_app']
-
-
         dic_rot = {'L_3d' : L_3d,'R': dic['rot_im']}
-
         L_3d_rotated = self.rotation(dic_rot)
+        #self._logger.info("L3d and Lapp not swapped")
+        #L_app_swapped=L_app
         L_app_swapped = torch.index_select(L_app, dim=0, index=index_invert)
-        #print("3")
         background = dic['background_target']
         dic_dec = { "L_3d": L_3d_rotated, "L_app" : L_app_swapped}
         decoded = self.decoder(dic_dec)

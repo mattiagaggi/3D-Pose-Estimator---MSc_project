@@ -29,7 +29,7 @@ class Trainer_Enc_Dec(BaseTrainer):
                  epochs = 2,
                  name="enc_dec",
                  output = "sample/checkpoints/",
-                 save_freq = 2000,
+                 save_freq = 5000,
                  no_cuda = no_cuda,
                  verbosity=2,
                  verbosity_iter=10,
@@ -80,10 +80,11 @@ class Trainer_Enc_Dec(BaseTrainer):
         info['size_dataset'] = len(self.data_loader)
         string=""
         for number,contents in enumerate(self.data_loader.index_file_list):
-            string += " %s content :" % self.data_loader.index_file_content[number]
+            string += "\n content :" + self.data_loader.index_file_content[number]
             for elements in contents:
+                string += "numbers: "
                 string += " %s," % elements
-        info['details'] = self.data_loader.index_file_list
+        info['details'] = string
         return info
 
 
@@ -163,17 +164,17 @@ class Trainer_Enc_Dec(BaseTrainer):
 
 
     def test_step_on_random(self,bid):
-        # self.model.eval()
+        self.model.eval()
         idx = random.randint(self.length_test_set)
         in_test_dic, out_test_dic = self.data_test[idx]
         out_test = self.model(in_test_dic)
+        self.model.train()
         loss_test = self.loss(out_test, out_test_dic['im_target'])
         self.model_logger.val.add_scalar('loss/iterations', loss_test.item(),
                                          self.global_step)
-
         if bid % self.img_log_step == 0:
             self.log_grid(in_test_dic['im_in'], out_test, out_test_dic['im_target'], 'test')
-        # self.model.train()
+
 
     def _train_epoch(self, epoch):
         """Train model for one epoch

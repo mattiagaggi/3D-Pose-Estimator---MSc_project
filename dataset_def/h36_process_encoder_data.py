@@ -2,6 +2,7 @@
 import numpy as np
 from numpy.random import randint
 from numpy.random import normal
+from random import shuffle
 
 from utils.utils_H36M.common import H36M_CONF
 from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
@@ -19,7 +20,8 @@ class Data_Encoder_Decoder(Data_Base_class):
                  sampling =10,
                  batch_size = 10,
                  index_file_content=['s'],
-                 index_file_list=[[1]]):
+                 index_file_list=[[1]],
+                 randomise=True):
 
         super().__init__(sampling)
 
@@ -29,12 +31,19 @@ class Data_Encoder_Decoder(Data_Base_class):
         self.create_index_file(index_file_content, index_file_list)
         self.index_file_content = index_file_content
         self.index_file_list = index_file_list
-        self.index_file_cameras =[]
+        self.randomise= randomise
+        if self.randomise:
+            self.index_file_cameras =[]
+        self._logger.info("Warning you changed cameras here")
         for i in self.index_file:
             s,act,subact,ca,fno = i
             for ca2 in range(1,5):
-                if ca2 != ca:
+                #if ca2 != ca :###############
+                if ca==1 and ca2==2:
                     self.index_file_cameras.append([s,act,subact,ca,fno,ca2])
+
+        if self.randomise:
+            shuffle(self.index_file_cameras)
         self.elements_taken=0
         self._current_epoch=0
 
@@ -85,7 +94,7 @@ class Data_Encoder_Decoder(Data_Base_class):
         rad = normal(scale=np.pi/10)
         return rad
     def extract_all_info(self, metadata, background,s, act, subact, ca, fno, rotation_angle=None):
-        rotation_angle = self.get_angle()
+        #rotation_angle = self.get_angle()
         im, joints_world, R, T, f, c, background = self.extract_info(metadata, background, s, act, subact,ca, fno)
         bbpx = bounding_box_pixel(joints_world,H36M_CONF.joints.root_idx, R, T, f,c)
         im, background, trans = self.patch_images(im,background,bbpx, rotation_angle)
@@ -199,6 +208,8 @@ class Data_Encoder_Decoder(Data_Base_class):
             self._logger.info("New Epoch reset elements taken")
             self._current_epoch += 1
             self.elements_taken = 0
+            if self.randomise:
+                shuffle(self.index_file_cameras)
 
 
     def __getitem__(self, item):
@@ -267,10 +278,11 @@ if __name__=="__main__":
         d = Data_Encoder_Decoder()
         print(len(d))
         for i in range(len(d)):
-            print(i)
             dic1,dic2= d[i]
             if i == 10:
                 for k in dic1.keys():
+                    if k== 'rot_im':
+                        print('ll',np.linalg.det(dic1[k][0,...]))
                     if k != 'invert_segments' and dic1[k].shape[2] == 128:
 
                         plt.figure()
@@ -280,15 +292,16 @@ if __name__=="__main__":
                         plt.figure()
                         plt.title("k app is "+k)
                         plt.imshow(np.transpose(dic1[k][5, ...], axes=[1, 2, 0]))
+
                 for k in dic2.keys():
                     if k != 'invert_segments' and dic2[k].shape[2] == 128:
-
                         plt.figure()
                         plt.title("k is " + k)
                         plt.imshow(np.transpose(dic2[k][0, ...], axes=[1, 2, 0]))
                         plt.figure()
                         plt.title("k app is " + k)
                         plt.imshow(np.transpose(dic2[k][5, ...], axes=[1, 2, 0]))
+
                 plt.show()
 
     #final_check()

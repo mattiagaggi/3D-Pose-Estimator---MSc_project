@@ -106,7 +106,7 @@ class Data_Base_class(BaseDataset):
         elif file and content == 'fno':
             return int(res[8])
         else:
-            self._logger.error("Error in parsing %s for content %s" % (name, content))
+            self._logger.t("Error in parsing %s for content %s" % (name, content))
 
 
     def get_name(self,s,act,sub,ca,fno):

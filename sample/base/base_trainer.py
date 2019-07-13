@@ -97,7 +97,7 @@ class BaseTrainer(FrameworkClass):
         self._dump_summary_info()
         if self.with_cuda:
             self.model.cuda()
-        for epoch in range(self.start_epoch, self.epochs + 1):
+        for epoch in range(self.start_epoch, self.epochs):
             if self.verbosity:
                 self._logger.info('Training epoch %d of %d',
                                   epoch, self.epochs)
@@ -112,7 +112,8 @@ class BaseTrainer(FrameworkClass):
                     metric.log_res(logger=self.model_logger.val,
                                    iter=self.global_step,
                                    error=epoch_val_metrics[i])
-            self._save_checkpoint(epoch, self.global_step, epoch_loss)
+        self._logger.info('Finished training')
+        self._save_checkpoint(epoch, self.global_step, epoch_loss)
 
     def _dump_summary_info(self):
         """Save training summary"""
