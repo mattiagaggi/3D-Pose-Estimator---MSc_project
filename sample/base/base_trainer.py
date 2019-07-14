@@ -61,13 +61,14 @@ class BaseTrainer(FrameworkClass):
         if not torch.cuda.is_available():
             self.with_cuda = False
 
-        #if self.with_cuda and (torch.cuda.device_count() > 1):
-        #    if self.verbosity:
-        #        self._logger.info("Let's use %d GPUs!",
-        #                          torch.cuda.device_count())
+        if self.with_cuda and (torch.cuda.device_count() > 1):
+            if self.verbosity:
+                self._logger.info("Let's use %d GPUs!",
+                                  torch.cuda.device_count())
 
             #parallelise
             #self.single_gpu = False
+            #self.model.parallelise() #this might be slower
             #self.model = torch.nn.DataParallel(self.model)
 
         io.ensure_dir(os.path.join(self.save_dir,

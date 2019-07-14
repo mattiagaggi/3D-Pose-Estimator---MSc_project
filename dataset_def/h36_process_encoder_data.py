@@ -35,12 +35,12 @@ class Data_Encoder_Decoder(Data_Base_class):
         self.randomise= randomise
 
         self.index_file_cameras =[]
-        self._logger.info("Warning you changed cameras here")
+        #self._logger.info("Warning you changed cameras here")
         for i in self.index_file:
             s,act,subact,ca,fno = i
             for ca2 in range(1,5):
-                #if ca2 != ca :###############
-                if ca==1 and ca2==2:
+                if ca2 != ca :###############
+                #if ca==1 and ca2==2:
                     self.index_file_cameras.append([s,act,subact,ca,fno,ca2])
 
         if self.randomise:

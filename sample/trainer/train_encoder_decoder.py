@@ -29,7 +29,7 @@ class Trainer_Enc_Dec(BaseTrainer):
                  epochs = 2,
                  name="enc_dec",
                  output = "sample/checkpoints/",
-                 save_freq = 5000,
+                 save_freq = 10000,
                  no_cuda = no_cuda,
                  verbosity=2,
                  verbosity_iter=10,
@@ -62,9 +62,9 @@ class Trainer_Enc_Dec(BaseTrainer):
         # load model
         #self._resume_checkpoint(args.resume)
 
-        self.encoder_parameters = self.model.encoder.return_n_parameters()
-        self.decoder_parameters = self.model.decoder.return_n_parameters()
-        self.rotation_parameters = self.model.rotation.return_n_parameters()
+        #self.encoder_parameters = self.model.encoder.return_n_parameters()
+        #self.decoder_parameters = self.model.decoder.return_n_parameters()
+        #self.rotation_parameters = self.model.rotation.return_n_parameters()
         # setting drawer
         #self.drawer = Drawer(Style.EQ_AXES)
 
@@ -195,8 +195,8 @@ class Trainer_Enc_Dec(BaseTrainer):
             loss, pbar = self.train_step(bid, dic_in, dic_out, pbar, epoch)
             if self.test_log_step is not None and (bid % self.test_log_step == 0):
                 self.test_step_on_random(bid)
-            if bid % self.parameters_show == 0:
-                self.log_gradients()
+            #if bid % self.parameters_show == 0:
+                #self.log_gradients()
             if bid % self.save_freq == 0:
                 if total_loss:
                     self._save_checkpoint(epoch, self.global_step,

@@ -9,18 +9,18 @@ from sample.trainer.train_encoder_decoder import Trainer_Enc_Dec
 
 data_train = Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
                             sampling = ENCODER_DECODER_PARAMS.encoder_decoder.sampling,
-                            index_file_content =['s','act','ca'],
+                            index_file_content =['s','act'],
                             #index_file_list=[[1, 5, 6, 7],[1,2]])
-                            index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9],[1,2]]) #8,9
+                            index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9]]) #8,9
 
 
 data_test=Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
                            sampling = ENCODER_DECODER_PARAMS.encoder_decoder.sampling,
-                            index_file_content =['s','act','ca'],
+                            index_file_content =['s','act'],
                            # index_file_list=[[8, 9],[1,2]])
                             #index_file_list=[[1],[10,11,12],[1,2]],
-                            index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9],[1,2]],
-                            get_intermediate_frames=False)
+                            index_file_list=[[1],[10, 11, 12]],
+                            get_intermediate_frames=True)
 
 
 
@@ -35,7 +35,7 @@ loss = torch.nn.MSELoss()
 
 
 
-train_data_loader = DataLoader(data_train,shuffle=True, num_workers=1)
+train_data_loader = DataLoader(data_train,shuffle=True, num_workers=2)
 
 metr=[]
 
@@ -47,7 +47,7 @@ trainer = Trainer_Enc_Dec(
         optimizer=optimizer,
         data_loader=data_train,
         data_test = data_test,
-        name ="enc_dec_test1", epochs=10
+        name ="enc_dec_test3", epochs=10
 )
 
 trainer.train()

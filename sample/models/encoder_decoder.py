@@ -47,6 +47,13 @@ class Encoder(BaseModel):
 
                                     )
 
+    def parallelise(self):
+
+        self.conv1=torch.nn.DataParallel(self.conv1)
+        self.conv2 = torch.nn.DataParallel(self.conv2)
+        self.conv3 = torch.nn.DataParallel(self.conv3)
+        self.conv4 = torch.nn.DataParallel(self.conv4)
+
     def forward(self, x):
 
         out=self.conv1(x)
@@ -55,10 +62,14 @@ class Encoder(BaseModel):
         out=self.conv4(out)
 
 
-        out=out.view(self.batch_size, -1)
-        L_3d = self.to_L3d(out)
-        L_app= self.to_Lapp(out)
+        out1=out.view(self.batch_size, -1)
+
+        L_3d = self.to_L3d(out1)
+
+        L_app= self.to_Lapp(out1)
+
         outputs = {'L_3d':L_3d, 'L_app':L_app} #flattened
+
         return outputs
 
 
@@ -136,7 +147,14 @@ class Decoder(BaseModel):
         self.conv2 = unetUpNoSKip(in_size = self.decoded_channels_L//2, out_size = self.decoded_channels_L//4,is_deconv = True)
         self.conv3 = unetUpNoSKip(in_size = self.decoded_channels_L//4, out_size = self.decoded_channels_L//8,is_deconv=True)
         self.conv4 = unetConv2(in_size = self.decoded_channels_L//8, out_size = self.decoded_channels_L//8)
-        #self.conv4 = unetUpNoSKip(in_size=self.decoded_channels_L // 4, out_size=self.decoded_channels_L // 8, is_deconv=True)
+
+    def parallelise(self):
+        self.full_layer= torch.nn.DataParallel(self.full_layer)
+        self.conv1 = torch.nn.DataParallel(self.conv1)
+        self.conv2 = torch.nn.DataParallel(self.conv2)
+        self.conv3 = torch.nn.DataParallel(self.conv3)
+        self.conv4 = torch.nn.DataParallel(self.conv4)
+
 
     def forward(self, dic):
 
@@ -167,7 +185,8 @@ class Decoder(BaseModel):
 class Encoder_Decoder(BaseModel):
     def __init__(self,
                  batch_size,
-                 input_im_size = ENCODER_DECODER_PARAMS.encoder_decoder.im_size):
+                 input_im_size = ENCODER_DECODER_PARAMS.encoder_decoder.im_size,
+                 parallelise=False):
         super().__init__()
 
         self.input_im_size = input_im_size #input image shape
@@ -189,6 +208,11 @@ class Encoder_Decoder(BaseModel):
         #self.to_pose = MLP.MLP_fromLatent(d_in=self.dimension_3d, d_hidden=2048, d_out=51, n_hidden=n_hidden_to3Dpose,
         #                                  dropout=0.5)
 
+
+    def parallelise(self):
+        self.encoder.parallelise()
+        self.decoder.parallelise()
+
     def forward(self, dic):
 
 
@@ -198,8 +222,6 @@ class Encoder_Decoder(BaseModel):
         L_app= encode['L_app']
         dic_rot = {'L_3d' : L_3d,'R': dic['rot_im']}
         L_3d_rotated = self.rotation(dic_rot)
-        #self._logger.info("L3d and Lapp not swapped")
-        #L_app_swapped=L_app
         L_app_swapped = torch.index_select(L_app, dim=0, index=index_invert)
         background = dic['background_target']
         dic_dec = { "L_3d": L_3d_rotated, "L_app" : L_app_swapped}
