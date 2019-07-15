@@ -49,6 +49,10 @@ class Data_Encoder_Decoder(Data_Base_class):
         self._current_epoch=0
 
 
+
+
+
+
     def check_previous_image(self, s):
         same_backgrounds = False
         if self.previous_chache is not None:

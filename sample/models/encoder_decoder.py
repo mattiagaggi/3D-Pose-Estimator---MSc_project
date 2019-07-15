@@ -1,14 +1,11 @@
 
-from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
-
 import torch.nn as nn
 import torch
+
+
+from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
 from sample.base.base_model import BaseModel
 from sample.base.base_modules import unetConv2,unetUpNoSKip
-
-
-
-#batch x channel x height x width
 
 
 
@@ -185,8 +182,8 @@ class Decoder(BaseModel):
 class Encoder_Decoder(BaseModel):
     def __init__(self,
                  batch_size,
-                 input_im_size = ENCODER_DECODER_PARAMS.encoder_decoder.im_size,
-                 parallelise=False):
+                 input_im_size = ENCODER_DECODER_PARAMS.encoder_decoder.im_size):
+
         super().__init__()
 
         self.input_im_size = input_im_size #input image shape

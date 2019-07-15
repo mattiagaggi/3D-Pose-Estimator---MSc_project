@@ -134,10 +134,11 @@ class Data_Base_class(BaseDataset):
         return path, name, parent_path
 
 
-    def append_index_to_dic(self, s, act, subact, ca, fno):
+    def append_index_to_dic(self,dic,s, act, subact, ca, fno):
         """
         transform self.index_file in nested dictionary such that
         self.index_file[s][act][subact][ca][fno]=path
+        :param dic: dictionary
         :param s: subject
         :param act: act
         :param subact: ...
@@ -149,37 +150,59 @@ class Data_Base_class(BaseDataset):
         path, _, _ = self.get_name(s, act, subact, ca, fno)
         if not file_exists(path):
             self._logger.error("file found by path %s does not exist" % path)
-        if s not in self.index_file.keys():
-            self.index_file[s] = {act: {
-                                    subact: {
-                                        ca: {
+        if s not in dic:
+            dic[s] = {act: {
+                            subact: {
+                                     ca: {
                                             fno: path}
-                                    }}}
+                        }}}
         else:
-            if act not in self.index_file[s].keys():
-                self.index_file[s][act] = {subact: {
-                                                ca: {
-                                                    fno: path}
+            if act not in dic[s].keys():
+                dic[s][act] = {subact: {
+                                        ca: {
+                                             fno: path}
                 }}
             else:
-                if subact not in self.index_file[s][act].keys():
-                    self.index_file[s][act][subact] = {ca: {fno: path}}
+                if subact not in dic[s][act].keys():
+                    dic[s][act][subact] = {ca: {fno: path}}
                 else:
-                    if ca not in self.index_file[s][act][subact].keys():
-                        self.index_file[s][act][subact][ca] = {fno: path}
+                    if ca not in dic[s][act][subact].keys():
+                        dic[s][act][subact][ca] = {fno: path}
                     else:
-                        if fno not in self.index_file[s][act][subact][ca].keys():
-                            self.index_file[s][act][subact][ca][fno] = path
+                        if fno not in dic[s][act][subact][ca].keys():
+                            dic[s][act][subact][ca][fno] = path
                         else:
                             self._logger.error(" adding path %s twice " % path)
+        return dic
 
 
-    def append_index_to_list(self, s, act, subact, ca, fno):
+    def append_index_to_list(self, dic,s, act, subact, ca, fno):
         path, _, _ = self.get_name(s, act, subact, ca, fno)
         if not file_exists(path):
             self._logger.error("file found by path %s does not exist" % path)
-        self.index_file.append([s,act,subact,ca,fno])
+        dic.append([s,act,subact,ca,fno])
+        return dic
 
+
+    def subsample_fno(self, index_as_list, percent,lower):
+        dic={}
+        for i in index_as_list:
+            s, act, subact, ca, fno=i
+            dic = self.append_index_to_dic(dic,s, act, subact, ca, fno)
+        new_index_file=[]
+        for s in dic.keys()
+            for act in dic[s].keys():
+                for subact in dic[s][act].keys():
+                    for ca in dic[s][act][subact].keys():
+                        max_fno = np.max(list(dic[s][act][subact][ca].keys()))
+                        for fno in dic[s][act][subact][ca].keys():
+                            if lower:
+                                if fno < int(max_fno*percent):
+                                    new_index_file.append([s, act, subact, ca, fno])
+                            else:
+                                if fno >= int(max_fno*percent):
+                                    new_index_file.append([s, act, subact, ca, fno])
+        return new_index_file
 
     def load_metadata(self, subdir_path):
         path = os.path.join(subdir_path,"h36m_meta.mat")
@@ -267,9 +290,11 @@ class Data_Base_class(BaseDataset):
                     if (fno+ self.sampling//2) % self.sampling != 1: # starts from 1
                         continue
                 if self.index_as_dict:
-                    self.append_index_to_dic(s, act, subact, ca, fno)
+                    self.index_file=\
+                        self.append_index_to_dic(self.index_file, s, act, subact, ca, fno)
                 else:
-                    self.append_index_to_list(s, act, subact, ca, fno)
+                    self.index_file=\
+                        self.append_index_to_list(self.index_file, s, act, subact, ca, fno)
 
     def load_index_file(self):
 
