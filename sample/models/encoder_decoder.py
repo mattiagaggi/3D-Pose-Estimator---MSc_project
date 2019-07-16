@@ -181,19 +181,15 @@ class Decoder(BaseModel):
 
 class Encoder_Decoder(BaseModel):
     def __init__(self,
-                 batch_size,
+                 args,
                  input_im_size = ENCODER_DECODER_PARAMS.encoder_decoder.im_size):
 
         super().__init__()
 
-        self.input_im_size = input_im_size #input image shape
-        self.batch_size = batch_size
-
-
-
+        self.batch_size = args.batch_size
         #encoder_parameters
         self.filters = [64, 128, 256, 512]
-        self.encoder = Encoder(batch_size, input_im_size, self.filters)
+        self.encoder = Encoder(self.batch_size, input_im_size, self.filters)
 
         self.dimension_L_app = self.encoder.dimension_L_app
         self.dimension_L_3D = self.encoder.dimension_L_3D

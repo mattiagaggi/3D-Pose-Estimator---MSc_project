@@ -112,13 +112,7 @@ class BaseParser(FrameworkClass):
             help='number of threads for dataset loader (default: {:d})'.format(
                 default))
 
-    def _add_cuda(self):
-        """Add cuda argument"""
 
-        self.parser.add_argument(
-            '--no-cuda',
-            action="store_true",
-            help='use CPU in case there\'s no GPU support')
 
     def _add_learning_rate(self, default):
         """Add learning rate argument
@@ -167,45 +161,9 @@ class BaseParser(FrameworkClass):
             type=int,
             help='number of epochs (default: {:d})'.format(default))
 
-    def _add_validation(self, required):
-        """Add validation path argument
 
-        Arguments:
-            required {boold} -- is required
-        """
 
-        self.parser.add_argument(
-            '--val-path',
-            required=required,
-            default='',
-            type=str,
-            help='Path to validation data')
 
-    def _add_reset(self):
-        """Add reset argument"""
-
-        self.parser.add_argument(
-            '--reset',
-            action="store_true",
-            help='reset global information about restored model')
-
-    def _add_lr_decay(self):
-        """Add learning rate related"""
-
-        self.parser.add_argument(
-            '--no-lr-decay',
-            action="store_true",
-            help='don\'t use learning rate decay')
-        self.parser.add_argument(
-            '--lr_decay_rate',
-            default=0.95,
-            type=float,
-            help='learning rate decay rate (default = 0.95)')
-        self.parser.add_argument(
-            '--lr_decay_step',
-            default=3000,
-            type=float,
-            help='learning rate decay step (default = 3000)')
 
     def _add_model_checkpoints(self, iterations):
         """Add argument to save model every n iterations
@@ -220,13 +178,12 @@ class BaseParser(FrameworkClass):
             type=int,
             help='training checkpoint frequency in iterations(default: {:d})'.format(iterations))
 
-    def _add_verbose(self, text, train, val, image, single_epoch=False):
+    def _add_verbose(self, text, train,img_log_step):
         """Add arguments for verbose
 
         Arguments:
             text {int} -- number of iterations
             train {int} -- number of iterations
-            val {int} -- number of iterations
             image {int} -- number of iterations
 
         Keyword Arguments:
@@ -250,24 +207,12 @@ class BaseParser(FrameworkClass):
                 default=train,
                 type=int,
                 help='log frequency for training (default: {:d})'.format(train))
-        if val > 0:
-            self.parser.add_argument(
-                '--val-log-step',
-                default=val,
-                type=int,
-                help='log frequency for validation (default: {:d})'.format(val))
-        if image > 0:
+        if img_log_step > 0:
             self.parser.add_argument(
                 '--img-log-step',
-                default=image,
+                default=img_log_step,
                 type=int,
-                help='log frequency for images (default: {:d})'.format(image))
-        if not single_epoch:
-            self.parser.add_argument(
-                '--eval-epoch',
-                action="store_true",
-                help='show model evaluation at the end of each epoch')
-
+                help='log frequency for image (default: {:d})'.format(img_log_step))
     def get_arguments(self):
         """Get arguments"""
 

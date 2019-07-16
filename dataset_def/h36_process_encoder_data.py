@@ -17,30 +17,40 @@ from matplotlib import pyplot as plt
 class Data_Encoder_Decoder(Data_Base_class):
 
     def __init__(self,
-                 sampling =10,
-                 batch_size = 10,
+                 args,
+                 sampling,
                  index_file_content=['s'],
                  index_file_list=[[1]],
                  randomise=True,
-                 get_intermediate_frames = False):
+                 get_intermediate_frames = False,
+                 subsampling_fno = 0):
 
+
+        self.batch_size = args.batch_size
         super().__init__(sampling,get_intermediate_frames=get_intermediate_frames)
 
-        self.batch_size = batch_size
-        assert batch_size % 2 == 0
-
+        assert self.batch_size % 2 == 0
         self.create_index_file(index_file_content, index_file_list)
         self.index_file_content = index_file_content
         self.index_file_list = index_file_list
         self.randomise= randomise
 
         self.index_file_cameras =[]
-        #self._logger.info("Warning you changed cameras here")
+
+        if subsampling_fno==0:
+            pass
+        if subsampling_fno==1:
+            self.index_file=self.subsample_fno(self.index_file, 0.75, lower=True)
+        elif subsampling_fno==2:
+            self.index_file = self.subsample_fno(self.index_file, 0.75, lower=False)
+        else:
+            self._logger.error("Subsampling not understood")
+        self._logger.info("Only from 1 to 2")
         for i in self.index_file:
             s,act,subact,ca,fno = i
             for ca2 in range(1,5):
-                if ca2 != ca :###############
-                #if ca==1 and ca2==2:
+                #if ca2 != ca :###############
+                if ca==1 and ca2==2:
                     self.index_file_cameras.append([s,act,subact,ca,fno,ca2])
 
         if self.randomise:
@@ -261,7 +271,7 @@ class Data_Encoder_Decoder(Data_Base_class):
 
 if __name__=="__main__":
     def check_data_feed():
-        d = Data_Encoder_Decoder()
+        d = Data_Encoder_Decoder(randomise=False)
         oo = 0
         for i in range(10000):
             oo += 1

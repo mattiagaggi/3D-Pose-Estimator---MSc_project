@@ -1,53 +1,67 @@
+import torch.nn
+
 from dataset_def.h36_process_encoder_data import Data_Encoder_Decoder
 from sample.models.encoder_decoder import Encoder_Decoder
-from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
-import torch.nn
 from torch.utils.data import DataLoader
 from sample.trainer.train_encoder_decoder import Trainer_Enc_Dec
+from sample.parsers.parser_enc_dec import EncParser
+from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
+
+
+parser = EncParser("Encoder parser")
+
+args =parser.get_arguments()
 
 
 
-data_train = Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
-                            sampling = ENCODER_DECODER_PARAMS.encoder_decoder.sampling,
+data_train = Data_Encoder_Decoder(args,subsampling_fno = 1,
                             index_file_content =['s','act'],
                             #index_file_list=[[1, 5, 6, 7],[1,2]])
-                            index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9]]) #8,9
+                            index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9]],
+                            sampling=ENCODER_DECODER_PARAMS.encoder_decoder.sampling_train) #8,9
 
 
-data_test=Data_Encoder_Decoder(batch_size= ENCODER_DECODER_PARAMS.encoder_decoder.batch_size,
-                           sampling = ENCODER_DECODER_PARAMS.encoder_decoder.sampling,
+data_test = Data_Encoder_Decoder(args, subsampling_fno = 2,
+                            index_file_content =['s','act'],
+                            #index_file_list=[[1, 5, 6, 7],[1,2]])
+                            index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9]],
+                            randomise=False,
+                            sampling=ENCODER_DECODER_PARAMS.encoder_decoder.sampling_test
+                                 ) #8,9
+
+
+"""
+
+
+data_test=Data_Encoder_Decoder(args,
                             index_file_content =['s','act'],
                            # index_file_list=[[8, 9],[1,2]])
                             #index_file_list=[[1],[10,11,12],[1,2]],
                             index_file_list=[[1],[10, 11, 12]],
-                            get_intermediate_frames=True)
+                            get_intermediate_frames=False)
+
+"""
 
 
+model = Encoder_Decoder(args)
 
-
-#sguffling only shuffles subelements
-
-model = Encoder_Decoder(batch_size= 64,
-                 input_im_size= ENCODER_DECODER_PARAMS.encoder_decoder.im_size)
-
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 loss = torch.nn.MSELoss()
 
 
-
-train_data_loader = DataLoader(data_train,shuffle=True, num_workers=2)
+train_data_loader = DataLoader(data_train,shuffle=True, num_workers=args.num_threads)
 
 metr=[]
 
-    # Trainer instance
+
 trainer = Trainer_Enc_Dec(
         model,
         loss,
+        args=args,
         metrics=metr,
         optimizer=optimizer,
         data_loader=data_train,
         data_test = data_test,
-        name ="enc_dec_test3", epochs=10
 )
 
 trainer.train()

@@ -2,11 +2,15 @@
 
 import datetime
 import numpy as np
+import pickle
+
+
 from sample.base.base_trainer import BaseTrainer
 from tqdm import tqdm
 import torchvision.utils as vutils
 import numpy.random as random
 from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
+
 
 
 if ENCODER_DECODER_PARAMS.encoder_decoder.device_type == 'cpu':
@@ -25,50 +29,48 @@ class Trainer_Enc_Dec(BaseTrainer):
                  metrics,
                  optimizer,
                  data_loader,
+                 args,
                  data_test=None,
-                 epochs = 2,
-                 name="enc_dec",
-                 output = "sample/checkpoints/",
-                 save_freq = 10000,
                  no_cuda = no_cuda,
-                 verbosity=2,
-                 verbosity_iter=10,
-                 train_log_step = 1,
                  eval_epoch = False
                  ):
+
+        name=args.name
+        output = args.output
+        epochs = args.epochs
+        save_freq = args.save_freq
+        verbosity = args.verbosity
+        verbosity_iter = args.verbosity_iter
+        train_log_step = args.train_log_step
+
+
         super().__init__(model, loss, metrics, optimizer, epochs,
                  name, output, save_freq, no_cuda, verbosity,
                  train_log_step, verbosity_iter,eval_epoch)
 
-        #self.batch_size = args.batch_size
-        self.data_loader = data_loader
 
+        self.data_loader = data_loader
         self.data_test = data_test
         #test while training
         self.test_log_step = None
-        self.length_test_set = len(self.data_test)
+        self.img_log_step = args.img_log_step
         if data_test is not None:
-            self.test_log_step = 10 * self.train_log_step
-        self.img_log_step = self.train_log_step * 100
+            self.test_log_step = self.train_log_step
 
-        self.parameters_show = self.train_log_step*300
 
-        #self.val_log_step = args.val_log_step
-
+        self.parameters_show = self.train_log_step * 300
+        self.length_test_set = len(self.data_test)
         self.len_trainset = len(self.data_loader)
 
-        self.verbosity_iter=verbosity_iter
 
         # load model
         #self._resume_checkpoint(args.resume)
 
-        #self.encoder_parameters = self.model.encoder.return_n_parameters()
-        #self.decoder_parameters = self.model.decoder.return_n_parameters()
-        #self.rotation_parameters = self.model.rotation.return_n_parameters()
+        self.encoder_parameters = self.model.encoder.return_n_parameters()
+        self.decoder_parameters = self.model.decoder.return_n_parameters()
+        self.rotation_parameters = self.model.rotation.return_n_parameters()
         # setting drawer
         #self.drawer = Drawer(Style.EQ_AXES)
-
-
 
 
     def _summary_info(self):

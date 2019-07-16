@@ -20,7 +20,6 @@ class Data_Base_class(BaseDataset):
     def __init__(self,
                  sampling,
                  subset = SubSet.train,
-                 max_epochs=1,
                  index_as_dict = False,
                  index_location = index_location,
                  h36m_location = h36m_location,
@@ -30,14 +29,15 @@ class Data_Base_class(BaseDataset):
         super().__init__()
 
 
-        self._max_epochs=max_epochs
+
         self.index_file_loc = index_location
         self.h_36m_loc = h36m_location
         self.background_location = background_location
         self.sampling = sampling
         self.subset = subset
         self.get_intermediate_frames = get_intermediate_frames
-
+        if self.sampling ==1 and get_intermediate_frames:
+            self._logger.error("sampling can't be one if we want intermediate frames")
 
 
         self.index_as_dict = index_as_dict
@@ -184,13 +184,13 @@ class Data_Base_class(BaseDataset):
         return dic
 
 
-    def subsample_fno(self, index_as_list, percent,lower):
+    def subsample_fno(self, index_as_list, percent, lower):
         dic={}
         for i in index_as_list:
             s, act, subact, ca, fno=i
             dic = self.append_index_to_dic(dic,s, act, subact, ca, fno)
         new_index_file=[]
-        for s in dic.keys()
+        for s in dic.keys():
             for act in dic[s].keys():
                 for subact in dic[s][act].keys():
                     for ca in dic[s][act][subact].keys():
@@ -284,7 +284,8 @@ class Data_Base_class(BaseDataset):
             for name in file_names:  # add only sequences sampled
                 s, act, subact, ca, fno = self.get_all_content_file_name(name, file=True)
                 if not self.get_intermediate_frames:
-                    if fno % self.sampling != 1: # starts from 1
+
+                    if (fno-1) % self.sampling != 0 and self.sampling!=1: # starts from 1
                         continue
                 else:
                     if (fno+ self.sampling//2) % self.sampling != 1: # starts from 1
@@ -295,6 +296,7 @@ class Data_Base_class(BaseDataset):
                 else:
                     self.index_file=\
                         self.append_index_to_list(self.index_file, s, act, subact, ca, fno)
+
 
     def load_index_file(self):
 
