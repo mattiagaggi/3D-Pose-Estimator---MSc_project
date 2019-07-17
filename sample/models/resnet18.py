@@ -12,15 +12,15 @@ model_urls = {
 }
 
 
-def resnet18(pretrained=False, **kwargs):
+def resnet18_loss(pretrained=False, **kwargs):
     """Constructs a ResNet-18 model.
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
+    model = ResNet(BasicBlock, [2, 2, 2, 2],  **kwargs)
     if pretrained:
         print("resnet_low_level: Loading image net weights...")
-        #transfer_partial_weights(model_zoo.load_url(model_urls['resnet18']), model)
+        transfer_partial_weights(model_zoo.load_url(model_urls['resnet18']), model)
         print("resnet_low_level: Done loading image net weights...")
-        model.load_state_dict( model_zoo.load_url(model_urls['resnet18']))
+        #model.load_state_dict( model_zoo.load_url(model_urls['resnet18']))
     return model

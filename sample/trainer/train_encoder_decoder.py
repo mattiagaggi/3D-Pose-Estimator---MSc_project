@@ -10,6 +10,7 @@ from tqdm import tqdm
 import torchvision.utils as vutils
 import numpy.random as random
 from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
+from sample.losses.images import ImageNetCriterium
 
 
 
@@ -17,6 +18,7 @@ if ENCODER_DECODER_PARAMS.encoder_decoder.device_type == 'cpu':
     no_cuda=True
 else:
     no_cuda=False
+device = ENCODER_DECODER_PARAMS['encoder_decoder']['device']
 
 class Trainer_Enc_Dec(BaseTrainer):
     """
@@ -51,6 +53,8 @@ class Trainer_Enc_Dec(BaseTrainer):
 
         self.data_loader = data_loader
         self.data_test = data_test
+        self.image_net_loss=ImageNetCriterium(self.loss,device,weight=2)
+
         #test while training
         self.test_log_step = None
         self.img_log_step = args.img_log_step
@@ -149,7 +153,9 @@ class Trainer_Enc_Dec(BaseTrainer):
 
         self.optimizer.zero_grad()
         out_im = self.model(dic_in)
-        loss = self.loss(out_im, dic_out['im_target'])
+        loss_pixels = self.loss(out_im, dic_out['im_target'])
+        loss_img_net = self.image_net_loss(out_im, dic_out['im_target'])
+        loss=(loss_img_net+loss_pixels)/2
         loss.backward()
         self.optimizer.step()
         if (bid % self.verbosity_iter == 0) and (self.verbosity == 2):

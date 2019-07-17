@@ -13,7 +13,7 @@ class EncParser(BaseParser):
         self._add_learning_rate(0.001)
         self._add_batch_size(64)
         self._add_epochs(30)
-        self._add_name('enc_dec_subsample_fno')
+        self._add_name('enc_dec_can')
         self._add_output_dir("sample/checkpoints")
         self._add_model_checkpoints(5000)
         self._add_verbose(50, 10, 300) #verb iter, train_log_step,img log_step
