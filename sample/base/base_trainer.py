@@ -114,7 +114,7 @@ class BaseTrainer(FrameworkClass):
                                    iter=self.global_step,
                                    error=epoch_val_metrics[i])
         self._logger.info('Finished training')
-        self._save_checkpoint(epoch, self.global_step, epoch_loss)
+        self._save_checkpoint(self.epochs, self.global_step, epoch_loss)
 
     def _dump_summary_info(self):
         """Save training summary"""

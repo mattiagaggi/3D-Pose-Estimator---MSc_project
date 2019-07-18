@@ -3,16 +3,13 @@ import torch.nn
 from sample.models.resnet18 import resnet18_loss
 
 
-#check weught = 2 while MSE loss weight 1
-
-
 class ImageNetCriterium(torch.nn.Module):
     """
     Computes difference in the feature space of a NN pretrained on ImageNet
     """
 
     def __init__(self, criterion, device, weight=1, do_maxpooling=True):
-        super(ImageNetCriterium, self).__init__()
+        super().__init__()
         self.weight = weight
         self.criterion = criterion
 
@@ -24,7 +21,19 @@ class ImageNetCriterium(torch.nn.Module):
     def forward(self, pred, label):
         preds_x = self.net(pred)
         labels_x = self.net(label)
-
         losses = [self.criterion(p, l) for p, l in zip(preds_x, labels_x)]
 
         return self.weight * sum(losses) / len(losses)
+
+
+class L2_Resnet_Loss(torch.nn.Module):
+
+    def __init__(self, device):
+        super().__init__()
+
+        self.loss_pixels = torch.nn.MSELoss()
+        self.loss_img_net = ImageNetCriterium(self.loss_pixels,device,weight=2)
+
+    def forward(self, out_im, pred):
+
+        return (self.loss_pixels(out_im,pred)+self.loss_img_net(out_im,pred))/2

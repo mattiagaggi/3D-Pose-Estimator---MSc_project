@@ -115,9 +115,6 @@ class Rotation(BaseModel):
 
 
 
-
-
-
 class Decoder(BaseModel):
     def __init__(self,
                  batch_size,
@@ -213,7 +210,9 @@ class Encoder_Decoder(BaseModel):
         encode = self.encoder(im)
         L_3d = encode['L_3d']
         L_app= encode['L_app']
-        dic_rot = {'L_3d' : L_3d,'R': dic['rot_im']}
+
+        rot=torch.bmm(dic['R_world_im_target'],torch.transpose(dic['R_world_im'],1,2))
+        dic_rot = {'L_3d' : L_3d,'R': rot}
         L_3d_rotated = self.rotation(dic_rot)
         L_app_swapped = torch.index_select(L_app, dim=0, index=index_invert)
         background = dic['background_target']

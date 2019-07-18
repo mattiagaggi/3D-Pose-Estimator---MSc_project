@@ -39,10 +39,8 @@ class Data_Base_class(BaseDataset):
         if self.sampling ==1 and get_intermediate_frames:
             self._logger.error("sampling can't be one if we want intermediate frames")
 
-
         self.index_as_dict = index_as_dict
         self.index_file = None
-        self._current_epoch = None
         self.previous_chache = None
         self.previous_background = None
         self.all_metadata = {}
@@ -55,9 +53,7 @@ class Data_Base_class(BaseDataset):
                 None, None, None, None, None
             self.current_s, self.current_act, self.current_subact, self.current_ca, self.current_fno = \
                 None, None, None, None, None
-        else:
 
-            self.current_iter = None
 
 
         if self.subset==SubSet.train:
@@ -330,8 +326,6 @@ class Data_Base_class(BaseDataset):
             self.s_tot=list(self.index_file.keys())
             self.current_s = 0
             self.reset('act')
-            if self._current_epoch  is not None: #meaning this is not the first reset
-                self._current_epoch +=1
         elif type=='act':
             self.act_tot = list(self.index_file[self.s_tot[self.current_s]].keys())
             self.current_act = 0
@@ -429,9 +423,7 @@ class Data_Base_class(BaseDataset):
         self._logger.info("New Epoch")
         if self.index_as_dict:
             self.reset('s')
-        else:
-            self.current_iter = 0
-        self._current_epoch=0
+
 
 
 

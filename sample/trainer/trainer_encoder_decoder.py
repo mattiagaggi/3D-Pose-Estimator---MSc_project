@@ -53,14 +53,12 @@ class Trainer_Enc_Dec(BaseTrainer):
 
         self.data_loader = data_loader
         self.data_test = data_test
-        self.image_net_loss=ImageNetCriterium(self.loss,device,weight=2)
 
         #test while training
         self.test_log_step = None
         self.img_log_step = args.img_log_step
         if data_test is not None:
             self.test_log_step = self.train_log_step
-
 
         self.parameters_show = self.train_log_step * 300
         self.length_test_set = len(self.data_test)
@@ -91,6 +89,7 @@ class Trainer_Enc_Dec(BaseTrainer):
                 string += "\n numbers: "
                 string += " %s," % elements
         info['details'] = string
+        info['one epoch'] = self.len_trainset
         return info
 
 
@@ -149,13 +148,12 @@ class Trainer_Enc_Dec(BaseTrainer):
         #                                      self.global_step)
 
 
+
     def train_step(self, bid, dic_in, dic_out, pbar, epoch):
 
         self.optimizer.zero_grad()
         out_im = self.model(dic_in)
-        loss_pixels = self.loss(out_im, dic_out['im_target'])
-        loss_img_net = self.image_net_loss(out_im, dic_out['im_target'])
-        loss=(loss_img_net+loss_pixels)/2
+        loss = self.loss(out_im, dic_out['im_target'])
         loss.backward()
         self.optimizer.step()
         if (bid % self.verbosity_iter == 0) and (self.verbosity == 2):
@@ -169,6 +167,8 @@ class Trainer_Enc_Dec(BaseTrainer):
             if bid % self.img_log_step:
                 self.log_grid(dic_in['im_in'], out_im, dic_out['im_target'], 'train')
         return loss, pbar
+
+
 
 
     def test_step_on_random(self,bid):

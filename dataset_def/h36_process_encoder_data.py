@@ -34,7 +34,6 @@ class Data_Encoder_Decoder(Data_Base_class):
         self.index_file_content = index_file_content
         self.index_file_list = index_file_list
         self.randomise= randomise
-
         self.index_file_cameras =[]
 
         if subsampling_fno==0:
@@ -45,22 +44,20 @@ class Data_Encoder_Decoder(Data_Base_class):
             self.index_file = self.subsample_fno(self.index_file, 0.75, lower=False)
         else:
             self._logger.error("Subsampling not understood")
-        self._logger.info("Only from 1 to 2")
+
+        #self._logger.info("Only from 1 to 2")
         for i in self.index_file:
             s,act,subact,ca,fno = i
             for ca2 in range(1,5):
-                #if ca2 != ca :###############
-                if ca==1 and ca2==2:
+                if ca2 != ca :###############
+                #if ca==1 and ca2==2:
                     self.index_file_cameras.append([s,act,subact,ca,fno,ca2])
 
         if self.randomise:
             shuffle(self.index_file_cameras)
+
         self.elements_taken=0
         self._current_epoch=0
-
-
-
-
 
 
     def check_previous_image(self, s):
@@ -184,9 +181,9 @@ class Data_Encoder_Decoder(Data_Base_class):
 
 
     def process_data(self,data):
-        im1, R1, background1, joints1, imT, RT, backgroundT, jointsT = data
-        rot1 = np.dot(RT, R1.T)
-        return im1, rot1, backgroundT, imT, joints1
+        im, R, background, joints, imT, RT, backgroundT, jointsT = data
+        #rot = np.dot(RT, R.T)
+        return im, R, backgroundT, imT, RT, joints
 
 
 
@@ -197,19 +194,19 @@ class Data_Encoder_Decoder(Data_Base_class):
         batch_2=self.return_apperance_data(index)
         s, act, subact, ca, fno, ca2 = self.index_file_cameras[index]
         self.update_stored_info(s, act, subact, ca, fno)
-
         return self.process_data(batch_1), self.process_data(batch_2)
 
 
 
-    def group_batches(self,im1, rot1, backgroundT, imT, joints1,
-                      im2, rot2, backgroundT2, imT2, joints2):
+    def group_batches(self,im1, rot1,rot1T, backgroundT, imT, joints1,
+                      im2, rot2, rot2T, backgroundT2, imT2, joints2):
         assert self.batch_size//2 == len(im1)
         assert self.batch_size//2 == len(im2)
         dic_in = {
                 'im_in': np.transpose(np.stack(im1+im2,axis=0), axes=[0,3,1,2]),
                 'background_target' : np.transpose(np.stack(backgroundT+backgroundT2,axis=0), axes=[0,3,1,2]),
-                'rot_im': np.stack(rot1 + rot2,axis=0),
+                'R_world_im': np.stack(rot1 + rot2,axis=0),
+                'R_world_im_target': np.stack(rot1T + rot2T,axis=0),
                 'invert_segments': list(range(self.batch_size//2, self.batch_size)) + list(range(self.batch_size//2))
             }
         dic_out ={'joints_im': np.stack(joints1+joints2,axis=0),
@@ -229,19 +226,20 @@ class Data_Encoder_Decoder(Data_Base_class):
 
     def __getitem__(self, item):
 
-
         index = item * (self.batch_size // 2)
-        im1_tot, rot1_tot, backgroundT_tot, imT_tot, joints1_tot, \
-        im2_tot, rot2_tot, backgroundT2_tot, imT2_tot, joints2_tot = \
-            [], [], [], [], [], [], [], [], [], []
+        im1_tot, rot1_tot,rot1T_tot, backgroundT_tot, imT_tot, joints1_tot, \
+        im2_tot, rot2_tot,rot2T_tot, backgroundT2_tot, imT2_tot, joints2_tot = \
+            [], [], [], [], [], [], [], [], [], [], [], []
         for i in range(self.batch_size // 2):
             all_b = self.return_batch(index)
-            im1, rot1, backgroundT, imT, joints1 = all_b[0]
-            im2, rot2, backgroundT2, imT2, joints2 = all_b[1]
+            im1, R1, backgroundT, imT,R1T, joints1 = all_b[0]
+            im2, R2, backgroundT2, imT2, R2T, joints2 = all_b[1]
             im1_tot.append(im1)
             im2_tot.append(im2)
-            rot1_tot.append(rot1)
-            rot2_tot.append(rot2)
+            rot1_tot.append(R1)
+            rot1T_tot.append(R1T)
+            rot2_tot.append(R2)
+            rot2T_tot.append(R2T)
             backgroundT_tot.append(backgroundT)
             backgroundT2_tot.append(backgroundT2)
             imT_tot.append(imT)
@@ -249,9 +247,10 @@ class Data_Encoder_Decoder(Data_Base_class):
             joints1_tot.append(joints1)
             joints2_tot.append(joints2)
             index += 1
-        dic_in, dic_out = self.group_batches(im1_tot, rot1_tot, backgroundT_tot, imT_tot, joints1_tot,
-                                 im2_tot, rot2_tot, backgroundT2_tot, imT2_tot, joints2_tot)
-
+        dic_in, dic_out = self.group_batches(im1_tot, rot1_tot, rot1T_tot, backgroundT_tot,
+                                             imT_tot, joints1_tot,
+                                             im2_tot, rot2_tot, rot2T_tot, backgroundT2_tot,
+                                             imT2_tot, joints2_tot)
 
         self.track_epochs()
 

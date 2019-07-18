@@ -1,20 +1,11 @@
-# -*- coding: utf-8 -*-
-"""
-ModelLogger class used for saving the progress
-during the training phase, by storing errors, images, etc.
 
-@author: Denis Tome'
-
-"""
 import os
 import torch
 from torch.autograd import Variable
 from tensorboardX import SummaryWriter
 from utils.io import ensure_dir
 
-__all__ = [
-    'ModelLogger',
-]
+
 
 
 class ModelLogger:
