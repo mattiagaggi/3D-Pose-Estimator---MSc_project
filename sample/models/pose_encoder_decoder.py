@@ -19,9 +19,13 @@ class Pose_3D(BaseModel):
         dimension_L_3D=self.encoder_decoder.dimension_L_3D
         self.pose_from_latent = MLP_from_Latent(d_in=dimension_L_3D)
 
+    def fix_encoder_decoder(self):
+        for par in self.encoder_decoder.parameters():
+            par.requires_grad = False
+
     def forward(self, x):
         dic_out = self.encoder_decoder.encoder(x)
-        L3D =dic_out['L_3d']
-        pose_out = self.pose_from_latent(L3D)
+        l3D = dic_out['L_3d']
+        pose_out = self.pose_from_latent(l3D)
         return pose_out
 

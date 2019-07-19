@@ -144,7 +144,11 @@ class Drawer:
         return ax
 
 
-    def pose_3d(self, fig, pose):
+    def pose_3d(self, pose, plot = False, fig = None):
+        if plot:
+            assert fig is not None
+        else:
+            fig=plt.figure()
         assert pose.shape == (H36M_CONF.joints.number,3)
         ax = fig.add_subplot(111, projection='3d')
         for lid, (p0, p1) in enumerate(self._limbs):
@@ -163,10 +167,19 @@ class Drawer:
             self._hide_planes(ax)
 
         fig.canvas.draw()
-        return fig
+        if plot:
+            return fig
+        w,h = fig.canvas.get_width_height()
+        image = np.fromstring(fig.canvas.tostring_rgb(), dtype='uint8')
+        image = image.reshape([w,h,3])
+        plt.close()
+        return image
 
-    def poses_3d(self, fig, predicted, gt):
-
+    def poses_3d(self,predicted, gt,plot=False,fig=None):
+        if plot:
+            assert fig is not None
+        else:
+            fig=plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         for lid,(p0, p1) in enumerate(self._limbs):
             col = self.rgb_to_string(self._get_color(lid))
@@ -195,7 +208,14 @@ class Drawer:
         if not self.planes:
             self._hide_planes(ax)
         fig.canvas.draw()
-        return fig
+        if plot:
+            return fig
+        w,h = fig.canvas.get_width_height()
+        image = np.fromstring(fig.canvas.tostring_rgb(), dtype='uint8')
+        image = image.reshape([w,h,3])
+        plt.close()
+        return image
+
 
 
 
