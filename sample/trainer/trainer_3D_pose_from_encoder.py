@@ -1,14 +1,16 @@
 import datetime
 import numpy as np
-import pickle
+from utils.utils_H36M.visualise import Drawer
 
 
 from sample.base.base_trainer import BaseTrainer
 from tqdm import tqdm
-import torchvision.utils as vutils
+import torch
 import numpy.random as random
+import matplotlib.pyplot as plt
 from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
-from sample.losses.images import ImageNetCriterium
+from dataset_def.trans_numpy_torch import NumpyToTensor
+
 
 
 
@@ -18,7 +20,7 @@ else:
     no_cuda=False
 device = ENCODER_DECODER_PARAMS['encoder_decoder']['device']
 
-class Trainer_Enc_Dec(BaseTrainer):
+class Trainer_Enc_Dec_Pose(BaseTrainer):
     """
     Trainer class, inherited from BaseTrainer
     """
@@ -48,6 +50,8 @@ class Trainer_Enc_Dec(BaseTrainer):
                  name, output, save_freq, no_cuda, verbosity,
                  train_log_step, verbosity_iter,eval_epoch)
 
+        self.model.fix_encoder_decoder()
+
 
         self.data_loader = data_loader
         self.data_test = data_test
@@ -61,11 +65,13 @@ class Trainer_Enc_Dec(BaseTrainer):
         self.parameters_show = self.train_log_step * 300
         self.length_test_set = len(self.data_test)
         self.len_trainset = len(self.data_loader)
-
-
+        self.drawer = Drawer()
+        mean= self.data_loader.get_mean_pose()
+        self.mean_pose = NumpyToTensor()(mean.reshape(1,17,3))
+        std = self.data_loader.get_std_pose(mean).reshape(1,17,3)
+        self.std_pose = NumpyToTensor()(std)
         # load model
         #self._resume_checkpoint(args.resume)
-
 
 
 
@@ -83,22 +89,30 @@ class Trainer_Enc_Dec(BaseTrainer):
                 string += "\n numbers: "
                 string += " %s," % elements
         info['details'] = string
+        info['optimiser']=str(self.optimizer)
+        info['loss']=str(self.loss.__class__.__name__)
         return info
 
 
-    def log_grid(self,image_in, pose_out, ground_truth, string):
+    def log_images(self,image_in, pose_out, ground_truth, string):
 
-        scale, norm, nrow = True, True, 3
-        grid = vutils.make_grid(image_in, nrow=nrow, normalize=norm, scale_each=scale)
-        self.model_logger.train.add_image("1 Image In " + str(string), grid, self.global_step)
+        for i in range(5):
+            idx=np.random.randint(self.model.batch_size)
+            pt=pose_out[idx]
+            gt=ground_truth[idx]
+            pt_cpu=pt.cpu().data.numpy()
+            gt_cpu=gt.cpu().data.numpy()
+            fig=plt.figure()
+            fig = self.drawer.poses_3d(pt_cpu,gt_cpu,plot=True, fig=fig)
+            if False:
+                if string=='train':
 
-        grid1 = vutils.make_grid(pose_out, nrow=nrow, normalize=norm, scale_each=scale)
-        self.model_logger.train.add_image("2 Model Output "+str(string), grid1, self.global_step)
-        grid2 = vutils.make_grid(ground_truth, nrow=nrow, normalize=norm, scale_each=scale)
-        self.model_logger.train.add_image("3 Ground Truth "+str(string), grid2, self.global_step)
-
-
-
+                    img= image_in[idx].data.cpu().numpy().transpose(1,2,0)
+                    plt.figure()
+                    plt.imshow(img)
+                    plt.show()
+            self.model_logger.train.add_image(str(string)+str(i) + "Image", image_in[idx], self.global_step)
+            self.model_logger.train.add_figure(str(string)+str(i) + "GT", fig, self.global_step)
 
 
     def log_gradients(self):
@@ -133,13 +147,24 @@ class Trainer_Enc_Dec(BaseTrainer):
         #                                      self.global_step)
 
 
+    def world_pose_to_camera(self,dic_in,dic_out):
+        mean= torch.bmm( self.mean_pose.repeat(self.model.batch_size,1,1), dic_in['R_world_im'].transpose(1,2))
+        gt = torch.bmm( dic_out['joints_im'], dic_in['R_world_im'].transpose(1,2))
+        return gt, mean
+
+
     def train_step(self, bid, dic_in, dic_out, pbar, epoch):
 
         self.optimizer.zero_grad()
-        out_pose = self.model(dic_in)
-        loss = self.loss(out_pose, dic_out['joints_im'])
+        out_pose_norm = self.model(dic_in)
+        gt, mean = self.world_pose_to_camera(dic_in, dic_out)
+        gt_norm = torch.div(gt-mean,self.std_pose)
+        loss = self.loss( out_pose_norm, gt_norm)
         loss.backward()
         self.optimizer.step()
+        self.model.eval()
+        out_pose_norm = self.model(dic_in)
+        self.model.train()
         if (bid % self.verbosity_iter == 0) and (self.verbosity == 2):
             pbar.set_description(' Epoch {} Loss {:.3f}'.format(
                 epoch, loss.item()
@@ -149,7 +174,8 @@ class Trainer_Enc_Dec(BaseTrainer):
             self.model_logger.train.add_scalar('loss/iterations', val,
                                                self.global_step)
             if bid % self.img_log_step:
-                self.log_grid(dic_in['im_in'], out_pose, dic_out['joints_im'], 'train')
+                out_pose = torch.mul(out_pose_norm, self.std_pose) + mean
+                self.log_images(dic_in['im_in'], out_pose, gt, 'train')
         return loss, pbar
 
 
@@ -157,12 +183,15 @@ class Trainer_Enc_Dec(BaseTrainer):
         self.model.eval()
         idx = random.randint(self.length_test_set)
         in_test_dic, out_test_dic = self.data_test[idx]
-        out_pose = self.model(in_test_dic)
+        gt,mean = self.world_pose_to_camera(in_test_dic,  out_test_dic)
+        out_pose_norm = self.model(in_test_dic)
         self.model.train()
-        loss_test = self.loss(out_pose, out_test_dic['joints_im'])
+        gt_norm = torch.div(gt - mean, self.std_pose)
+        loss_test = self.loss(out_pose_norm, gt_norm)
         self.model_logger.val.add_scalar('loss/iterations', loss_test.item(),
                                          self.global_step)
-        self.log_grid(in_test_dic['im_in'], out_pose, out_test_dic['joints_im'], 'test')
+        out_pose = torch.mul(out_pose_norm, self.std_pose) + mean
+        self.log_images(in_test_dic['im_in'], out_pose, gt, 'test')
 
 
     def _train_epoch(self, epoch):
@@ -185,8 +214,8 @@ class Trainer_Enc_Dec(BaseTrainer):
             loss, pbar = self.train_step(bid, dic_in, dic_out, pbar, epoch)
             if self.test_log_step is not None and (bid % self.test_log_step == 0):
                 self.test_step_on_random(bid)
-            if bid % self.parameters_show == 0:
-                self.log_gradients()
+            #if bid % self.parameters_show == 0:
+                #self.log_gradients()
             if bid % self.save_freq == 0:
                 if total_loss:
                     self._save_checkpoint(epoch, self.global_step,

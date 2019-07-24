@@ -19,6 +19,7 @@ class MPJ(torch.nn.Module):
         squared = torch.pow((pose_pred-pose_label),exponent=2)
         summed = torch.sum(squared, dim=2)
         dist = torch.sqrt(summed)
-        return torch.mean(dist, dim=1)
+        #mean_over_joints=torch.mean(dist,dim=1)
+        return torch.mean(dist) # mean over batch
 
 

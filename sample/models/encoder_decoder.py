@@ -178,12 +178,12 @@ class Decoder(BaseModel):
 
 class Encoder_Decoder(BaseModel):
     def __init__(self,
-                 args,
+                 batch_size,
                  input_im_size = ENCODER_DECODER_PARAMS.encoder_decoder.im_size):
 
         super().__init__()
 
-        self.batch_size = args.batch_size
+        self.batch_size = batch_size
         #encoder_parameters
         self.filters = [64, 128, 256, 512]
         self.encoder = Encoder(self.batch_size, input_im_size, self.filters)
@@ -210,8 +210,7 @@ class Encoder_Decoder(BaseModel):
         encode = self.encoder(im)
         L_3d = encode['L_3d']
         L_app= encode['L_app']
-
-        rot=torch.bmm(dic['R_world_im_target'],torch.transpose(dic['R_world_im'],1,2))
+        rot=torch.bmm(dic['R_world_im_target'],dic['R_world_im'].transpose(1,2))
         dic_rot = {'L_3d' : L_3d,'R': rot}
         L_3d_rotated = self.rotation(dic_rot)
         L_app_swapped = torch.index_select(L_app, dim=0, index=index_invert)

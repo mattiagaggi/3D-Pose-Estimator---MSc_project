@@ -67,9 +67,9 @@ class BaseTrainer(FrameworkClass):
                                   torch.cuda.device_count())
 
             #parallelise
-            #self.single_gpu = False
-            #self.model.parallelise() #this might be slower
-            #self.model = torch.nn.DataParallel(self.model)
+            self.single_gpu = False
+            self.model.parallelise() #this might be slower
+            self.model = torch.nn.DataParallel(self.model)
 
         io.ensure_dir(os.path.join(self.save_dir,
                                    self.training_name))

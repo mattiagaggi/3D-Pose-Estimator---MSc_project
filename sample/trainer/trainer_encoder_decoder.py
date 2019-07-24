@@ -90,6 +90,8 @@ class Trainer_Enc_Dec(BaseTrainer):
                 string += " %s," % elements
         info['details'] = string
         info['one epoch'] = self.len_trainset
+        info['optimiser']=str(self.optimizer)
+        info['loss']=str(self.loss.__class__.__name__)
         return info
 
 

@@ -1,6 +1,9 @@
 
-from utils.io import ensure_dir
 import numpy as np
+import os
+
+
+from utils.io import ensure_dir
 
 class TrainingLogger:
     """
@@ -11,9 +14,10 @@ class TrainingLogger:
         self.dir_path = dir_path
         ensure_dir(self.dir_path)
         self.training_name = training_name
-        path=os.path.join(self.dir_path, 'training_pickled/')
+        path=os.path.join(self.dir_path, 'training_files/')
         ensure_dir(path)
-        self.losses={'training_loss':np.array([]),
-                    'test_loss':np.array([])}
+        self.losses={'training_loss':[]),
+                    'test_loss':[]}
 
-    def
+    def save_loss(self):
+        self.lo

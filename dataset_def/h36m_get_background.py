@@ -1,20 +1,13 @@
 """
-
 This class create the background.
 The backgrounds are saved for each subject as an array of shape [camera number,L,W,3]
 in background_location folder with the name "background_subject%s.npy" % subject_number
-
 """
-
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 plt.switch_backend("TkAgg")
 import os
-import cv2
-from tempfile import TemporaryFile
-outfile = TemporaryFile()
+
 
 
 from data.directories_location import backgrounds_location

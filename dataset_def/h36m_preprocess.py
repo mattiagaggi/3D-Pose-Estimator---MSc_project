@@ -2,7 +2,6 @@
 import os
 import pickle as pkl
 import scipy.io as sio
-
 import cv2
 import numpy as np
 
@@ -25,11 +24,17 @@ class Data_Base_class(BaseDataset):
                  h36m_location = h36m_location,
                  background_location = backgrounds_location,
                  get_intermediate_frames = False):
+        """
+        :param sampling: sampling rate
+        :param subset: train/test/val
+        :param index_as_dict: do  we want the index file as a nested dic or list
+        :param index_location: location of index file
+        :param h36m_location: data location
+        :param background_location:  backgroubd loc
+        :param get_intermediate_frames:
+        """
 
         super().__init__()
-
-
-
         self.index_file_loc = index_location
         self.h_36m_loc = h36m_location
         self.background_location = background_location
@@ -38,24 +43,19 @@ class Data_Base_class(BaseDataset):
         self.get_intermediate_frames = get_intermediate_frames
         if self.sampling ==1 and get_intermediate_frames:
             self._logger.error("sampling can't be one if we want intermediate frames")
-
         self.index_as_dict = index_as_dict
+
         self.index_file = None
         self.previous_chache = None
         self.previous_background = None
-        self.all_metadata = {}
-
+        self.all_metadata = {} #store metadata here
         if self.index_as_dict:
-
             #once we create the index file we keep track of the current image being looked at
             #using  lists self.s_tot.... and indices in list self.current_s
             self.s_tot, self.act_tot, self.subact_tot, self.ca_tot, self.fno_tot = \
                 None, None, None, None, None
             self.current_s, self.current_act, self.current_subact, self.current_ca, self.current_fno = \
                 None, None, None, None, None
-
-
-
         if self.subset==SubSet.train:
             self.index_name = "index_train.pkl"
         elif self.subset==SubSet.val:
@@ -64,9 +64,6 @@ class Data_Base_class(BaseDataset):
             self.index_name = "index_test.pkl"
         else:
             self._logger.error("Argument to Data class must be 0 or 1 or 2 (train,val,test)")
-
-
-
     ################################ INDEX/DATA LOADING FUNCTIONS #############################
 
 
@@ -173,6 +170,16 @@ class Data_Base_class(BaseDataset):
 
 
     def append_index_to_list(self, dic,s, act, subact, ca, fno):
+        """
+        while apending it checks the file is there
+        :param dic: list
+        :param s:
+        :param act:
+        :param subact:
+        :param ca:
+        :param fno:
+        :return: list appended details
+        """
         path, _, _ = self.get_name(s, act, subact, ca, fno)
         if not file_exists(path):
             self._logger.error("file found by path %s does not exist" % path)
@@ -181,6 +188,13 @@ class Data_Base_class(BaseDataset):
 
 
     def subsample_fno(self, index_as_list, percent, lower):
+        """
+        subsample index file by taking upper or lower percentage of the frames
+        :param index_as_list: dic as list
+        :param percent: percentage
+        :param lower: bool True for lower
+        :return:
+        """
         dic={}
         for i in index_as_list:
             s, act, subact, ca, fno=i
@@ -201,6 +215,10 @@ class Data_Base_class(BaseDataset):
         return new_index_file
 
     def load_metadata(self, subdir_path):
+        """
+        :param subdir_path: subdirectory from h =36m
+        :return:
+        """
         path = os.path.join(subdir_path,"h36m_meta.mat")
         if not os.path.exists(path):
             self._logger.error('File %s not loaded', path)
@@ -224,7 +242,6 @@ class Data_Base_class(BaseDataset):
         :param act: act
         :param subact: ...
         :param ca: ...
-
         :return:
         """
         fno = 0 # not used only needed for get_name()

@@ -11,7 +11,6 @@ from utils.utils_H36M.common import H36M_CONF
 
 
 class Drawer:
-    """Class specifing visualization parameters"""
 
 
     def __init__(self, line=1, marker=2, visibility=None):
@@ -151,6 +150,7 @@ class Drawer:
             fig=plt.figure()
         assert pose.shape == (H36M_CONF.joints.number,3)
         ax = fig.add_subplot(111, projection='3d')
+        ax.view_init(azim=0, elev=-90)
         for lid, (p0, p1) in enumerate(self._limbs):
             col = self.rgb_to_string(self._get_color(lid))
             ax.plot([pose[p0, 0], pose[p1, 0]],
@@ -181,6 +181,7 @@ class Drawer:
         else:
             fig=plt.figure()
         ax = fig.add_subplot(111, projection='3d')
+        ax.view_init(azim=-90,elev=-90)
         for lid,(p0, p1) in enumerate(self._limbs):
             col = self.rgb_to_string(self._get_color(lid))
             # plotting predicted pose

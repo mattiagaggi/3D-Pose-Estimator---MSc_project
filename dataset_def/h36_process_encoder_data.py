@@ -24,21 +24,27 @@ class Data_Encoder_Decoder(Data_Base_class):
                  randomise=True,
                  get_intermediate_frames = False,
                  subsampling_fno = 0):
+        """
+        :param args:
+        :param sampling:
+        :param index_file_content:
+        :param index_file_list:
+        :param randomise:
+        :param get_intermediate_frames:
+        :param subsampling_fno:
+        """
 
-
+        super().__init__(sampling, get_intermediate_frames=get_intermediate_frames)
         self.batch_size = args.batch_size
-        super().__init__(sampling,get_intermediate_frames=get_intermediate_frames)
-
         assert self.batch_size % 2 == 0
         self.create_index_file(index_file_content, index_file_list)
         self.index_file_content = index_file_content
         self.index_file_list = index_file_list
         self.randomise= randomise
         self.index_file_cameras =[]
-
         if subsampling_fno==0:
             pass
-        if subsampling_fno==1:
+        elif subsampling_fno==1:
             self.index_file=self.subsample_fno(self.index_file, 0.75, lower=True)
         elif subsampling_fno==2:
             self.index_file = self.subsample_fno(self.index_file, 0.75, lower=False)
@@ -59,6 +65,31 @@ class Data_Encoder_Decoder(Data_Base_class):
         self.elements_taken=0
         self._current_epoch=0
 
+    def get_mean_pose(self):
+        summed = np.zeros((17,3))
+        N = 0
+        for s in self.all_metadata:
+            for act in self.all_metadata[s]:
+                for subact in self.all_metadata[s][act]:
+                    for ca in self.all_metadata[s][act][subact]:
+                        metadata=self.all_metadata[s][act][subact][ca]['joint_world']
+                        N += metadata.shape[0]
+                        summed += np.sum(metadata, axis=0)
+        return summed/N
+
+    def get_std_pose(self,mean):
+        summed = np.zeros((17,3))
+        mean=mean.reshape(1,17,3)
+        N = 0
+        for s in self.all_metadata:
+            for act in self.all_metadata[s]:
+                for subact in self.all_metadata[s][act]:
+                    for ca in self.all_metadata[s][act][subact]:
+                        metadata=self.all_metadata[s][act][subact][ca]['joint_world']
+                        N+= metadata.shape[0]
+                        summed += np.sum((metadata-mean)**2, axis=0)
+        summed /= N-1
+        return np.sqrt(summed)
 
     def check_previous_image(self, s):
         same_backgrounds = False
@@ -253,17 +284,10 @@ class Data_Encoder_Decoder(Data_Base_class):
                                              imT2_tot, joints2_tot)
 
         self.track_epochs()
-
         return encoder_dictionary_to_pytorch(dic_in), encoder_dictionary_to_pytorch(dic_out)
 
     def __len__(self):
-        return (len(self.index_file_cameras) // (self.batch_size//2) ) -1
-
-
-
-
-
-
+        return len(self.index_file_cameras) // (self.batch_size//2)
 
 
 
@@ -287,7 +311,6 @@ if __name__=="__main__":
                         plt.figure()
                         plt.imshow(e[el])
                         plt.show()
-
     def final_check():
         d = Data_Encoder_Decoder()
         print(len(d))
@@ -315,7 +338,6 @@ if __name__=="__main__":
                         plt.figure()
                         plt.title("k app is " + k)
                         plt.imshow(np.transpose(dic2[k][5, ...], axes=[1, 2, 0]))
-
                 plt.show()
 
     #final_check()

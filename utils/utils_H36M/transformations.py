@@ -127,15 +127,11 @@ def bounding_box_pixel(joints, root_idx,rot, t, f, c):
 
 
 
-
-
 def plot_bounding_box(fig,joints, root_idx,rot, t, f, c):
     bbox = bounding_box_pixel(joints, root_idx,rot, t, f, c)
     plt.scatter([bbox[0], bbox[2] + bbox[0]], [bbox[1], bbox[1]])
     plt.scatter([bbox[0], bbox[2] + bbox[0]], [bbox[3] + bbox[1], bbox[3] + bbox[1]])
     return fig
-
-
 
 
 def world_to_pixel(joints, root_idx, n_joints, rot, t, f, c):
@@ -162,7 +158,6 @@ def world_to_pixel(joints, root_idx, n_joints, rot, t, f, c):
     center_cam = joint_cam[root_idx]
     # joint in pixel coordinates
     joint_px = cam2pixel(joint_cam, f, c)
-
     return joint_px, center_cam
 
 
@@ -309,7 +304,6 @@ def get_affine(c_x, c_y, src_width, src_height, dst_width, dst_height, inv=False
         ones=np.ones((dst.shape[0],1))
         dst=np.concatenate([dst,ones], axis=1)
         dst = np.dot(dst, rotation.T)
-
     if inv:
         trans = cv2.getAffineTransform(np.float32(dst), np.float32(src))
     else:
@@ -343,19 +337,18 @@ def transform_2d_joints(joints_px, transformation):
 
 def warp_joints_bbox(joints, bbox, cam_center,
                      src_shape, src_depth, trg_depth):
-    """Warp joints normalized according to the 2D bounding
+
+    """
+    NOT USED
+    Warp joints normalized according to the 2D bounding
     box back to their original version (bbox independent)
-
-    Arguments:
-        joints {numpy array} -- vecotor of joints or matrix
-        bbox {numpy array} -- [x, y, width, height]
-        cam_center {numpy array} -- format [2]
-        src_shape {int} -- output resolution of the heatmaps
-        src_depth {int} -- source depth
-        trg_depth {int} -- source depth
-
-    Returns:
-        numpy array -- unnormalized joints
+    :param joints: 17x3 joints
+    :param bbox: [x, y, width, height]
+    :param cam_center: numpy array size 2
+    :param src_shape:  output resolution of the heatmaps
+    :param src_depth: source depth
+    :param trg_depth: target depth
+    :return:
     """
 
     if joints.ndim == 1:
