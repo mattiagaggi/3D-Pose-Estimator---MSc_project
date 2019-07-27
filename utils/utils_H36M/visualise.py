@@ -143,14 +143,14 @@ class Drawer:
         return ax
 
 
-    def pose_3d(self, pose, plot = False, fig = None):
+    def pose_3d(self, pose, plot = False, fig = None, azim=-90, elev=-90):
         if plot:
             assert fig is not None
         else:
             fig=plt.figure()
         assert pose.shape == (H36M_CONF.joints.number,3)
         ax = fig.add_subplot(111, projection='3d')
-        ax.view_init(azim=0, elev=-90)
+        ax.view_init(azim=azim,elev=elev)
         for lid, (p0, p1) in enumerate(self._limbs):
             col = self.rgb_to_string(self._get_color(lid))
             ax.plot([pose[p0, 0], pose[p1, 0]],
@@ -175,13 +175,13 @@ class Drawer:
         plt.close()
         return image
 
-    def poses_3d(self,predicted, gt,plot=False,fig=None):
+    def poses_3d(self,predicted, gt,plot=False,fig=None, azim=-90, elev=-90):
         if plot:
             assert fig is not None
         else:
             fig=plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-        ax.view_init(azim=-90,elev=-90)
+        ax.view_init(azim=azim,elev=elev)
         for lid,(p0, p1) in enumerate(self._limbs):
             col = self.rgb_to_string(self._get_color(lid))
             # plotting predicted pose

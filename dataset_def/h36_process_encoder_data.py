@@ -50,7 +50,6 @@ class Data_Encoder_Decoder(Data_Base_class):
             self.index_file = self.subsample_fno(self.index_file, 0.75, lower=False)
         else:
             self._logger.error("Subsampling not understood")
-
         #self._logger.info("Only from 1 to 2")
         for i in self.index_file:
             s,act,subact,ca,fno = i
@@ -58,7 +57,6 @@ class Data_Encoder_Decoder(Data_Base_class):
                 if ca2 != ca :###############
                 #if ca==1 and ca2==2:
                     self.index_file_cameras.append([s,act,subact,ca,fno,ca2])
-
         if self.randomise:
             shuffle(self.index_file_cameras)
 
@@ -75,6 +73,7 @@ class Data_Encoder_Decoder(Data_Base_class):
                         metadata=self.all_metadata[s][act][subact][ca]['joint_world']
                         N += metadata.shape[0]
                         summed += np.sum(metadata, axis=0)
+
         return summed/N
 
     def get_std_pose(self,mean):
@@ -173,6 +172,8 @@ class Data_Encoder_Decoder(Data_Base_class):
 
 
         act_list = list(self.all_metadata[s].keys())
+        if len(act_list) < 2:
+            self._logger.error("Can't have apperance data if only one act selected")
         new_act = self.return_random_from_list(act_list, act)
         subact_list = list(self.all_metadata[s][new_act].keys())
         new_subact = self.return_random_from_list(subact_list)
@@ -256,6 +257,11 @@ class Data_Encoder_Decoder(Data_Base_class):
 
 
     def __getitem__(self, item):
+        """
+        This looks horrible!
+        :param item:
+        :return:
+        """
 
         index = item * (self.batch_size // 2)
         im1_tot, rot1_tot,rot1T_tot, backgroundT_tot, imT_tot, joints1_tot, \
@@ -321,7 +327,6 @@ if __name__=="__main__":
                     if k== 'rot_im':
                         print('ll',np.linalg.det(dic1[k][0,...]))
                     if k != 'invert_segments' and dic1[k].shape[2] == 128:
-
                         plt.figure()
                         plt.title("k is "+ k)
                         plt.imshow(np.transpose(dic1[k][0, ...], axes=[1, 2, 0]))
@@ -329,7 +334,6 @@ if __name__=="__main__":
                         plt.figure()
                         plt.title("k app is "+k)
                         plt.imshow(np.transpose(dic1[k][5, ...], axes=[1, 2, 0]))
-
                 for k in dic2.keys():
                     if k != 'invert_segments' and dic2[k].shape[2] == 128:
                         plt.figure()
@@ -339,5 +343,4 @@ if __name__=="__main__":
                         plt.title("k app is " + k)
                         plt.imshow(np.transpose(dic2[k][5, ...], axes=[1, 2, 0]))
                 plt.show()
-
     #final_check()

@@ -9,7 +9,7 @@ import torch
 import numpy.random as random
 import matplotlib.pyplot as plt
 from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
-from dataset_def.trans_numpy_torch import NumpyToTensor
+from dataset_def.trans_numpy_torch import numpy_to_tensor
 
 
 
@@ -37,18 +37,11 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
                  eval_epoch = False
                  ):
 
-        name=args.name
-        output = args.output
-        epochs = args.epochs
-        save_freq = args.save_freq
-        verbosity = args.verbosity
-        verbosity_iter = args.verbosity_iter
-        train_log_step = args.train_log_step
 
-
-        super().__init__(model, loss, metrics, optimizer, epochs,
-                 name, output, save_freq, no_cuda, verbosity,
-                 train_log_step, verbosity_iter,eval_epoch)
+        super().__init__(model, loss, metrics, optimizer, no_cuda,eval_epoch,
+                         args.epochs, args.name, args.output, args.save_freq,
+                         args.verbosity, args.train_log_step,
+                         args.verbosity_iter)
 
         self.model.fix_encoder_decoder()
 
@@ -60,16 +53,18 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         self.test_log_step = None
         self.img_log_step = args.img_log_step
         if data_test is not None:
-            self.test_log_step = self.train_log_step
-
+            self.test_log_step = self.train_log_step * 10
+            if self.img_log_step % self.test_log_step != 0:
+                self._logger.error("Test images never recorded! %s %s" %(self.test_log_step,self.img_log_step))
+        self.log_images_start_training = [10, 100, 500]
         self.parameters_show = self.train_log_step * 300
         self.length_test_set = len(self.data_test)
         self.len_trainset = len(self.data_loader)
         self.drawer = Drawer()
         mean= self.data_loader.get_mean_pose()
-        self.mean_pose = NumpyToTensor()(mean.reshape(1,17,3))
+        self.mean_pose = numpy_to_tensor(mean.reshape(1,17,3))
         std = self.data_loader.get_std_pose(mean).reshape(1,17,3)
-        self.std_pose = NumpyToTensor()(std)
+        self.std_pose = numpy_to_tensor(std)
         # load model
         #self._resume_checkpoint(args.resume)
 
@@ -86,15 +81,16 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         for number,contents in enumerate(self.data_loader.index_file_list):
             string += "\n content :" + self.data_loader.index_file_content[number]
             for elements in contents:
-                string += "\n numbers: "
+                string += " "
                 string += " %s," % elements
         info['details'] = string
         info['optimiser']=str(self.optimizer)
         info['loss']=str(self.loss.__class__.__name__)
+        info['sampling'] = str(self.data_loader.sampling)
         return info
 
 
-    def log_images(self,image_in, pose_out, ground_truth, string):
+    def log_images(self, string, image_in, pose_out, ground_truth,):
 
         for i in range(5):
             idx=np.random.randint(self.model.batch_size)
@@ -102,18 +98,13 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
             gt=ground_truth[idx]
             pt_cpu=pt.cpu().data.numpy()
             gt_cpu=gt.cpu().data.numpy()
-            fig=plt.figure()
-            fig = self.drawer.poses_3d(pt_cpu,gt_cpu,plot=True, fig=fig)
-            if False:
-                if string=='train':
-
-                    img= image_in[idx].data.cpu().numpy().transpose(1,2,0)
-                    plt.figure()
-                    plt.imshow(img)
-                    plt.show()
             self.model_logger.train.add_image(str(string)+str(i) + "Image", image_in[idx], self.global_step)
+            fig = plt.figure()
+            fig = self.drawer.poses_3d(pt_cpu, gt_cpu, plot=True, fig=fig)
             self.model_logger.train.add_figure(str(string)+str(i) + "GT", fig, self.global_step)
-
+            fig2=plt.figure()
+            fig2 = self.drawer.poses_3d(pt_cpu, gt_cpu, plot=True, fig=fig2, azim=-90, elev=0)
+            self.model_logger.train.add_figure(str(string) + str(i) + "GT_depth", fig2, self.global_step)
 
     def log_gradients(self):
 
@@ -162,9 +153,6 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         loss = self.loss( out_pose_norm, gt_norm)
         loss.backward()
         self.optimizer.step()
-        self.model.eval()
-        out_pose_norm = self.model(dic_in)
-        self.model.train()
         if (bid % self.verbosity_iter == 0) and (self.verbosity == 2):
             pbar.set_description(' Epoch {} Loss {:.3f}'.format(
                 epoch, loss.item()
@@ -173,9 +161,15 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
             val = loss.item()
             self.model_logger.train.add_scalar('loss/iterations', val,
                                                self.global_step)
-            if bid % self.img_log_step:
-                out_pose = torch.mul(out_pose_norm, self.std_pose) + mean
-                self.log_images(dic_in['im_in'], out_pose, gt, 'train')
+            self.train_logger.record_scalar('loss/iterations', val,
+                                               self.global_step)
+        if (bid % self.img_log_step == 0) or (self.global_step in self.log_images_start_training):
+
+            out_pose = torch.mul(out_pose_norm, self.std_pose) + mean
+            self.log_images('train',dic_in['im_in'], out_pose, gt)
+            self.train_logger.save_batch_images('train', dic_in['im_in'], self.global_step,
+                                                pose_pred=out_pose, pose_gt=gt)
+
         return loss, pbar
 
 
@@ -190,8 +184,12 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         loss_test = self.loss(out_pose_norm, gt_norm)
         self.model_logger.val.add_scalar('loss/iterations', loss_test.item(),
                                          self.global_step)
+        self.train_logger.record_scalar("test_loss", loss_test.item(),self.global_step)
         out_pose = torch.mul(out_pose_norm, self.std_pose) + mean
-        self.log_images(in_test_dic['im_in'], out_pose, gt, 'test')
+        if bid % self.img_log_step == 0:
+            self.log_images('test',in_test_dic['im_in'], out_pose, gt)
+            self.train_logger.save_batch_images('test', in_test_dic['im_in'],self.global_step,
+                                                pose_pred=out_pose, pose_gt=gt)
 
 
     def _train_epoch(self, epoch):
@@ -225,6 +223,8 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
             total_loss += loss.item()
         avg_loss = total_loss / len(self.data_loader)
         self.model_logger.train.add_scalar('loss/epochs', avg_loss, epoch)
+        self.train_logger.record_scalar('loss/epochs', avg_loss, epoch)
+        self.train_logger.save_logger()
 
         return avg_loss
 

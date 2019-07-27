@@ -33,10 +33,10 @@ data_train = Data_Encoder_Decoder(args_enc,#subsampling_fno = 1,
 data_test = Data_Encoder_Decoder(args_enc, #subsampling_fno = 2,
                             index_file_content =['s','act'],
                             #index_file_list=[[1, 5, 6, 7],[1,2]])
-                            index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9]],
-                            randomise=False,
+                            index_file_list=[[1],[10,11,12]],
                             sampling=sampling_test
                                  ) #8,9
+
 
 
 """
@@ -48,22 +48,15 @@ data_test=Data_Encoder_Decoder(args,
                             #index_file_list=[[1],[10,11,12],[1,2]],
                             index_file_list=[[1],[10, 11, 12]],
                             get_intermediate_frames=False)
-
 """
 
 
 model = Pose_3D(args_enc.batch_size)
-
 optimizer = torch.optim.Adam(model.encoder_decoder.parameters(), lr=args_enc.learning_rate)
 loss = L2_Resnet_Loss(device)
 
 train_data_loader = DataLoader(data_train,shuffle=True, num_workers=args_enc.num_threads)
-
 metr=[]
-
-
-
-
 trainer = Trainer_Enc_Dec(
         model.encoder_decoder,
         loss,
@@ -76,27 +69,24 @@ trainer = Trainer_Enc_Dec(
 
 #trainer.train()
 
-    # Start training!
+# Start training!
 trainer._resume_checkpoint("sample/checkpoints/enc_dec_more_cameras_new_loss")
+model.encoder_decoder = trainer.model
 
-
-
-
-
+optimizer_pose = torch.optim.Adam(model.parameters(), lr=args_pose.learning_rate)
 loss_pose=MPJ()
 trainer_pose =Trainer_Enc_Dec_Pose(
         model,
         loss_pose,
         args=args_pose,
         metrics=metr,
-        optimizer=optimizer,
+        optimizer=optimizer_pose,
         data_loader=data_train,
         data_test = data_test,
 )
 
 
-#print(torch.cuda.max_memory_allocated(0))
-#print(torch.cuda.max_memory_allocated(1))
+
 trainer_pose.train()
 
 

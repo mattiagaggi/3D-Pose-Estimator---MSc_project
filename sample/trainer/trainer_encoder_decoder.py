@@ -2,7 +2,6 @@
 
 import datetime
 import numpy as np
-import pickle
 
 
 from sample.base.base_trainer import BaseTrainer
@@ -10,7 +9,6 @@ from tqdm import tqdm
 import torchvision.utils as vutils
 import numpy.random as random
 from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
-from sample.losses.images import ImageNetCriterium
 
 
 
@@ -37,29 +35,24 @@ class Trainer_Enc_Dec(BaseTrainer):
                  eval_epoch = False
                  ):
 
-        name=args.name
-        output = args.output
-        epochs = args.epochs
-        save_freq = args.save_freq
-        verbosity = args.verbosity
-        verbosity_iter = args.verbosity_iter
-        train_log_step = args.train_log_step
-
-
-        super().__init__(model, loss, metrics, optimizer, epochs,
-                 name, output, save_freq, no_cuda, verbosity,
-                 train_log_step, verbosity_iter,eval_epoch)
+        super().__init__(model, loss, metrics, optimizer, args.epochs,
+                         no_cuda,eval_epoch,
+                 args.name, args.output, args.save_freq, args.verbosity,
+                 args.train_log_step, args.verbosity_iter
+                         )
 
 
         self.data_loader = data_loader
         self.data_test = data_test
-
         #test while training
         self.test_log_step = None
         self.img_log_step = args.img_log_step
         if data_test is not None:
             self.test_log_step = self.train_log_step
+            if self.img_log_step % self.test_log_step != 0:
+                self._logger.error("Test images never recorded!")
 
+        self.log_images_start_training =[10,100,500]
         self.parameters_show = self.train_log_step * 300
         self.length_test_set = len(self.data_test)
         self.len_trainset = len(self.data_loader)
@@ -71,8 +64,7 @@ class Trainer_Enc_Dec(BaseTrainer):
         self.encoder_parameters = self.model.encoder.return_n_parameters()
         self.decoder_parameters = self.model.decoder.return_n_parameters()
         self.rotation_parameters = self.model.rotation.return_n_parameters()
-        # setting drawer
-        #self.drawer = Drawer(Style.EQ_AXES)
+
 
 
     def _summary_info(self):
@@ -86,16 +78,18 @@ class Trainer_Enc_Dec(BaseTrainer):
         for number,contents in enumerate(self.data_loader.index_file_list):
             string += "\n content :" + self.data_loader.index_file_content[number]
             for elements in contents:
-                string += "\n numbers: "
+                string += " "
                 string += " %s," % elements
         info['details'] = string
         info['one epoch'] = self.len_trainset
-        info['optimiser']=str(self.optimizer)
-        info['loss']=str(self.loss.__class__.__name__)
+        info['optimiser'] = str(self.optimizer)
+        info['loss'] = str(self.loss.__class__.__name__)
+        info['sampling'] = str(self.data_loader.sampling)
+
         return info
 
 
-    def log_grid(self,image_in, image_out, ground_truth, string):
+    def log_grid(self, string, image_in, image_out, ground_truth):
 
         scale, norm, nrow = True, True, 3
         grid = vutils.make_grid(image_in, nrow=nrow, normalize=norm, scale_each=scale)
@@ -136,18 +130,6 @@ class Trainer_Enc_Dec(BaseTrainer):
         #              logger=self.model_logger.train,
         #              iteration=self.global_step)
 
-    def log_3D_pose(self):
-        pass
-
-        # if (bid % self.img_log_step) == 0 and self.img_log_step > -1:
-        #    y_output = p3d.data.cpu().numpy()
-        #    y_target = p3d_gt.data.cpu().numpy()
-
-        #    img_poses = self.drawer.poses_3d(y_output[0], y_target[0])
-        #    img_poses = img_poses.transpose([2, 0, 1])
-        #    self.model_logger.train.add_image('3d_poses',
-        #                                      img_poses,
-        #                                      self.global_step)
 
 
 
@@ -166,8 +148,13 @@ class Trainer_Enc_Dec(BaseTrainer):
             val = loss.item()
             self.model_logger.train.add_scalar('loss/iterations', val,
                                                self.global_step)
-            if bid % self.img_log_step:
-                self.log_grid(dic_in['im_in'], out_im, dic_out['im_target'], 'train')
+            self.train_logger.record_scalar("train_loss", val, self.global_step)
+        if (bid % self.img_log_step==0) or (self.global_step in self.log_images_start_training):
+            self.log_grid( 'train',dic_in['im_in'], out_im, dic_out['im_target'])
+            self.train_logger.save_batch_images('train_img', dic_in['im_in'], self.global_step,
+                                                image_target=dic_out['im_target'],
+                                                image_pred= out_im)
+
         return loss, pbar
 
 
@@ -182,7 +169,13 @@ class Trainer_Enc_Dec(BaseTrainer):
         loss_test = self.loss(out_test, out_test_dic['im_target'])
         self.model_logger.val.add_scalar('loss/iterations', loss_test.item(),
                                          self.global_step)
-        self.log_grid(in_test_dic['im_in'], out_test, out_test_dic['im_target'], 'test')
+        self.train_logger.record_scalar("test_loss", loss_test.item(), self.global_step)
+        if bid % self.img_log_step == 0:
+            self.log_grid('test',in_test_dic['im_in'], out_test, out_test_dic['im_target'])
+            self.train_logger.save_batch_images('test_img', in_test_dic['im_in'],self.global_step,
+                                                image_target =  out_test_dic['im_target'],
+                                                image_pred= out_test)
+
 
 
     def _train_epoch(self, epoch):
@@ -200,7 +193,6 @@ class Trainer_Enc_Dec(BaseTrainer):
             self.model.cuda()
         total_loss = 0
         pbar = tqdm(self.data_loader)
-
         for bid, (dic_in,dic_out) in enumerate(pbar):
             loss, pbar = self.train_step(bid, dic_in, dic_out, pbar, epoch)
             if self.test_log_step is not None and (bid % self.test_log_step == 0):
@@ -216,7 +208,8 @@ class Trainer_Enc_Dec(BaseTrainer):
             total_loss += loss.item()
         avg_loss = total_loss / len(self.data_loader)
         self.model_logger.train.add_scalar('loss/epochs', avg_loss, epoch)
-
+        self.train_logger.record_scalar('loss/epochs', avg_loss, epoch)
+        self.train_logger.save_logger()
         return avg_loss
 
     def _valid_epoch(self):

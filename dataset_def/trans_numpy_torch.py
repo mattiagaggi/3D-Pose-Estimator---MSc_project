@@ -1,24 +1,13 @@
 import torch
-import numpy as np
-from sample.base.base_logger import FrameworkClass
 from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
 
 device=ENCODER_DECODER_PARAMS.encoder_decoder.device
 
-class ImageToTensor(FrameworkClass):
-
-    """Convert ndarrays in sample to Tensors."""
-    def __call__(self, image):
-        image = np.transpose(image, [2, 0, 1])
-        return torch.from_numpy(image).float().to(device)
 
 
-class NumpyToTensor(FrameworkClass):
+def numpy_to_tensor(data):
 
-    """Convert ndarrays in sample to Tensors."""
-    def __call__(self, data):
-
-        return torch.from_numpy(data).float().to(device)
+    return torch.from_numpy(data).float().to(device)
 
 
 def encoder_dictionary_to_pytorch(dic):
@@ -26,8 +15,28 @@ def encoder_dictionary_to_pytorch(dic):
         if key == 'invert_segments':
             dic[key] = torch.LongTensor(dic[key]).to(device)
         else:
-            dic[key] = NumpyToTensor()(dic[key])
+            dic[key] = numpy_to_tensor(dic[key])
     return dic
+
+
+def tensor_to_numpy(tensor):
+
+    return tensor.data.cpu().numpy()
+
+
+def image_pytorch_to_numpy(image, batch_idx=False):
+
+    if batch_idx:
+        return tensor_to_numpy(image).transpose(0,2, 3, 1)
+    return tensor_to_numpy(image).transpose(1, 2, 0)
+
+def image_numpy_to_pytorch(image, batch_idx=False):
+
+    if batch_idx:
+        return numpy_to_tensor(image.transpose(0,3, 1, 2))
+    else:
+        return numpy_to_tensor(image.transpose(2, 0, 1))
+
 
 
 

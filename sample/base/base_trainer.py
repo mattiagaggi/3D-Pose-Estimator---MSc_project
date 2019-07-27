@@ -13,6 +13,7 @@ import torch
 import torch.nn
 import numpy as np
 from logger.model_logger import ModelLogger
+from logger.train_hist_logger import TrainingLogger
 import utils.io as io
 from utils.io import is_model_parallel
 from sample.base.base_logger import FrameworkClass
@@ -24,10 +25,9 @@ class BaseTrainer(FrameworkClass):
     Base class for all trainers
     """
 
-    def __init__(self, model, loss, metrics, optimizer, epochs,
-                 name, output, save_freq, no_cuda, verbosity,
-                 train_log_step, verbosity_iter,
-                  eval_epoch,reset=False, **kwargs):
+    def __init__(self, model, loss, metrics, optimizer, no_cuda, eval_epoch, epochs,
+                 name, output, save_freq, verbosity,
+                 train_log_step, verbosity_iter,reset=False, **kwargs):
         """Init class"""
 
         super().__init__()
@@ -51,25 +51,30 @@ class BaseTrainer(FrameworkClass):
         self.start_iteration = 0
         path=os.path.join(self.save_dir,self.training_name,'log')
         self.model_logger = ModelLogger(path,self.training_name)
-        self.training_info = None
+        path = os.path.join(self.save_dir,self.training_name,'log_results')
+        self.train_logger = TrainingLogger(path)
 
+        self.training_info = None
         self.reset = reset
         self.single_gpu = True
         self.global_step = 0
 
         # check that we can run on GPU
+
         if not torch.cuda.is_available():
             self.with_cuda = False
+            self._logger.info("GPU not available set no cuda = True")
+        if self.with_cuda:
+            self._logger.info("GPU is used!")
+            if torch.cuda.device_count() > 1:
+                if self.verbosity:
+                    self._logger.info("Let's use %d GPUs!",
+                                      torch.cuda.device_count())
 
-        if self.with_cuda and (torch.cuda.device_count() > 1):
-            if self.verbosity:
-                self._logger.info("Let's use %d GPUs!",
-                                  torch.cuda.device_count())
-
-            #parallelise
-            self.single_gpu = False
-            self.model.parallelise() #this might be slower
-            self.model = torch.nn.DataParallel(self.model)
+                #parallelise
+                self.single_gpu = False
+                self.model.parallelise() #this might be slower
+                self.model = torch.nn.DataParallel(self.model)
 
         io.ensure_dir(os.path.join(self.save_dir,
                                    self.training_name))
@@ -98,6 +103,7 @@ class BaseTrainer(FrameworkClass):
         self._dump_summary_info()
         if self.with_cuda:
             self.model.cuda()
+        epoch_loss = None
         for epoch in range(self.start_epoch, self.epochs):
             if self.verbosity:
                 self._logger.info('Training epoch %d of %d',
@@ -109,6 +115,8 @@ class BaseTrainer(FrameworkClass):
                 epoch_val_loss, epoch_val_metrics = self._valid_epoch()
                 self.model_logger.val.add_scalar('loss/iterations', epoch_val_loss,
                                                  self.global_step)
+                self.train_logger.record_scalar( "epoch_test_loss", epoch_val_loss, epoch)
+                self._logger.error("Correct this")
                 for i, metric in enumerate(self.metrics):
                     metric.log_res(logger=self.model_logger.val,
                                    iter=self.global_step,
@@ -221,8 +229,6 @@ class BaseTrainer(FrameworkClass):
             if not self.single_gpu:
                 trained_dict = OrderedDict(('module.{}'.format(k), val)
                                                        for k, val in checkpoint['state_dict'].items())
-
-
         self.model.load_state_dict(trained_dict)
 
         #############
@@ -233,6 +239,7 @@ class BaseTrainer(FrameworkClass):
             self.start_iteration = checkpoint['iter'] + 1
             self.start_epoch = checkpoint['epoch']
             try:
+                self.train_logger.load_logger()
                 self.global_step = checkpoint['global_step'] + 1
             except KeyError:
                 self.global_step = self.start_iteration
