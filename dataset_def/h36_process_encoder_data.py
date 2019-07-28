@@ -54,12 +54,11 @@ class Data_Encoder_Decoder(Data_Base_class):
         for i in self.index_file:
             s,act,subact,ca,fno = i
             for ca2 in range(1,5):
-                if ca2 != ca :###############
+                if (ca2 != ca) and (ca2 in list(self.all_metadata[s][act][subact].keys())):###############
                 #if ca==1 and ca2==2:
                     self.index_file_cameras.append([s,act,subact,ca,fno,ca2])
         if self.randomise:
             shuffle(self.index_file_cameras)
-
         self.elements_taken=0
         self._current_epoch=0
 
@@ -150,6 +149,7 @@ class Data_Encoder_Decoder(Data_Base_class):
 
 
     def extract_all_info_memory_background(self,s, act, subact, ca, fno):
+        #print(s,act,subact,ca) #11 2 2 4
         metadata = self.all_metadata[s][act][subact][ca]
         im, R, background, joints = self.extract_all_info(metadata, self.previous_background, s, act, subact, ca,fno)
         return im, R, background, joints
@@ -247,8 +247,9 @@ class Data_Encoder_Decoder(Data_Base_class):
 
 
     def track_epochs(self):
+
         self.elements_taken += self.batch_size // 2
-        if self.elements_taken == len(self.index_file_cameras):
+        if self.elements_taken //(self.batch_size // 2) == self.__len__():
             self._logger.info("New Epoch reset elements taken")
             self._current_epoch += 1
             self.elements_taken = 0

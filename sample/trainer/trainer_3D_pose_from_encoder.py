@@ -56,7 +56,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
             self.test_log_step = self.train_log_step * 10
             if self.img_log_step % self.test_log_step != 0:
                 self._logger.error("Test images never recorded! %s %s" %(self.test_log_step,self.img_log_step))
-        self.log_images_start_training = [10, 100, 500]
+        self.log_images_start_training = [10, 100, 500,1000]
         self.parameters_show = self.train_log_step * 300
         self.length_test_set = len(self.data_test)
         self.len_trainset = len(self.data_loader)
@@ -161,7 +161,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
             val = loss.item()
             self.model_logger.train.add_scalar('loss/iterations', val,
                                                self.global_step)
-            self.train_logger.record_scalar('loss/iterations', val,
+            self.train_logger.record_scalar('train_loss', val,
                                                self.global_step)
         if (bid % self.img_log_step == 0) or (self.global_step in self.log_images_start_training):
 
@@ -216,8 +216,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
                 #self.log_gradients()
             if bid % self.save_freq == 0:
                 if total_loss:
-                    self._save_checkpoint(epoch, self.global_step,
-                                          total_loss / bid)
+                    self._save_checkpoint(epoch, total_loss / bid)
                     self._update_summary(self.global_step,total_loss/bid,metrics=self.metrics)
             self.global_step += 1
             total_loss += loss.item()

@@ -122,7 +122,7 @@ class BaseTrainer(FrameworkClass):
                                    iter=self.global_step,
                                    error=epoch_val_metrics[i])
         self._logger.info('Finished training')
-        self._save_checkpoint(self.epochs, self.global_step, epoch_loss)
+        self._save_checkpoint(self.epochs, epoch_loss)
 
     def _dump_summary_info(self):
         """Save training summary"""
@@ -170,7 +170,7 @@ class BaseTrainer(FrameworkClass):
     def _summary_info(self):
         raise NotImplementedError
 
-    def _save_checkpoint(self, epoch, iteration, loss):
+    def _save_checkpoint(self, epoch, loss):
         """Save model
 
         Arguments:
@@ -178,22 +178,22 @@ class BaseTrainer(FrameworkClass):
             iteration {int} -- iteration number
             loss {float} -- loss value
         """
-
+        self.train_logger.save_logger()
         if loss < self.min_loss:
             self.min_loss = loss
         arch = type(self.model).__name__
         state = {
             'epoch': epoch,
-            'iter': iteration,
             'arch': arch,
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'min_loss': self.min_loss,
+            'global_step': self.global_step
         }
         filename = os.path.join(
             self.save_dir, self.training_name,
             'ckpt_eph{:02d}_iter{:06d}_loss_{:.5f}.pth.tar'.format(
-                epoch, iteration, loss))
+                epoch, self.global_step , loss))
         self._logger.info("Saving checkpoint: {} ...".format(filename))
         torch.save(state, filename)
         if loss == self.min_loss:
@@ -236,13 +236,12 @@ class BaseTrainer(FrameworkClass):
         ###########
 
         if not self.reset:
-            self.start_iteration = checkpoint['iter'] + 1
+            self.start_iteration =  checkpoint['global_step'] + 1
             self.start_epoch = checkpoint['epoch']
-            try:
-                self.train_logger.load_logger()
-                self.global_step = checkpoint['global_step'] + 1
-            except KeyError:
-                self.global_step = self.start_iteration
+            self.train_logger.load_logger()
+            self.global_step = checkpoint['global_step'] + 1
+
+
             self.min_loss = checkpoint['min_loss']
             self.optimizer.load_state_dict(checkpoint['optimizer'])
 

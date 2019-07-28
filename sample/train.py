@@ -11,6 +11,9 @@ from sample.trainer.trainer_3D_pose_from_encoder import Trainer_Enc_Dec_Pose
 from sample.losses.poses import MPJ
 
 
+
+
+
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 device=ENCODER_DECODER_PARAMS['encoder_decoder']['device']
 sampling_train=ENCODER_DECODER_PARAMS.encoder_decoder.sampling_train
@@ -21,21 +24,20 @@ parser= Pose_Parser("Pose Parser")
 args_pose = parser.get_arguments()
 
 
-
-
 data_train = Data_Encoder_Decoder(args_enc,#subsampling_fno = 1,
-                            index_file_content =['s','act'],
+                            index_file_content =['s'],
                             #index_file_list=[[1, 5, 6, 7],[1,2]])
-                            index_file_list=[[1],[2, 3, 4, 5, 6, 7, 8, 9]],
+                            index_file_list=[[1,5,6,7,8]],
                             sampling=sampling_train) #8,9
 
 
 data_test = Data_Encoder_Decoder(args_enc, #subsampling_fno = 2,
-                            index_file_content =['s','act'],
+                            index_file_content =['s'],
                             #index_file_list=[[1, 5, 6, 7],[1,2]])
-                            index_file_list=[[1],[10,11,12]],
+                            index_file_list=[[9,11]],
                             sampling=sampling_test
                                  ) #8,9
+
 
 
 
@@ -67,11 +69,11 @@ trainer = Trainer_Enc_Dec(
         data_test = data_test,
 )
 
-#trainer.train()
+trainer.train()
 
 # Start training!
-trainer._resume_checkpoint("sample/checkpoints/enc_dec_more_cameras_new_loss")
-model.encoder_decoder = trainer.model
+#trainer._resume_checkpoint("sample/checkpoints/enc_dec_more_cameras_new_loss")
+#model.encoder_decoder = trainer.model
 
 optimizer_pose = torch.optim.Adam(model.parameters(), lr=args_pose.learning_rate)
 loss_pose=MPJ()
@@ -88,7 +90,6 @@ trainer_pose =Trainer_Enc_Dec_Pose(
 
 
 trainer_pose.train()
-
 
 
 

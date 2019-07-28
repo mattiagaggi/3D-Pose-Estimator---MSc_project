@@ -181,6 +181,7 @@ class Data_Base_class(BaseDataset):
         :return: list appended details
         """
         path, _, _ = self.get_name(s, act, subact, ca, fno)
+
         if not file_exists(path):
             self._logger.error("file found by path %s does not exist" % path)
         dic.append([s,act,subact,ca,fno])
