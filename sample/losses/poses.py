@@ -65,9 +65,7 @@ class Aligned_MPJ(BaseMetric):
         s_op = dot_pose_gt / dot_pose_pose
         norm = s_op.view(-1,1,1).expand_as(pose_label)
         norm_pred = torch.mul(norm, pose_pred)
-
-        #reshape and mul H =
-
+        H = torch.bmm( norm_pred.transpose(1,2), pose_label)
         U,S,VT = torch_batch_svd(H)
         V= VT.transpose(1,2)
         M=torch.bmm(V, U.transpose(1,2) )

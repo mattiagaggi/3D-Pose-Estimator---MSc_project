@@ -11,9 +11,6 @@ from sample.trainer.trainer_3D_pose_from_encoder import Trainer_Enc_Dec_Pose
 from sample.losses.poses import MPJ
 
 
-import numpy as np
-
-
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 device=ENCODER_DECODER_PARAMS['encoder_decoder']['device']
