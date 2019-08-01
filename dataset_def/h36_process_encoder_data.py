@@ -15,7 +15,6 @@ from matplotlib import pyplot as plt
 
 
 class Data_Encoder_Decoder(Data_Base_class):
-
     def __init__(self,
                  args,
                  sampling,

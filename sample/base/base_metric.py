@@ -1,6 +1,6 @@
-from torch import nn.Module
+from torch.nn import Module
 
-class BaseMetric(nn.Module):
+class BaseMetric(Module):
     """Base Metric class"""
 
     def __init__(self):
@@ -13,15 +13,15 @@ class BaseMetric(nn.Module):
 
         raise NotImplementedError('Abstract method in BaseMetric class...')
 
-
+    """
     def log(self, logger, iteration, pred, gt):
 
 
         error = self.forward(pred, gt)
-        self.log_res(logger,
+        self.log_(logger,
                      iteration,
                      error)
-
+    """
     def log_model(self, logger, iteration, error):
 
         logger.add_scalar('metrics/{0}'.format(self.name),
