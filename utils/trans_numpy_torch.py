@@ -5,6 +5,9 @@ device=ENCODER_DECODER_PARAMS.encoder_decoder.device
 
 
 
+def create_zero_float_tensor(shape):
+    return torch.zeros(shape, dtype=torch.float32, device=device)
+
 def numpy_to_tensor(data):
 
     return torch.from_numpy(data).float().to(device)

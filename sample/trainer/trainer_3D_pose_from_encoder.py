@@ -9,7 +9,7 @@ import torch
 import numpy.random as random
 import matplotlib.pyplot as plt
 from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
-from dataset_def.trans_numpy_torch import numpy_to_tensor
+from utils.trans_numpy_torch import numpy_to_tensor
 
 
 

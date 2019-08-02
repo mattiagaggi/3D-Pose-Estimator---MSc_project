@@ -5,7 +5,7 @@ import pickle as pkl
 
 from utils.io import ensure_dir, file_exists
 from logger.console_logger import ConsoleLogger
-from dataset_def.trans_numpy_torch import image_pytorch_to_numpy, tensor_to_numpy
+from utils.trans_numpy_torch import image_pytorch_to_numpy, tensor_to_numpy
 
 class TrainingLogger:
 

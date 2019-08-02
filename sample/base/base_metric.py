@@ -1,4 +1,5 @@
 from torch.nn import Module
+from logger.console_logger import ConsoleLogger
 
 class BaseMetric(Module):
     """Base Metric class"""
@@ -7,6 +8,7 @@ class BaseMetric(Module):
         """Initialize class"""
         super().__init__()
         self.name= self.__class__.__name__
+        self._logger=ConsoleLogger(self.name)
 
     def forward(self, *input):
 

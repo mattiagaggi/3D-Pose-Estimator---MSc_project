@@ -7,8 +7,9 @@ from random import shuffle
 from utils.utils_H36M.common import H36M_CONF
 from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
 from dataset_def.h36m_preprocess import Data_Base_class
-from dataset_def.trans_numpy_torch import encoder_dictionary_to_pytorch
-from utils.utils_H36M.transformations import bounding_box_pixel, get_patch_image, cam_pointing_root, rotate_z, transform_2d_joints, world_to_pixel, world_to_camera
+from utils.trans_numpy_torch import encoder_dictionary_to_pytorch
+from utils.utils_H36M.transformations import bounding_box_pixel, get_patch_image, cam_pointing_root, rotate_z, transform_2d_joints, world_to_pixel
+from utils.utils_H36M.common import H36M_CONF
 from utils.utils_H36M.visualise import Drawer
 from matplotlib import pyplot as plt
 
@@ -242,6 +243,8 @@ class Data_Encoder_Decoder(Data_Base_class):
             }
         dic_out ={'joints_im': np.stack(joints1+joints2,axis=0),
                   'im_target': np.transpose(np.stack(imT + imT2, axis=0), axes=[0, 3, 1, 2])}
+        N,J,T = dic_out['joints_im'].shape
+        dic_out['joints_im'] -= np.reshape(dic_out['joints_im'][:,H36M_CONF.joints.root_idx,:], (N,1,T))
         return dic_in,dic_out
 
 
@@ -294,6 +297,15 @@ class Data_Encoder_Decoder(Data_Base_class):
 
     def __len__(self):
         return len(self.index_file_cameras) // (self.batch_size//2)
+
+
+
+
+
+
+
+
+
 
 
 

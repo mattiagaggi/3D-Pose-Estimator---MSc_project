@@ -1,11 +1,6 @@
-
-
-from easydict import EasyDict as edict
 import torch
 
-
-
-
+from easydict import EasyDict as edict
 
 
 
@@ -17,7 +12,7 @@ ENCODER_DECODER_PARAMS = edict({
         'sampling_train': 5,
         'sampling_test': 20,
         'im_size' : 128,
-        'device_type' : 'gpu'
+        'device_type' : 'cpu'
     }
 })
 

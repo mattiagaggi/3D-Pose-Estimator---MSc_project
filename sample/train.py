@@ -36,9 +36,6 @@ data_test = Data_Encoder_Decoder(args_enc, #subsampling_fno = 2,
                             sampling=sampling_test
                                  ) #8,9
 
-
-
-
 """
 
 

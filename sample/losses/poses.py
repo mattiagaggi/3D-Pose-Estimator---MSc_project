@@ -1,17 +1,18 @@
-from sample.base.base_metric import BaseMetric
-from dataset_def.trans_numpy_torch import tensor_to_numpy
-import torch
-import torch_batch_svd
 
-from numpy.linalg import det
-import numpy as np
+import torch
+#you can't even install this if there is no cuda
+
+from sample.base.base_metric import BaseMetric
+from utils.utils_alignment import batch_svd,tiled_identity,determinant
+
 
 
 class MPJ(BaseMetric):
 
 
-    def __init__(self):
+    def __init__(self, debug=False):
         super().__init__()
+        self.debug = debug
 
 
     def forward(self, pose_pred, pose_label):
@@ -23,6 +24,8 @@ class MPJ(BaseMetric):
         summed = torch.sum(squared, dim=2)
         dist = torch.sqrt(summed)
         #mean_over_joints=torch.mean(dist,dim=1)
+        if self.debug:
+            return torch.mean(dist),pose_pred,pose_label
         return torch.mean(dist) # mean over batch and joints
 
 
@@ -31,6 +34,7 @@ class Normalised_MPJ(BaseMetric):
 
     def __init__(self):
         super().__init__()
+        self.MPJ=MPJ()
 
 
     def forward(self, pose_pred, pose_label):
@@ -43,7 +47,7 @@ class Normalised_MPJ(BaseMetric):
         s_op = dot_pose_gt / dot_pose_pose
         norm = s_op.view(-1,1,1).expand_as(pose_label)
         norm_pred = torch.mul(norm, pose_pred)
-        return MPJ.forward(norm_pred, pose_label)
+        return self.MPJ(norm_pred, pose_label)
 
 
 
@@ -52,6 +56,8 @@ class Aligned_MPJ(BaseMetric):
 
     def __init__(self):
         super().__init__()
+        self.MPJ = MPJ()
+        self._logger.info("Aligned MPJ does not support Backprop")
 
 
     def forward(self, pose_pred, pose_label):
@@ -59,26 +65,20 @@ class Aligned_MPJ(BaseMetric):
         assert pose_label.size()[1] == 17
         assert pose_pred.size()[2] == 3
         assert pose_label.size()[2] == 3
-        #align by translation
-        dot_pose_pose = torch.mul(pose_pred,pose_pred).sum(dim=2).sum(dim=1)
-        dot_pose_gt = torch.mul(pose_pred,pose_label).sum(dim=2).sum(dim=1)
-        s_op = dot_pose_gt / dot_pose_pose
-        norm = s_op.view(-1,1,1).expand_as(pose_label)
-        norm_pred = torch.mul(norm, pose_pred)
-        H = torch.bmm( norm_pred.transpose(1,2), pose_label)
-        U,S,VT = torch_batch_svd(H)
-        V= VT.transpose(1,2)
-        M=torch.bmm(V, U.transpose(1,2) )
+        #Kabsch algorithm
+        pose_pred =pose_pred- torch.sum(pose_pred, dim=1).reshape((-1,1,3))
+        pose_label = pose_label - torch.sum(pose_label, dim=1).reshape((-1,1,3))
+        H = torch.bmm( pose_pred.transpose(1,2), pose_label)
+        U,S,V = batch_svd(H)
 
-        D = det( tensor_to_numpy(M) )
-        U= tensor_to_numpy(U)
-        V = tensor_to_numpy(V)
-        ident = np.eye(3)
-        iden_batch = np.tile(ident, (len(D), 1, 1))
-        iden_batch[:,2,2] = D
-        UT = np.transpose(U,(0,2,1))
-        R = np.matmul(V,np.matmul(iden_batch, UT))
-
-        return MPJ.forward(norm_pred, pose_label)
+        M=torch.bmm(V, U.transpose(1,2))
+        d = determinant(M)
+        b_size = d.size()[0]
+        D = tiled_identity(b_size)
+        D[:,2,2] = d #determinant correction -1,1
+        UT = U.transpose(1,2)
+        R = torch.bmm(V,torch.bmm(D, UT))
+        rot_pred = torch.bmm(pose_pred, R.transpose(1,2))
+        return self.MPJ(rot_pred, pose_label)
 
 
