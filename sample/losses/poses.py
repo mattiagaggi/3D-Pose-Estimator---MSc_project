@@ -10,9 +10,8 @@ from utils.utils_alignment import batch_svd,tiled_identity,determinant
 class MPJ(BaseMetric):
 
 
-    def __init__(self, debug=False):
+    def __init__(self):
         super().__init__()
-        self.debug = debug
 
 
     def forward(self, pose_pred, pose_label):
@@ -24,8 +23,7 @@ class MPJ(BaseMetric):
         summed = torch.sum(squared, dim=2)
         dist = torch.sqrt(summed)
         #mean_over_joints=torch.mean(dist,dim=1)
-        if self.debug:
-            return torch.mean(dist),pose_pred,pose_label
+        return torch.mean(dist),pose_pred,pose_label
         return torch.mean(dist) # mean over batch and joints
 
 
