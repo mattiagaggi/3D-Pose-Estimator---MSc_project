@@ -113,31 +113,6 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
                                            self.global_step)
 
 
-    def log_metrics(self):
-        pass
-
-        # for metric in self.metrics:
-        #    y_output = p3d.data.cpu().numpy()
-        #    y_target = p3d_gt.data.cpu().numpy()
-        #   metric.log(pred=y_output,
-        #              gt=y_target,
-        #              logger=self.model_logger.train,
-        #              iteration=self.global_step)
-
-    def log_3D_pose(self):
-        pass
-
-        # if (bid % self.img_log_step) == 0 and self.img_log_step > -1:
-        #    y_output = p3d.data.cpu().numpy()
-        #    y_target = p3d_gt.data.cpu().numpy()
-
-        #    img_poses = self.drawer.poses_3d(y_output[0], y_target[0])
-        #    img_poses = img_poses.transpose([2, 0, 1])
-        #    self.model_logger.train.add_image('3d_poses',
-        #                                      img_poses,
-        #                                      self.global_step)
-
-
     def world_pose_to_camera(self,dic_in,dic_out):
         mean= torch.bmm( self.mean_pose.repeat(self.model.batch_size,1,1), dic_in['R_world_im'].transpose(1,2))
         gt = torch.bmm( dic_out['joints_im'], dic_in['R_world_im'].transpose(1,2))
@@ -233,8 +208,13 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
 
         :return: loss and metrics
         """
-        pass
-
-
-
+        self.model.eval()
+        idx = random.randint(self.length_test_set)
+        in_test_dic, out_test_dic = self.data_test[idx]
+        out_test = self.model(in_test_dic)
+        for m in self.metrics:
+            value = m(out_test,out_test_dic['im_target'])
+            m.log_model(self.model_logger.test, self.global_step, value.item())
+            m.log_train(self,self.train_logger, self.global_step, value.item())
+        self.model.train()
 

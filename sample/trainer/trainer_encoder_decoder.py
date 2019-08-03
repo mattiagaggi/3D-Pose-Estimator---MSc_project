@@ -217,7 +217,16 @@ class Trainer_Enc_Dec(BaseTrainer):
 
         :return: loss and metrics
         """
-        pass
+        self.model.eval()
+        idx = random.randint(self.length_test_set)
+        in_test_dic, out_test_dic = self.data_test[idx]
+        out_test = self.model(in_test_dic)
+        for m in self.metrics:
+            value = m(out_test,out_test_dic['im_target'])
+            m.log_model(self.model_logger.test, self.global_step, value.item())
+            m.log_train(self,self.train_logger, self.global_step, value.item())
+        self.model.train()
+
 
 
 

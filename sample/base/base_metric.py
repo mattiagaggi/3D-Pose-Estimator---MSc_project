@@ -7,7 +7,7 @@ class BaseMetric(Module):
     def __init__(self):
         """Initialize class"""
         super().__init__()
-        self.name= self.__class__.__name__
+        self.name = self.__class__.__name__
         self._logger=ConsoleLogger(self.name)
 
     def forward(self, *input):
@@ -15,15 +15,7 @@ class BaseMetric(Module):
 
         raise NotImplementedError('Abstract method in BaseMetric class...')
 
-    """
-    def log(self, logger, iteration, pred, gt):
 
-
-        error = self.forward(pred, gt)
-        self.log_(logger,
-                     iteration,
-                     error)
-    """
     def log_model(self, logger, iteration, error):
 
         logger.add_scalar('metrics/{0}'.format(self.name),

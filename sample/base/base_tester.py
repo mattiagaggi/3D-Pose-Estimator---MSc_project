@@ -48,23 +48,7 @@ class BaseTester(FrameworkClass):
         io.ensure_dir(os.path.join(self.save_dir,
                                    self.output_name))
 
-    def _get_var(self, var):
-        """Generate variable based on CUDA availability
 
-        Arguments:
-            var {undefined} -- variable to be converted
-
-        Returns:
-            tensor -- pytorch tensor
-        """
-
-        var = torch.FloatTensor(var)
-        var = Variable(var)
-
-        if self.with_cuda:
-            var = var.cuda()
-
-        return var
 
     def test(self):
         """Run test on the test-set"""

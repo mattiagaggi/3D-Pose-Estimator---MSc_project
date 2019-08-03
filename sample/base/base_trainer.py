@@ -112,15 +112,7 @@ class BaseTrainer(FrameworkClass):
             if self.eval_epoch:
                 self._logger.info('Evaluating epoch %d of %d',
                                   epoch, self.epochs)
-                epoch_val_loss, epoch_val_metrics = self._valid_epoch()
-                self.model_logger.val.add_scalar('loss/iterations', epoch_val_loss,
-                                                 self.global_step)
-                self.train_logger.record_scalar( "epoch_test_loss", epoch_val_loss, epoch)
-                self._logger.error("Correct this")
-                for i, metric in enumerate(self.metrics):
-                    metric.log_res(logger=self.model_logger.val,
-                                   iter=self.global_step,
-                                   error=epoch_val_metrics[i])
+                self._valid_epoch()
         self._logger.info('Finished training')
         self._save_checkpoint(self.epochs, epoch_loss)
 

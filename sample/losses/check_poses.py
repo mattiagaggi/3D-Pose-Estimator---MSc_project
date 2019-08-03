@@ -10,21 +10,23 @@ from utils.utils_H36M.visualise import Drawer
 
 
 parser = EncParser("Encoder parser")
-args_enc =parser.get_arguments()
+args_enc = parser.get_arguments()
 data_train = Data_Encoder_Decoder(args_enc,
                             index_file_content =['s','act'],
-                            index_file_list=[[1],[2,3]],
+                            index_file_list=[[1],[2]],
                             sampling=5,
                                 randomise=False) #8,9
 
-loss=MPJ(debug=True)
+loss=MPJ()
 _,it=data_train[10]
 poses= it['joints_im'][:5]
 R = int['R_world_im'][:5]
 
 #now apply transormation
 pose_trans = torch.bmm(poses,R.transpose(1,2))
-loss_al,pred,gt= l(poses,pose_trans)
+#uncomment line in losses.poses MPJ to output the GT and prediction
+loss_al,pred,gt= loss(poses,pose_trans)
+
 
 #draw
 print(tensor_to_numpy(loss_al))
