@@ -6,4 +6,3 @@ sample/OpenPose3D/
 *.pyo 
 *.pyc
 sample/checkpoints/
-sample/pytorch-mask-rcnn/

@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 
-from data.directories_location import index_location, h36m_location, backgrounds_location
+from data.config import index_location, h36m_location, backgrounds_location
 from utils.utils_H36M.common import H36M_CONF
 from utils.io import get_sub_dirs,get_files,file_exists
 from sample.base.base_dataset import BaseDataset,SubSet
