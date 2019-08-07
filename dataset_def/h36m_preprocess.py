@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 
-from data.config import index_location, h36m_location, backgrounds_location
+from data.config import index_location, h36m_location, backgrounds_location, masks_location
 from utils.utils_H36M.common import H36M_CONF
 from utils.io import get_sub_dirs,get_files,file_exists
 from sample.base.base_dataset import BaseDataset,SubSet
@@ -44,7 +44,6 @@ class Data_Base_class(BaseDataset):
         if self.sampling ==1 and get_intermediate_frames:
             self._logger.error("sampling can't be one if we want intermediate frames")
         self.index_as_dict = index_as_dict
-
         self.index_file = None
         self.previous_chache = None
         self.previous_background = None
@@ -124,6 +123,16 @@ class Data_Base_class(BaseDataset):
         parent_path=os.path.join(h36m_location, subdir)
         path=os.path.join(parent_path,name)
 
+        return path, name, parent_path
+
+    def get_mask_name(self,s,act,sub,ca,fno):
+        subdir = "s_%s_act_%s_subact_%s_ca_%s" % ('{:02d}'.format(s), '{:02d}'.format(act),
+                                                  '{:02d}'.format(sub), '{:02d}'.format(ca))
+        name = "s_%s_act_%s_subact_%s_ca_%s_%s.png" % ('{:02d}'.format(s), '{:02d}'.format(act),
+                                                       '{:02d}'.format(sub), '{:02d}'.format(ca),
+                                                       '{:06d}'.format(fno))
+        parent_path = os.path.join(masks_location,subdir)
+        path = os.path.join(parent_path, name)
         return path, name, parent_path
 
 
@@ -485,6 +494,14 @@ class Data_Base_class(BaseDataset):
         im = im.astype(np.float32)
         im /= 256
         return im
+    def extract_mask(self, path):
+        im = cv2.imread(path, 0)
+        print(im.shape)
+        im = im[:H36M_CONF.max_size, :H36M_CONF.max_size]
+        im = cv2.threshold(im, 128, 255, cv2.THRESH_BINARY)[1]
+        im = im.astype(np.float32)
+        im /= 255
+        return im
 
     def load_image(self,s,act, subact, ca, fno):
 
@@ -496,6 +513,13 @@ class Data_Base_class(BaseDataset):
             self._logger.error("path not loaded %s" % path)
         else:
             return self.extract_image(path)
+
+    def load_mask(self,s,act, subact, ca, fno):
+        path, _, _ = self.get_mask_name(s, act, subact, ca, fno)
+        if not file_exists(path):
+            self._logger.error("path not loaded %s" % path)
+        else:
+            return self.extract_mask(path)
 
     def extract_info(self,metadata, background,s, act, subact, ca, fno):
 

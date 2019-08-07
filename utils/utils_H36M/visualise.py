@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 #for 3D plot
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib
-matplotlib.use('TkAgg') #make np.string work mac
+#matplotlib.use('TkAgg') #make np.string work mac
 from utils.utils_H36M.common import H36M_CONF
 
 

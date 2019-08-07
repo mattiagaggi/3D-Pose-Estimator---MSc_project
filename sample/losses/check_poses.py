@@ -3,7 +3,7 @@
 import torch
 from matplotlib import plt
 from sample.parsers.parser_enc_dec import EncParser
-from dataset_def.h36_process_encoder_data import Data_Encoder_Decoder
+from dataset_def.h36m_3dpose_data import Data_3dpose
 from sample.losses.poses import Aligned_MPJ, MPJ, Normalised_MPJ
 from utils.trans_numpy_torch import tensor_to_numpy
 from utils.utils_H36M.visualise import Drawer
@@ -11,11 +11,11 @@ from utils.utils_H36M.visualise import Drawer
 
 parser = EncParser("Encoder parser")
 args_enc = parser.get_arguments()
-data_train = Data_Encoder_Decoder(args_enc,
-                            index_file_content =['s','act'],
-                            index_file_list=[[1],[2]],
-                            sampling=5,
-                                randomise=False) #8,9
+data_train = Data_3dpose(args_enc,
+                         index_file_content =['s','act'],
+                         index_file_list=[[1],[2]],
+                         sampling=5,
+                         randomise=False) #8,9
 
 loss=MPJ()
 _,it=data_train[10]

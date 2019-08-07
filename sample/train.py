@@ -1,6 +1,6 @@
 import torch.nn
 import os
-from dataset_def.h36_process_encoder_data import Data_Encoder_Decoder
+from dataset_def.h36m_3dpose_data import Data_3dpose
 from sample.models.pose_encoder_decoder import Pose_3D
 from torch.utils.data import DataLoader
 from sample.parsers.parser_enc_dec import EncParser,Pose_Parser
@@ -22,19 +22,19 @@ parser= Pose_Parser("Pose Parser")
 args_pose = parser.get_arguments()
 
 
-data_train = Data_Encoder_Decoder(args_enc,#subsampling_fno = 1,
-                            index_file_content =['s'],
-                            #index_file_list=[[1, 5, 6, 7],[1,2]])
-                            index_file_list=[[1,5,6,7,8]],
-                            sampling=sampling_train) #8,9
+data_train = Data_3dpose(args_enc,  #subsampling_fno = 1,
+                         index_file_content =['s'],
+                         #index_file_list=[[1, 5, 6, 7],[1,2]])
+                         index_file_list=[[1,5,6,7,8]],
+                         sampling=sampling_train) #8,9
 
 
-data_test = Data_Encoder_Decoder(args_enc, #subsampling_fno = 2,
-                            index_file_content =['s'],
-                            #index_file_list=[[1, 5, 6, 7],[1,2]])
-                            index_file_list=[[9,11]],
-                            sampling=sampling_test
-                                 ) #8,9
+data_test = Data_3dpose(args_enc,  #subsampling_fno = 2,
+                        index_file_content =['s'],
+                        #index_file_list=[[1, 5, 6, 7],[1,2]])
+                        index_file_list=[[9,11]],
+                        sampling=sampling_test
+                        ) #8,9
 
 
 
@@ -58,10 +58,10 @@ trainer = Trainer_Enc_Dec(
 
 
 # Start training!
-trainer._resume_checkpoint("data/enc_dec_S15678_no_rot")
+trainer._resume_checkpoint("data/checkpoints/enc_dec_S15678_no_rot")
 model.encoder_decoder = trainer.model
 
-#trainer.train()
+trainer.train()
 
 
 metr=[]
