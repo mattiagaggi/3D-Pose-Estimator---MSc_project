@@ -1,0 +1,11 @@
+{
+  "creation": "2019-08-01 18:40:05.954292",
+  "size_dataset": 29267,
+  "details": "\n content :s  1,  5,  6,  7,  8,",
+  "one epoch": 29267,
+  "optimiser": "Adam (\nParameter Group 0\n    amsgrad: False\n    betas: (0.9, 0.999)\n    eps: 1e-08\n    lr: 0.001\n    weight_decay: 0\n)",
+  "loss": "L2_Resnet_Loss",
+  "sampling": "5",
+  "global_step": 152803,
+  "val_loss": 0.016378194694928825
+}

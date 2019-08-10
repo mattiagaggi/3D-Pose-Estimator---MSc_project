@@ -1,5 +1,4 @@
 
-
 from data.directories_location import h36m_location
 from utils.utils_H36M.common import H36M_CONF
 import scipy.io as sio
@@ -86,15 +85,15 @@ from utils.utils_H36M.transformations import get_patch_image,transform_2d_joints
 #   sample_metadata['T'],
 #    sample_metadata['f'],
 #    sample_metadata['c']
-)
+#)
 
-bbpx_px=bounding_box_pixel(joints_world, 0, sample_metadata['R'], sample_metadata['T'], sample_metadata['f'], sample_metadata['c'])
-imwarped,trans = get_patch_image(img, bbpx_px, (256,256), np.pi/4) # in degrees rotation around z axis
-trsf_joints, vis = transform_2d_joints(joint_px, trans)
-b=Drawer()
-ax=plt.subplot()
-ax=b.pose_2d(ax,imwarped,trsf_joints[:,:-1])
-plt.show()
+#bbpx_px=bounding_box_pixel(joints_world, 0, sample_metadata['R'], sample_metadata['T'], sample_metadata['f'], sample_metadata['c'])
+#imwarped,trans = get_patch_image(img, bbpx_px, (256,256), np.pi/4) # in degrees rotation around z axis
+#trsf_joints, vis = transform_2d_joints(joint_px, trans)
+#b=Drawer()
+#ax=plt.subplot()
+#ax=b.pose_2d(ax,imwarped,trsf_joints[:,:-1])
+#plt.show()
 
 
 

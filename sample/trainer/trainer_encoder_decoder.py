@@ -28,7 +28,7 @@ class Trainer_Enc_Dec(BaseTrainer):
                  loss,
                  metrics,
                  optimizer,
-                 data_loader,
+                 data_train,
                  args,
                  data_test=None,
                  no_cuda = no_cuda,
@@ -42,7 +42,7 @@ class Trainer_Enc_Dec(BaseTrainer):
                          )
 
 
-        self.data_loader = data_loader
+        self.data_train = data_train
         self.data_test = data_test
         #test while training
         self.test_log_step = None
@@ -55,7 +55,7 @@ class Trainer_Enc_Dec(BaseTrainer):
         self.log_images_start_training =[10,100,500,1000]
         self.parameters_show = self.train_log_step * 300
         self.length_test_set = len(self.data_test)
-        self.len_trainset = len(self.data_loader)
+        self.len_trainset = len(self.data_train)
 
 
         # load model
@@ -73,10 +73,10 @@ class Trainer_Enc_Dec(BaseTrainer):
         """
         info = dict()
         info['creation'] = str(datetime.datetime.now())
-        info['size_dataset'] = len(self.data_loader)
+        info['size_dataset'] = len(self.data_train)
         string=""
-        for number,contents in enumerate(self.data_loader.index_file_list):
-            string += "\n content :" + self.data_loader.index_file_content[number]
+        for number,contents in enumerate(self.data_train.index_file_list):
+            string += "\n content :" + self.data_train.index_file_content[number]
             for elements in contents:
                 string += " "
                 string += " %s," % elements
@@ -84,7 +84,7 @@ class Trainer_Enc_Dec(BaseTrainer):
         info['one epoch'] = self.len_trainset
         info['optimiser'] = str(self.optimizer)
         info['loss'] = str(self.loss.__class__.__name__)
-        info['sampling'] = str(self.data_loader.sampling)
+        info['sampling'] = str(self.data_train.sampling)
 
         return info
 
@@ -192,7 +192,7 @@ class Trainer_Enc_Dec(BaseTrainer):
         if self.with_cuda:
             self.model.cuda()
         total_loss = 0
-        pbar = tqdm(self.data_loader)
+        pbar = tqdm(self.data_train)
         for bid, (dic_in,dic_out) in enumerate(pbar):
             loss, pbar = self.train_step(bid, dic_in, dic_out, pbar, epoch)
             if self.test_log_step is not None and (bid % self.test_log_step == 0):
@@ -205,7 +205,7 @@ class Trainer_Enc_Dec(BaseTrainer):
                     self._update_summary(self.global_step,total_loss/bid,metrics=self.metrics)
             self.global_step += 1
             total_loss += loss.item()
-        avg_loss = total_loss / len(self.data_loader)
+        avg_loss = total_loss / len(self.data_train)
         self.model_logger.train.add_scalar('loss/epochs', avg_loss, epoch)
         self.train_logger.record_scalar('loss/epochs', avg_loss, epoch)
         self.train_logger.save_logger()

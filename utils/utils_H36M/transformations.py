@@ -232,37 +232,9 @@ def rotation_xy(cx,cy,angle):
     :param angle:
     :return:
     """
-
     rot_mat = cv2.getRotationMatrix2D((cx,cy), angle, 1.0)
     return rot_mat
 
-
-def get_patch_image(img, bbox, target_shape, rotation_angle=45):
-    """
-    :param img: numpy array
-    :param bbox: bounding box [x, y, width, height] array
-    :param target_shape: target  [width, height]
-    :return: transformed image, transformation 2x3 array
-    """
-
-    assert len(bbox) == 4
-    assert len(target_shape) == 2
-
-    bb_c_x = float(bbox[0] + 0.5*bbox[2])
-    bb_c_y = float(bbox[1] + 0.5*bbox[3])
-    bb_width = float(bbox[2])
-    bb_height = float(bbox[3])
-
-    trans = get_affine(bb_c_x, bb_c_y,
-                               bb_width, bb_height,
-                               target_shape[1],
-                               target_shape[0],
-                               False,rotation_angle)
-    img_patch = cv2.warpAffine(img, trans,
-                               (int(target_shape[1]), int(target_shape[0])),
-                               flags=cv2.INTER_LINEAR)
-
-    return img_patch, trans
 
 
 def get_affine(c_x, c_y, src_width, src_height, dst_width, dst_height, inv=False, rotation_angle=None):
@@ -312,6 +284,32 @@ def get_affine(c_x, c_y, src_width, src_height, dst_width, dst_height, inv=False
     return trans
 
 
+def get_patch_image(img, bbox, target_shape, rotation_angle=45):
+    """
+    :param img: numpy array
+    :param bbox: bounding box [x, y, width, height] array
+    :param target_shape: target  [width, height]
+    :return: transformed image, transformation 2x3 array
+    """
+
+    assert len(bbox) == 4
+    assert len(target_shape) == 2
+
+    bb_c_x = float(bbox[0] + 0.5*bbox[2])
+    bb_c_y = float(bbox[1] + 0.5*bbox[3])
+    bb_width = float(bbox[2])
+    bb_height = float(bbox[3])
+
+    trans = get_affine(bb_c_x, bb_c_y,
+                               bb_width, bb_height,
+                               target_shape[1],
+                               target_shape[0],
+                               False,rotation_angle)
+    img_patch = cv2.warpAffine(img, trans,
+                               (int(target_shape[1]), int(target_shape[0])),
+                               flags=cv2.INTER_LINEAR)
+
+    return img_patch, trans
 
 
 

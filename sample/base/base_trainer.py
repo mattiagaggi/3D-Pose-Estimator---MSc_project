@@ -232,8 +232,6 @@ class BaseTrainer(FrameworkClass):
             self.start_epoch = checkpoint['epoch']
             self.train_logger.load_logger()
             self.global_step = checkpoint['global_step'] + 1
-
-
             self.min_loss = checkpoint['min_loss']
             self.optimizer.load_state_dict(checkpoint['optimizer'])
 

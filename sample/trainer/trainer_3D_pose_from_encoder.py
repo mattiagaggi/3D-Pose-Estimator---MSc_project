@@ -1,12 +1,14 @@
 import datetime
 import numpy as np
 from utils.utils_H36M.visualise import Drawer
-
+from utils import io
 
 from sample.base.base_trainer import BaseTrainer
 from tqdm import tqdm
 import torch
+import os
 import numpy.random as random
+from collections import OrderedDict
 import matplotlib.pyplot as plt
 from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
 from utils.trans_numpy_torch import numpy_to_tensor
@@ -30,7 +32,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
                  loss,
                  metrics,
                  optimizer,
-                 data_loader,
+                 data_train,
                  args,
                  data_test=None,
                  no_cuda = no_cuda,
@@ -46,7 +48,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         self.model.fix_encoder_decoder()
 
 
-        self.data_loader = data_loader
+        self.data_train = data_train
         self.data_test = data_test
 
         #test while training
@@ -59,11 +61,11 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         self.log_images_start_training = [10, 100, 500,1000]
         self.parameters_show = self.train_log_step * 300
         self.length_test_set = len(self.data_test)
-        self.len_trainset = len(self.data_loader)
+        self.len_trainset = len(self.data_train)
         self.drawer = Drawer()
-        mean= self.data_loader.get_mean_pose()
+        mean= self.data_train.get_mean_pose()
         self.mean_pose = numpy_to_tensor(mean.reshape(1,17,3))
-        std = self.data_loader.get_std_pose(mean).reshape(1,17,3)
+        std = self.data_train.get_std_pose(mean).reshape(1, 17, 3)
         self.std_pose = numpy_to_tensor(std)
         # load model
         #self._resume_checkpoint(args.resume)
@@ -76,18 +78,37 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         """
         info = dict()
         info['creation'] = str(datetime.datetime.now())
-        info['size_dataset'] = len(self.data_loader)
+        info['size_dataset'] = len(self.data_train)
         string=""
-        for number,contents in enumerate(self.data_loader.index_file_list):
-            string += "\n content :" + self.data_loader.index_file_content[number]
+        for number,contents in enumerate(self.data_train.index_file_list):
+            string += "\n content :" + self.data_train.index_file_content[number]
             for elements in contents:
                 string += " "
                 string += " %s," % elements
         info['details'] = string
         info['optimiser']=str(self.optimizer)
         info['loss']=str(self.loss.__class__.__name__)
-        info['sampling'] = str(self.data_loader.sampling)
+        info['sampling'] = str(self.data_train.sampling)
         return info
+
+    def resume_encoder(self,resume_path):
+        if not os.path.isfile(resume_path):
+            resume_path = io.get_checkpoint(resume_path)
+        self._logger.info("Loading Encoder: %s ...", resume_path)
+        checkpoint = torch.load(resume_path)
+        trained_dict = checkpoint['state_dict']
+        if io.is_model_parallel(checkpoint):
+            if self.single_gpu:
+                trained_dict = OrderedDict((k.replace('module.', ''), val)
+                                                       for k, val in checkpoint['state_dict'].items())
+        else:
+            if not self.single_gpu:
+                trained_dict = OrderedDict(('module.{}'.format(k), val)
+                                                       for k, val in checkpoint['state_dict'].items())
+        self.model.encoder_decoder.load_state_dict(trained_dict)
+        self._logger.info("Encoder Loaded '%s' loaded",
+                          resume_path)
+
 
 
     def log_images(self, string, image_in, pose_out, ground_truth,):
@@ -181,8 +202,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         if self.with_cuda:
             self.model.cuda()
         total_loss = 0
-        pbar = tqdm(self.data_loader)
-
+        pbar = tqdm(self.data_train)
         for bid, (dic_in,dic_out) in enumerate(pbar):
             loss, pbar = self.train_step(bid, dic_in, dic_out, pbar, epoch)
             if self.test_log_step is not None and (bid % self.test_log_step == 0):
@@ -195,7 +215,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
                     self._update_summary(self.global_step,total_loss/bid,metrics=self.metrics)
             self.global_step += 1
             total_loss += loss.item()
-        avg_loss = total_loss / len(self.data_loader)
+        avg_loss = total_loss / len(self.data_train)
         self.model_logger.train.add_scalar('loss/epochs', avg_loss, epoch)
         self.train_logger.record_scalar('loss/epochs', avg_loss, epoch)
         self.train_logger.save_logger()

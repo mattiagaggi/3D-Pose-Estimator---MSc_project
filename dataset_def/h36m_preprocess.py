@@ -496,7 +496,6 @@ class Data_Base_class(BaseDataset):
         return im
     def extract_mask(self, path):
         im = cv2.imread(path, 0)
-        print(im.shape)
         im = im[:H36M_CONF.max_size, :H36M_CONF.max_size]
         im = cv2.threshold(im, 128, 255, cv2.THRESH_BINARY)[1]
         im = im.astype(np.float32)
