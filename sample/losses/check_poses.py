@@ -1,7 +1,7 @@
 
 
 import torch
-from matplotlib import plt
+from matplotlib import pyplot as plt
 from sample.parsers.parser_enc_dec import EncParser
 from dataset_def.h36m_3dpose_data import Data_3dpose
 from sample.losses.poses import Aligned_MPJ, MPJ, Normalised_MPJ
@@ -13,14 +13,14 @@ parser = EncParser("Encoder parser")
 args_enc = parser.get_arguments()
 data_train = Data_3dpose(args_enc,
                          index_file_content =['s','act'],
-                         index_file_list=[[1],[2]],
+                         index_file_list=[[1],[2,3]],
                          sampling=5,
                          randomise=False) #8,9
 
-loss=MPJ()
-_,it=data_train[10]
-poses= it['joints_im'][:5]
-R = int['R_world_im'][:5]
+loss=Aligned_MPJ()
+it,out=data_train[10]
+poses= out['joints_im'][:5]
+R = it['R_world_im'][:5]
 
 #now apply transormation
 pose_trans = torch.bmm(poses,R.transpose(1,2))

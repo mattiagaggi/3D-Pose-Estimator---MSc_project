@@ -1,5 +1,5 @@
 
-from data.directories_location import h36m_location
+from data.config import h36m_location
 from utils.utils_H36M.common import H36M_CONF
 import scipy.io as sio
 import cv2
@@ -15,23 +15,27 @@ import pickle as pkl
 #######################################################################
 #test data loadinf
 #######################################################################
-from utils.utils_H36M.transformations import world_to_pixel,world_to_camera
-from utils.utils_H36M.preprocess import Data_Base_class
+from dataset_def.h36m_preprocess import Data_Base_class
 from utils.io import *
-from data.directories_location import backgrounds_location
+from utils.trans_numpy_torch import tensor_to_numpy,numpy_to_tensor
+from data.config import backgrounds_location
 #
 #
-# d=Data_Base_class()
-# subjlist=[1,2,3,4,5,6,7,8,9,10]
-# d.create_index_file('s',[1])
-# print(d.index_file)
-# path=d.index_file[1][2][1][1][65]
+d=Data_Base_class(sampling=1,index_as_dict=True)
+d.create_index_file('s',[[1]])
+print(d.index_file)
+path=d.index_file[1][2][1][1][65]
 #
-# path2=d.index_file[1][5][1][1][65]
-# sample_metadata=d.load_metadata(get_parent(path))
-# img=d.extract_image(path)
-# sample_metadata2=d.load_metadata(get_parent(path2))
-# img2=d.extract_image(path2)
+path2=d.index_file[1][5][1][1][65]
+sample_metadata=d.load_metadata(get_parent(path))
+img=d.extract_image(path)
+sample_metadata2=d.load_metadata(get_parent(path2))
+img2=d.extract_image(path2)
+# plt.figure()
+# plt.imshow(img)
+# plt.figure()
+# plt.imshow(img2)
+# plt.show()
 #print(sample_metadata['R'])
 #print(sample_metadata2['R'])
 
@@ -74,10 +78,23 @@ from utils.utils_H36M.visualise import Drawer
 #test cropping
 #######################################################################
 from utils.utils_H36M.transformations import get_patch_image,transform_2d_joints
+from utils.utils_H36M.transformations import world_to_pixel,world_to_camera
+from utils.utils_H36M.transformations_torch import world_to_camera_batch
 
-# joints_world=sample_metadata['joint_world'][64]
-# joint_cam=world_to_camera(joints_world, 17, sample_metadata['R'], sample_metadata['T'])
-# joint_px, center= world_to_pixel(
+joints_world=sample_metadata['joint_world'][64].astype(np.float32)
+joint_cam=world_to_camera(joints_world, 17, sample_metadata['R'].astype(np.float32), sample_metadata['T'].astype(np.float32))
+joints_world_torch = numpy_to_tensor(joints_world.reshape(1,17,3))
+R_torch = numpy_to_tensor(sample_metadata['R'].astype(np.float32).reshape(1,3,3))
+T_torch =numpy_to_tensor(sample_metadata['T'].astype(np.float32).reshape(1,1,3))
+
+joints_cam_torch = world_to_camera_batch(joints_world_torch,17,R_torch,T_torch)
+joints_cam_torch= tensor_to_numpy(joints_cam_torch).reshape(17,3)
+print(joints_cam_torch-joint_cam) #
+
+
+
+
+# joint_px world_to_pixel(
 #    joints_world,
 #    H36M_CONF.joints.root_idx,
 #    H36M_CONF.joints.number,

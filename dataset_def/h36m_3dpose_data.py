@@ -99,7 +99,7 @@ class Data_3dpose(Data_Base_class):
 
     def testing(self,joints_world, imwarped, background_warped, R, T, f, c, trans):
 
-        joint_px, center = world_to_pixel(
+        joint_px= world_to_pixel(
             joints_world,
             H36M_CONF.joints.root_idx,
             H36M_CONF.joints.number, R,T,f,c
@@ -161,8 +161,8 @@ class Data_3dpose(Data_Base_class):
     def return_random_from_list(self,lst, element_to_compare = None):
 
         new_index = randint(len(lst))
-        assert len(lst)>1
         if element_to_compare is not None:
+            assert len(lst) > 1
             while lst[new_index] == element_to_compare:
                 new_index = randint(len(lst))
         return lst[new_index]
@@ -173,7 +173,7 @@ class Data_3dpose(Data_Base_class):
 
         act_list = list(self.all_metadata[s].keys())
         if len(act_list) < 2:
-            self._logger.error("Can't have apperance data if only one act selected")
+            self._logger.error("Can't have appearance data if only one act selected")
         new_act = self.return_random_from_list(act_list, act)
         subact_list = list(self.all_metadata[s][new_act].keys())
         new_subact = self.return_random_from_list(subact_list)

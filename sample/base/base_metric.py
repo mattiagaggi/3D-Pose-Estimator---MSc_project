@@ -22,7 +22,7 @@ class BaseMetric(Module):
                           error,
                           iteration)
 
-    def log_train(self,logger, iteration, error,train=True):
+    def log_train(self,logger, iteration, error,train=False):
         """Add result to log file
 
         Arguments:

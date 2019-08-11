@@ -23,7 +23,7 @@ class MPJ(BaseMetric):
         dist = torch.sqrt(summed)
         # debug line
         #return torch.mean(dist),pose_pred,pose_label
-        return torch.mean(dist) # mean over batch and joints
+        return torch.mean(dist)# mean over batch and joints
 
 
 class Normalised_MPJ(BaseMetric):

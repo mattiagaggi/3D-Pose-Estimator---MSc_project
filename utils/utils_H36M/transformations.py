@@ -144,7 +144,7 @@ def world_to_pixel(joints, root_idx, n_joints, rot, t, f, c):
     :param t: translation
     :param f: f intrinsic
     :param c: camera center intrinsics
-    :return: Nx3 camera coords, root in camera coords
+    :return: Nx3 camera coords
 
     """
     assert joints.shape == (n_joints,3)
@@ -155,10 +155,10 @@ def world_to_pixel(joints, root_idx, n_joints, rot, t, f, c):
 
     # joints in camera reference system
     joint_cam = world_to_camera(joints, n_joints, rot, t)
-    center_cam = joint_cam[root_idx]
+    #center_cam = joint_cam[root_idx]
     # joint in pixel coordinates
     joint_px = cam2pixel(joint_cam, f, c)
-    return joint_px, center_cam
+    return joint_px#, center_cam
 
 
 def rotate_x(angle_rad):

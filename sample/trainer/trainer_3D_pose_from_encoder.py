@@ -36,9 +36,8 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
                  args,
                  data_test=None,
                  no_cuda = no_cuda,
-                 eval_epoch = False
+                 eval_epoch = True
                  ):
-
 
         super().__init__(model, loss, metrics, optimizer, no_cuda,eval_epoch,
                          args.epochs, args.name, args.output, args.save_freq,
@@ -134,8 +133,8 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
                                            self.global_step)
 
 
-    def world_pose_to_camera(self,dic_in,dic_out):
-        mean= torch.bmm( self.mean_pose.repeat(self.model.batch_size,1,1), dic_in['R_world_im'].transpose(1,2))
+    def gt_cam_mean_cam(self, dic_in, dic_out):
+        mean = torch.bmm( self.mean_pose.repeat(self.model.batch_size,1,1), dic_in['R_world_im'].transpose(1,2))
         gt = torch.bmm( dic_out['joints_im'], dic_in['R_world_im'].transpose(1,2))
         return gt, mean
 
@@ -144,8 +143,10 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
 
         self.optimizer.zero_grad()
         out_pose_norm = self.model(dic_in)
-        gt, mean = self.world_pose_to_camera(dic_in, dic_out)
-        gt_norm = torch.div(gt-mean,self.std_pose)
+        gt, mean = self.gt_cam_mean_cam(dic_in, dic_out)
+        #normalise gt
+        gt_norm = gt-mean
+
         loss = self.loss( out_pose_norm, gt_norm)
         loss.backward()
         self.optimizer.step()
@@ -161,7 +162,8 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
                                                self.global_step)
         if (bid % self.img_log_step == 0) or (self.global_step in self.log_images_start_training):
 
-            out_pose = torch.mul(out_pose_norm, self.std_pose) + mean
+            out_pose = out_pose_norm + mean
+
             self.log_images('train',dic_in['im_in'], out_pose, gt)
             self.train_logger.save_batch_images('train', dic_in['im_in'], self.global_step,
                                                 pose_pred=out_pose, pose_gt=gt)
@@ -173,15 +175,18 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         self.model.eval()
         idx = random.randint(self.length_test_set)
         in_test_dic, out_test_dic = self.data_test[idx]
-        gt,mean = self.world_pose_to_camera(in_test_dic,  out_test_dic)
+        gt, mean = self.gt_cam_mean_cam(in_test_dic, out_test_dic)
         out_pose_norm = self.model(in_test_dic)
         self.model.train()
-        gt_norm = torch.div(gt - mean, self.std_pose)
+        #normalise gt
+        gt_norm = gt - mean
+
         loss_test = self.loss(out_pose_norm, gt_norm)
         self.model_logger.val.add_scalar('loss/iterations', loss_test.item(),
                                          self.global_step)
         self.train_logger.record_scalar("test_loss", loss_test.item(),self.global_step)
-        out_pose = torch.mul(out_pose_norm, self.std_pose) + mean
+        out_pose = out_pose_norm + mean
+
         if bid % self.img_log_step == 0:
             self.log_images('test',in_test_dic['im_in'], out_pose, gt)
             self.train_logger.save_batch_images('test', in_test_dic['im_in'],self.global_step,
@@ -207,8 +212,6 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
             loss, pbar = self.train_step(bid, dic_in, dic_out, pbar, epoch)
             if self.test_log_step is not None and (bid % self.test_log_step == 0):
                 self.test_step_on_random(bid)
-            #if bid % self.parameters_show == 0:
-                #self.log_gradients()
             if bid % self.save_freq == 0:
                 if total_loss:
                     self._save_checkpoint(epoch, total_loss / bid)
@@ -231,10 +234,13 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         self.model.eval()
         idx = random.randint(self.length_test_set)
         in_test_dic, out_test_dic = self.data_test[idx]
-        out_test = self.model(in_test_dic)
+        gt, mean = self.gt_cam_mean_cam(in_test_dic, out_test_dic)
+        out_pose_norm = self.model(in_test_dic)
+        out_pose = out_pose_norm + mean
+
         for m in self.metrics:
-            value = m(out_test,out_test_dic['im_target'])
-            m.log_model(self.model_logger.test, self.global_step, value.item())
-            m.log_train(self,self.train_logger, self.global_step, value.item())
+            value = m(out_pose, gt)
+            m.log_model(self.model_logger.val, self.global_step, value.item())
+            m.log_train(self.train_logger, self.global_step, value.item())
         self.model.train()
 

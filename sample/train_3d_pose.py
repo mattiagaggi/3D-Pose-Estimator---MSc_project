@@ -36,7 +36,7 @@ model = Pose_3D(args_pose.batch_size)
 
 
 
-metrics=[MPJ, Aligned_MPJ, Normalised_MPJ]
+metrics=[MPJ(), Aligned_MPJ(), Normalised_MPJ()]
 optimizer_pose = torch.optim.Adam(model.parameters(), lr=args_pose.learning_rate)
 loss_pose=MPJ()
 trainer_pose =Trainer_Enc_Dec_Pose(

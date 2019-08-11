@@ -235,11 +235,11 @@ class Data_Base_class(BaseDataset):
             exit()
         metadata = {}
         data = sio.loadmat(path)
-        metadata['joint_world'] = data['pose3d_world']
-        metadata['R'] = data['R']
-        metadata['T'] = data['T']
-        metadata['c'] = data['c']
-        metadata['f'] = data['f']
+        metadata['joint_world'] = data['pose3d_world'].astype(np.float32)
+        metadata['R'] = data['R'].astype(np.float32)
+        metadata['T'] = data['T'].astype(np.float32)
+        metadata['c'] = data['c'].astype(np.float32)
+        metadata['f'] = data['f'].astype(np.float32)
         metadata['img_widths'] = data['img_width']
         metadata['img_heights'] = data['img_height']
         return metadata
