@@ -64,8 +64,8 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         self.drawer = Drawer()
         mean= self.data_train.get_mean_pose()
         self.mean_pose = numpy_to_tensor(mean.reshape(1,17,3))
-        std = self.data_train.get_std_pose(mean).reshape(1, 17, 3)
-        self.std_pose = numpy_to_tensor(std)
+        #std = self.data_train.get_std_pose(mean).reshape(1, 17, 3)
+        #self.std_pose = numpy_to_tensor(std)
         # load model
         #self._resume_checkpoint(args.resume)
 

@@ -20,11 +20,10 @@ def cam2pixel(cam_coord, f, c):
 
     x = cam_coord[..., 0] / cam_coord[..., 2] * f[0,0] + c[0,0]
     y = cam_coord[..., 1] / cam_coord[..., 2] * f[0,1] + c[0,1]
-    z = cam_coord[..., 2]
+
 
     points = np.concatenate([x[..., np.newaxis],
-                             y[..., np.newaxis],
-                             z[..., np.newaxis]], axis=-1)
+                             y[..., np.newaxis]], axis=-1)
 
     return points
 
@@ -45,11 +44,10 @@ def pixel2cam(pixel_coord, f, c):
 
     x = (pixel_coord[..., 0] - c[0,0]) / f[0,0] * pixel_coord[..., 2]
     y = (pixel_coord[..., 1] - c[0,1]) / f[0,1] * pixel_coord[..., 2]
-    z = pixel_coord[..., 2]
+
 
     points = np.concatenate([x[..., np.newaxis],
-                             y[..., np.newaxis],
-                             z[..., np.newaxis]], axis=-1)
+                             y[..., np.newaxis]], axis=-1)
 
     return points
 
@@ -134,7 +132,7 @@ def plot_bounding_box(fig,joints, root_idx,rot, t, f, c):
     return fig
 
 
-def world_to_pixel(joints, root_idx, n_joints, rot, t, f, c):
+def world_to_pixel(joints, n_joints, rot, t, f, c):
     """
     Project from world coordinates to the camera space
     :param joints:  format (N_JOINTS x 3)
@@ -323,13 +321,10 @@ def transform_2d_joints(joints_px, transformation):
     """
 
     transformed_joints = np.copy(joints_px)
-    vis = np.ones(len(joints_px), dtype=bool)
-    concatenated_ones=np.concatenate( [transformed_joints[:,:2],np.ones(shape=(transformed_joints.shape[0],1))], axis=1)
-    transformed_joints[:,:2]=np.dot(concatenated_ones,transformation.T)
-    # rescale points to output size
-    transformed_joints[:, 2] *= H36M_CONF.depth_dim
+    concatenated_ones = np.concatenate( [transformed_joints,np.ones(shape=(transformed_joints.shape[0],1))], axis=1)
+    transformed_joints = np.dot(concatenated_ones,transformation.T)
 
-    return transformed_joints, vis
+    return transformed_joints
 
 
 

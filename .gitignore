@@ -4,5 +4,3 @@ sample/OpenPose3D/
 .idea/
 *DS_Store
 *.pyo 
-*.pyc
-sample/checkpoints/
