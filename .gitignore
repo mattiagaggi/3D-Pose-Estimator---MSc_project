@@ -5,3 +5,4 @@ sample/OpenPose3D/
 *DS_Store
 *.pyo 
 *_pycache_
+*pyc
