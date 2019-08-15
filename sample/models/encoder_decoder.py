@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch
 
 
-from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
+from sample.config.encoder_decoder import PARAMS
 from sample.base.base_model import BaseModel
 from sample.base.base_modules import unetConv2,unetUpNoSKip
 
@@ -179,7 +179,7 @@ class Decoder(BaseModel):
 class Encoder_Decoder(BaseModel):
     def __init__(self,
                  batch_size,
-                 input_im_size = ENCODER_DECODER_PARAMS.encoder_decoder.im_size):
+                 input_im_size = PARAMS.encoder_decoder.im_size):
 
         super().__init__()
 

@@ -520,16 +520,25 @@ class Data_Base_class(BaseDataset):
         else:
             return self.extract_mask(path)
 
-    def extract_info(self,metadata, background,s, act, subact, ca, fno):
+    def extract_info(self,metadata,s, act, subact, ca, fno):
 
-        background = background[ca-1,...]
         R = metadata['R']
         T = metadata['T']
         f = metadata['f']
         c = metadata['c']
         joints_world = metadata['joint_world'][fno-1]
         im = self.load_image(s, act, subact,ca, fno)
-        return im, joints_world, R, T, f, c, background
+        return im, joints_world, R, T, f, c
+
+    def extract_mask_info(self,metadata, s, act, subact, ca, fno):
+        R = metadata['R']
+        T = metadata['T']
+        f = metadata['f']
+        c = metadata['c']
+        joints_world = metadata['joint_world'][fno - 1]
+        im = self.load_mask(s, act, subact,ca, fno)
+        return im, joints_world, R, T, f, c
+
 
 
 

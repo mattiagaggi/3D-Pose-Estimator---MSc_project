@@ -4,11 +4,11 @@ from easydict import EasyDict as edict
 
 
 
-ENCODER_DECODER_PARAMS = edict({
+PARAMS = edict({
     'background':{
         'sampling': 64
     },
-    'encoder_decoder' : {
+    'data' : {
         'sampling_train': 5,
         'sampling_test': 20,
         'im_size' : 128,
@@ -16,7 +16,7 @@ ENCODER_DECODER_PARAMS = edict({
     }
 })
 
-if ENCODER_DECODER_PARAMS['encoder_decoder']['device_type'] == 'cpu':
-    ENCODER_DECODER_PARAMS['encoder_decoder']['device'] = torch.device('cpu')
+if PARAMS['data']['device_type'] == 'cpu':
+    PARAMS['data']['device'] = torch.device('cpu')
 else:
-    ENCODER_DECODER_PARAMS['encoder_decoder']['device'] = torch.device('cuda')
+    PARAMS['data']['device'] = torch.device('cuda')

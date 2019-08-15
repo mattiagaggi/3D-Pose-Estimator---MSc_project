@@ -4,10 +4,12 @@ import numpy as np
 from numpy.random import randint
 from numpy.random import normal
 from random import shuffle
-
+import torch
 from utils.utils_H36M.common import H36M_CONF
-from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
+from sample.config.encoder_decoder import PARAMS
 from dataset_def.h36m_preprocess import Data_Base_class
+from utils.utils_H36M.transformations import get_patch_image, bounding_box_pixel, rotate_z
+from utils.trans_numpy_torch import numpy_to_tensor, image_numpy_to_pytorch, numpy_to_long
 
 class SMPL_Data(Data_Base_class):
     def __init__(self,
@@ -76,3 +78,120 @@ class SMPL_Data(Data_Base_class):
                         summed += np.sum((metadata-mean)**2, axis=0)
         summed /= N-1
         return np.sqrt(summed)
+
+
+
+    def crop_img(self, img, bbpx,rotation_angle):
+        imwarped, trans = get_patch_image(img, bbpx,
+                                          (PARAMS.encoder_decoder.im_size,
+                                           PARAMS.encoder_decoder.im_size),
+                                          rotation_angle)
+        return imwarped, trans
+
+
+    def extract_image_info(self, s, act, subact, ca, fno, rotation_angle=None):
+
+        metadata = self.all_metadata[s][act][subact][ca][fno]
+        im, joints_world, R, T, f, c= self.extract_info(metadata, s, act, subact, ca, fno)
+        bbpx = bounding_box_pixel(joints_world, H36M_CONF.joints.root_idx, R, T, f,c)
+        im, trans = self.crop_img(im, bbpx, rotation_angle)
+        return im, joints_world
+
+    def extract_masks_info(self,s,act,subact,ca,fno, rotation_angle=None):
+        metadata = self.all_metadata[s][act][subact][ca][fno]
+        im, joints_world, R, T, f, c = self.extract_mask_info(metadata, s, act, subact, ca, fno)
+        bbpx = bounding_box_pixel(joints_world, H36M_CONF.joints.root_idx, R, T, f, c)
+        im, trans = self.crop_img(im, bbpx, rotation_angle)
+        return im, R, T, f, c, trans
+
+
+
+    def create_mask_dic(self):
+        mask_sub_dic={"image":[],
+                      "idx":[],
+                      "R":[],
+                      "T":[],
+                      "f":[],
+                      "c":[],
+                      "trans_crop":[]
+                      }
+        return mask_sub_dic
+
+
+    def create_dictionary_data(self):
+        dic= {"image" : [],
+              "joints_im" : [],
+              "masks" : {1 : self.create_mask_dic(),
+                         2 : self.create_mask_dic(),
+                         3 : self.create_mask_dic(),
+                         4 : self.create_mask_dic()}
+              }
+        return dic
+
+
+
+    def update_dic_with_image(self, dic, s, act, subact, ca, fno, rotation_angle):
+        im, joints_world=self.extract_image_info(s, act, subact, ca, fno, rotation_angle=rotation_angle)
+        dic['image'].append(image_numpy_to_pytorch(im))
+        dic['joints_im'].append(numpy_to_tensor(joints_world))
+        return dic
+
+
+    def update_dic_with_mask(self,dic, i,  s, act, subact,mask_number, fno, rotation_angle):
+        im, R, T, f, c, trans = self.extract_masks_info(s,act,subact,mask_number,fno,rotation_angle)
+        dic['masks'][mask_number]['idx'].append(i)
+        dic['masks'][mask_number]['R'].append(numpy_to_tensor(R))
+        dic['masks'][mask_number]['T'].append(numpy_to_tensor(T))
+        dic['masks'][mask_number]['f'].append(numpy_to_tensor(f))
+        dic['masks'][mask_number]['c'].append(numpy_to_tensor(c))
+        dic['masks'][mask_number]['trans_crop'].append(numpy_to_tensor(trans))
+        return dic
+
+    def dic_final_processing(self,dic):
+        dic['image'] = torch.stack(dic['image'], dim=0)
+        dic['joints_im'] = torch.stack(dic['joints_im'], dim=0)
+        for mask in dic['masks'].keys():
+            for key in dic['masks'][mask].keys():
+                if key == 'idx':
+                    dic['masks'][mask][key] = numpy_to_long(dic['masks'][mask][key])
+                else:
+                    dic['masks'][mask][key] = torch.stack(dic['masks'][mask][key], dim=0)
+        return dic
+
+    def track_epochs(self):
+
+        self.elements_taken += self.batch_size
+        if self.elements_taken //(self.batch_size ) == self.__len__():
+            self._logger.info("New Epoch reset elements taken")
+            self._current_epoch += 1
+            self.elements_taken = 0
+            if self.randomise:
+                shuffle(self.index_file)
+
+    def __len__(self):
+        len(self.index_file_cameras) // self.batch_size
+
+
+        
+    def __getitem__(self, item):
+        idx = item * self.batch_size
+        dic = self.create_dictionary_data()
+        rotation_angle = 0
+        for i in range(self.batch_size):
+            s, act, subact, ca, fno = self.index_file[idx+i]
+            dic = self.update_dic_with_image(dic,s, act, subact, ca, fno, rotation_angle)
+            for mask_number in range(1,5):
+                if mask_number in self.all_metadata[s][act][subact].keys():
+                    dic = self.update_dic_with_mask(dic, i, s, act, subact, mask_number, fno, rotation_angle)
+        dic = self.dic_final_processing(dic)
+        self.track_epochs()
+        return dic
+
+
+
+
+
+
+
+
+

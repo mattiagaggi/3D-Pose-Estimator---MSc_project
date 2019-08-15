@@ -13,7 +13,7 @@ import os
 from data.config import backgrounds_location
 from dataset_def.h36m_preprocess import Data_Base_class
 from utils.utils_H36M.common import H36M_CONF
-from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
+from sample.config.encoder_decoder import PARAMS
 from utils.io import file_exists
 
 
@@ -22,7 +22,7 @@ from utils.io import file_exists
 class Backgrounds(Data_Base_class):
 
     def __init__(self,
-                 sampling = ENCODER_DECODER_PARAMS.background.sampling,
+                 sampling = PARAMS.background.sampling,
                  max_epochs = 1):
 
         super().__init__(sampling, max_epochs, index_as_dict=False)

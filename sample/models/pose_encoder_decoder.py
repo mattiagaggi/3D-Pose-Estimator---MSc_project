@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch
 
 
-from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
+from sample.config.encoder_decoder import PARAMS
 from sample.base.base_model import BaseModel
 from sample.models.encoder_decoder import Encoder_Decoder
 from sample.models.MLP_from_latent import MLP_from_Latent

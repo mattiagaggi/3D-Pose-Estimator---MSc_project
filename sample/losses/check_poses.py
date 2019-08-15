@@ -3,7 +3,7 @@
 import torch
 from matplotlib import pyplot as plt
 from sample.parsers.parser_enc_dec import EncParser
-from dataset_def.h36m_3dpose_data import Data_3dpose
+from dataset_def.h36m_encoder_data import Data_3dpose
 from sample.losses.poses import Aligned_MPJ, MPJ, Normalised_MPJ
 from utils.trans_numpy_torch import tensor_to_numpy
 from utils.utils_H36M.visualise import Drawer

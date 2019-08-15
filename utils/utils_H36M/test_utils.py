@@ -24,13 +24,15 @@ from data.config import backgrounds_location
 d=Data_Base_class(sampling=1,index_as_dict=True)
 d.create_index_file('s',[[1]])
 print(d.index_file)
-path=d.index_file[1][2][1][1][65]
+path=d.index_file[1][2][1][4][1]
 #
-path2=d.index_file[1][5][1][1][65]
+path2=d.index_file[1][2][1][4][2]
 sample_metadata=d.load_metadata(get_parent(path))
 img=d.extract_image(path)
 sample_metadata2=d.load_metadata(get_parent(path2))
 img2=d.extract_image(path2)
+
+print(np.sum(sample_metadata['joint_world']-sample_metadata2['joint_world']))
 # plt.figure()
 # plt.imshow(img)
 # plt.figure()
@@ -81,7 +83,7 @@ from utils.utils_H36M.transformations import get_patch_image,transform_2d_joints
 from utils.utils_H36M.transformations import world_to_pixel,world_to_camera
 from utils.utils_H36M.transformations_torch import world_to_camera_batch, camera_to_pixels_batch, transform_2d_joints_batch
 
-joints_world=sample_metadata['joint_world'][64].astype(np.float32)
+joints_world=sample_metadata['joint_world'][0].astype(np.float32)
 joint_cam=world_to_camera(joints_world, 17, sample_metadata['R'].astype(np.float32), sample_metadata['T'].astype(np.float32))
 joints_world_torch = numpy_to_tensor(joints_world.reshape(1,17,3))
 R_torch = numpy_to_tensor(sample_metadata['R'].astype(np.float32).reshape(1,3,3))
@@ -105,7 +107,7 @@ joint_px=world_to_pixel(
 
 
 bbpx_px=bounding_box_pixel(joints_world, 0, sample_metadata['R'], sample_metadata['T'], sample_metadata['f'], sample_metadata['c'])
-imwarped,trans = get_patch_image(img, bbpx_px, (256,256), np.pi/4) # in degrees rotation around z axis
+imwarped,trans = get_patch_image(img, bbpx_px, (256,256), 0)#np.pi/4) # in degrees rotation around z axis
 trans_torch = numpy_to_tensor(trans.reshape(1,2,3))
 trsft_joints_torch = transform_2d_joints_batch(joints_pix_torch, trans_torch)
 trsf_joints = transform_2d_joints(joint_px, trans)

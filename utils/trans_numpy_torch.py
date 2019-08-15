@@ -1,7 +1,7 @@
 import torch
-from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
+from sample.config.encoder_decoder import PARAMS
 
-device=ENCODER_DECODER_PARAMS.encoder_decoder.device
+device=PARAMS.encoder_decoder.device
 
 
 
@@ -15,13 +15,17 @@ def numpy_to_tensor(data):
     return torch.from_numpy(data).float().to(device)
 
 
+def numpy_to_long(data):
+    return  torch.LongTensor(data).to(device)
+
 def encoder_dictionary_to_pytorch(dic):
     for key in dic.keys():
         if key == 'invert_segments':
-            dic[key] = torch.LongTensor(dic[key]).to(device)
+            dic[key] = numpy_to_long(dic[key])
         else:
             dic[key] = numpy_to_tensor(dic[key])
     return dic
+
 
 
 def tensor_to_numpy(tensor):

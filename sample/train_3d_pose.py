@@ -1,18 +1,18 @@
 
 import torch.nn
 import os
-from dataset_def.h36m_3dpose_data import Data_3dpose
+from dataset_def.h36m_encoder_data import Data_3dpose
 from sample.models.pose_encoder_decoder import Pose_3D
-from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
+from sample.config.encoder_decoder import PARAMS
 from sample.parsers.parser_enc_dec import Pose_Parser
 from sample.losses.poses import MPJ, Aligned_MPJ, Normalised_MPJ
 from sample.trainer.trainer_3D_pose_from_encoder import Trainer_Enc_Dec_Pose
 
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
-device=ENCODER_DECODER_PARAMS['encoder_decoder']['device']
-sampling_train=ENCODER_DECODER_PARAMS.encoder_decoder.sampling_train
-sampling_test= ENCODER_DECODER_PARAMS.encoder_decoder.sampling_test
+device=PARAMS['data']['device']
+sampling_train=PARAMS.data.sampling_train
+sampling_test= PARAMS.data.sampling_test
 parser= Pose_Parser("Pose Parser")
 args_pose = parser.get_arguments()
 

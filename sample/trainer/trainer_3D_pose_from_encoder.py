@@ -10,17 +10,17 @@ import os
 import numpy.random as random
 from collections import OrderedDict
 import matplotlib.pyplot as plt
-from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
+from sample.config.encoder_decoder import PARAMS
 from utils.trans_numpy_torch import numpy_to_tensor
 
 
 
 
-if ENCODER_DECODER_PARAMS.encoder_decoder.device_type == 'cpu':
+if PARAMS.encoder_decoder.device_type == 'cpu':
     no_cuda=True
 else:
     no_cuda=False
-device = ENCODER_DECODER_PARAMS['encoder_decoder']['device']
+device = PARAMS['data']['device']
 
 class Trainer_Enc_Dec_Pose(BaseTrainer):
     """

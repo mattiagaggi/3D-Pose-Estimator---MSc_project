@@ -5,12 +5,13 @@ from numpy.random import normal
 from random import shuffle
 
 from utils.utils_H36M.common import H36M_CONF
-from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
+from sample.config.encoder_decoder import PARAMS
 from dataset_def.h36m_preprocess import Data_Base_class
 from utils.trans_numpy_torch import encoder_dictionary_to_pytorch
 from utils.utils_H36M.transformations import bounding_box_pixel, get_patch_image, cam_pointing_root, rotate_z, transform_2d_joints, world_to_pixel
 from utils.utils_H36M.common import H36M_CONF
 from utils.utils_H36M.visualise import Drawer
+from utils.utils_H36M.transformations import get_rotation_angle
 from matplotlib import pyplot as plt
 
 
@@ -89,7 +90,7 @@ class Data_3dpose(Data_Base_class):
         summed /= N-1
         return np.sqrt(summed)
 
-    def check_previous_image(self, s):
+    def check_previous_background(self, s):
         same_backgrounds = False
         if self.previous_chache is not None:
             s_p, act_p, subact_p, ca_p, fno_p = self.previous_chache
@@ -101,7 +102,6 @@ class Data_3dpose(Data_Base_class):
 
         joint_px= world_to_pixel(
             joints_world,
-            H36M_CONF.joints.root_idx,
             H36M_CONF.joints.number, R,T,f,c
         )
         plt.figure()
@@ -119,39 +119,37 @@ class Data_3dpose(Data_Base_class):
 
     # extracxt apperance image
 
-    def patch_images(self,im,background, bbpx, rotation_angle):
-        imwarped, trans = get_patch_image(im, bbpx,
-                                          (ENCODER_DECODER_PARAMS.encoder_decoder.im_size,
-                                           ENCODER_DECODER_PARAMS.encoder_decoder.im_size),
-                                          rotation_angle)  # in rotation around z axis
-        background_warped, _ = get_patch_image(background, bbpx,
-                                          (ENCODER_DECODER_PARAMS.encoder_decoder.im_size,
-                                           ENCODER_DECODER_PARAMS.encoder_decoder.im_size),
+    def crop_img(self, img, bbpx,rotation_angle):
+        imwarped, trans = get_patch_image(img, bbpx,
+                                          (PARAMS.encoder_decoder.im_size,
+                                           PARAMS.encoder_decoder.im_size),
                                           rotation_angle)
-        return imwarped, background_warped, trans
+        return  imwarped, trans
 
 
-    def get_angle(self):
-        rad = normal(scale=np.pi/10)
-        return rad
+
+
+
     def extract_all_info(self, metadata, background,s, act, subact, ca, fno, rotation_angle=None):
         #rotation_angle = self.get_angle()
-        im, joints_world, R, T, f, c, background = self.extract_info(metadata, background, s, act, subact,ca, fno)
+        im, joints_world, R, T, f, c = self.extract_info(metadata, s, act, subact,ca, fno)
         bbpx = bounding_box_pixel(joints_world,H36M_CONF.joints.root_idx, R, T, f,c)
-        im, background, trans = self.patch_images(im,background,bbpx, rotation_angle)
+        im,  trans = self.crop_img(im, bbpx, rotation_angle)
+        background, _ = self.crop_img(background, bbpx, rotation_angle)
         R_centre = cam_pointing_root(joints_world, H36M_CONF.joints.root_idx, H36M_CONF.joints.number, R, T)
         if rotation_angle is not None:
             R_centre = np.dot(rotate_z(rotation_angle), R_centre)
         R_pointing_centre = np.dot( R_centre, R)
         #self.testing(joints_world, im, background, R, T, f, c, trans)
 
-        return im, R_pointing_centre, background, joints_world
+        return im, R_pointing_centre,background, joints_world
 
 
     def extract_all_info_memory_background(self,s, act, subact, ca, fno):
         #print(s,act,subact,ca) #11 2 2 4
         metadata = self.all_metadata[s][act][subact][ca]
-        im, R, background, joints = self.extract_all_info(metadata, self.previous_background, s, act, subact, ca,fno)
+        background = self.previous_background[ca-1]
+        im, R, background, joints = self.extract_all_info(metadata, background, s, act, subact, ca,fno)
         return im, R, background, joints
 
     def update_stored_info(self,s, act, subact, ca, fno):
@@ -188,7 +186,7 @@ class Data_3dpose(Data_Base_class):
 
         s, act, subact, ca, fno, ca2 = self.index_file_cameras[index]
         #print(s, act, subact, ca, fno, ca2)
-        same_backgrounds = self.check_previous_image(s)
+        same_backgrounds = self.check_previous_background(s)
         self.load_memory_backgrounds_image(s,same_backgrounds)
         im1, R1, background1, joints1 = self.extract_all_info_memory_background(s, act, subact, ca, fno)
         imT, RT, backgroundT, jointsT = self.extract_all_info_memory_background(s, act, subact, ca2, fno)
@@ -216,8 +214,6 @@ class Data_3dpose(Data_Base_class):
         im, R, background, joints, imT, RT, backgroundT, jointsT = data
         #rot = np.dot(RT, R.T)
         return im, R, backgroundT, imT, RT, joints
-
-
 
 
     def return_batch(self, index):
@@ -271,7 +267,7 @@ class Data_3dpose(Data_Base_class):
         im2_tot, rot2_tot,rot2T_tot, backgroundT2_tot, imT2_tot, joints2_tot = \
             [], [], [], [], [], [], [], [], [], [], [], []
         for i in range(self.batch_size // 2):
-            all_b = self.return_batch(index)
+            all_b = self.return_batch(index + i)
             im1, R1, backgroundT, imT,R1T, joints1 = all_b[0]
             im2, R2, backgroundT2, imT2, R2T, joints2 = all_b[1]
             im1_tot.append(im1)

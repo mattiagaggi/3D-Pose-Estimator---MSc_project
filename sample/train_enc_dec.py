@@ -1,17 +1,17 @@
 import torch.nn
 import os
-from dataset_def.h36m_3dpose_data import Data_3dpose
+from dataset_def.h36m_encoder_data import Data_3dpose
 from sample.models.pose_encoder_decoder import Pose_3D
 from torch.utils.data import DataLoader
 from sample.parsers.parser_enc_dec import EncParser
-from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
+from sample.config.encoder_decoder import PARAMS
 from sample.losses.images import L2_Resnet_Loss
 from sample.trainer.trainer_encoder_decoder import Trainer_Enc_Dec
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
-device=ENCODER_DECODER_PARAMS['encoder_decoder']['device']
-sampling_train=ENCODER_DECODER_PARAMS.encoder_decoder.sampling_train
-sampling_test= ENCODER_DECODER_PARAMS.encoder_decoder.sampling_test
+device=PARAMS['data']['device']
+sampling_train=PARAMS.data.sampling_train
+sampling_test= PARAMS.data.sampling_test
 parser = EncParser("Encoder parser")
 args_enc =parser.get_arguments()
 

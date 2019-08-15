@@ -8,15 +8,15 @@ from sample.base.base_trainer import BaseTrainer
 from tqdm import tqdm
 import torchvision.utils as vutils
 import numpy.random as random
-from sample.config.encoder_decoder import ENCODER_DECODER_PARAMS
+from sample.config.encoder_decoder import PARAMS
 
 
 
-if ENCODER_DECODER_PARAMS.encoder_decoder.device_type == 'cpu':
+if PARAMS.encoder_decoder.device_type == 'cpu':
     no_cuda=True
 else:
     no_cuda=False
-device = ENCODER_DECODER_PARAMS['encoder_decoder']['device']
+device = PARAMS['data']['device']
 
 class Trainer_Enc_Dec(BaseTrainer):
     """

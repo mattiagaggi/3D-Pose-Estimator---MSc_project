@@ -234,6 +234,10 @@ def rotation_xy(cx,cy,angle):
     return rot_mat
 
 
+def get_rotation_angle():
+    return 0
+
+
 
 def get_affine(c_x, c_y, src_width, src_height, dst_width, dst_height, inv=False, rotation_angle=None):
     """
