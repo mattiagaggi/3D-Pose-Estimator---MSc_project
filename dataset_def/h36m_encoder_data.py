@@ -115,19 +115,12 @@ class Data_3dpose(Data_Base_class):
         ax = b.pose_2d(ax, imwarped, trsf_joints[:, :-1])
         plt.show()
 
-
-
-    # extracxt apperance image
-
     def crop_img(self, img, bbpx,rotation_angle):
         imwarped, trans = get_patch_image(img, bbpx,
                                           (PARAMS.encoder_decoder.im_size,
                                            PARAMS.encoder_decoder.im_size),
                                           rotation_angle)
-        return  imwarped, trans
-
-
-
+        return imwarped, trans
 
 
     def extract_all_info(self, metadata, background,s, act, subact, ca, fno, rotation_angle=None):
@@ -213,7 +206,7 @@ class Data_3dpose(Data_Base_class):
     def process_data(self,data):
         im, R, background, joints, imT, RT, backgroundT, jointsT = data
         #rot = np.dot(RT, R.T)
-        return im, R, backgroundT, imT, RT, joints
+        return im, R, RT, backgroundT, imT, joints
 
 
     def return_batch(self, index):
@@ -224,24 +217,63 @@ class Data_3dpose(Data_Base_class):
         self.update_stored_info(s, act, subact, ca, fno)
         return self.process_data(batch_1), self.process_data(batch_2)
 
+    def create_dic_in(self):
 
+        dic={ 'im_in' : [],
+              'background_target': [],
+              'R_world_im': [],
+              'R_world_im_target': [],
+              'invert_segments': list(range(self.batch_size//2, self.batch_size)) + list(range(self.batch_size//2))
 
-    def group_batches(self,im1, rot1,rot1T, backgroundT, imT, joints1,
-                      im2, rot2, rot2T, backgroundT2, imT2, joints2):
-        assert self.batch_size//2 == len(im1)
-        assert self.batch_size//2 == len(im2)
-        dic_in = {
-                'im_in': np.transpose(np.stack(im1+im2,axis=0), axes=[0,3,1,2]),
-                'background_target' : np.transpose(np.stack(backgroundT+backgroundT2,axis=0), axes=[0,3,1,2]),
-                'R_world_im': np.stack(rot1 + rot2,axis=0),
-                'R_world_im_target': np.stack(rot1T + rot2T,axis=0),
-                'invert_segments': list(range(self.batch_size//2, self.batch_size)) + list(range(self.batch_size//2))
-            }
-        dic_out ={'joints_im': np.stack(joints1+joints2,axis=0),
-                  'im_target': np.transpose(np.stack(imT + imT2, axis=0), axes=[0, 3, 1, 2])}
-        N,J,T = dic_out['joints_im'].shape
-        dic_out['joints_im'] -= np.reshape(dic_out['joints_im'][:,H36M_CONF.joints.root_idx,:], (N,1,T))
-        return dic_in,dic_out
+        }
+        return dic
+
+    def create_dic_out(self):
+
+        dic = { 'joints_im': [],
+                'im_target': []
+        }
+        return dic
+
+    def create_all_dic(self):
+        dic_in = self.create_dic_in()
+        dic_out = self.create_dic_out()
+        dic_in_app = self.create_dic_in()
+        dic_out_app = self.create_dic_out()
+        return dic_in, dic_out, dic_in_app, dic_out_app
+
+    def update_dic_in(self, dic, im, rot, rotT, backgroundT):
+        dic['im_in'].append(im)
+        dic['background_target'].append(backgroundT)
+        dic['R_world_im'].append(rot)
+        dic['R_world_im_target'].append(rotT)
+        return dic
+
+    def update_dic_out(self, dic, imT, joints):
+        dic['joints_im'].append(joints)
+        dic['im_target'].append(imT)
+        return dic
+
+    def joint_dic_in(self, dic1, dic2):
+        assert self.batch_size//2 == dic1['im_in']
+        assert self.batch_size//2 == dic2['im_in']
+        new_dic = {}
+        for key in dic1.keys():
+            new_dic[key] = np.stack(dic1[key] + dic2[key], axis=0)
+        new_dic['im_in'] = np.transpose(new_dic['im_in'], axes=[0,3,1,2])
+        new_dic['background_target'] = np.transpose(new_dic['background_target'], axes=[0,3,1,2])
+        new_dic['invert_segments']= list(range(self.batch_size//2, self.batch_size)) + list(range(self.batch_size//2))
+        return new_dic
+
+    def join_dic_out(self, dic1, dic2):
+        new_dic = {}
+        for key in dic1.keys():
+            new_dic[key] = np.stack(dic1[key] + dic2[key], axis=0)
+        new_dic['im_target'] = np.transpose(new_dic['im_target'], axes=[0, 3, 1, 2])
+        N, J, T = new_dic['joints_im'].shape
+        new_dic['joints_im'] -= np.reshape(new_dic['joints_im'][:, H36M_CONF.joints.root_idx, :], (N, 1, T))
+        return new_dic
+
 
 
     def track_epochs(self):
@@ -254,6 +286,8 @@ class Data_3dpose(Data_Base_class):
             if self.randomise:
                 shuffle(self.index_file_cameras)
 
+    def __len__(self):
+        return len(self.index_file_cameras) // (self.batch_size//2)
 
     def __getitem__(self, item):
         """
@@ -261,49 +295,20 @@ class Data_3dpose(Data_Base_class):
         :param item:
         :return:
         """
-
         index = item * (self.batch_size // 2)
-        im1_tot, rot1_tot,rot1T_tot, backgroundT_tot, imT_tot, joints1_tot, \
-        im2_tot, rot2_tot,rot2T_tot, backgroundT2_tot, imT2_tot, joints2_tot = \
-            [], [], [], [], [], [], [], [], [], [], [], []
+        dic_in, dic_out, dic_in_app, dic_out_app = self.create_all_dic()
         for i in range(self.batch_size // 2):
-            all_b = self.return_batch(index + i)
-            im1, R1, backgroundT, imT,R1T, joints1 = all_b[0]
-            im2, R2, backgroundT2, imT2, R2T, joints2 = all_b[1]
-            im1_tot.append(im1)
-            im2_tot.append(im2)
-            rot1_tot.append(R1)
-            rot1T_tot.append(R1T)
-            rot2_tot.append(R2)
-            rot2T_tot.append(R2T)
-            backgroundT_tot.append(backgroundT)
-            backgroundT2_tot.append(backgroundT2)
-            imT_tot.append(imT)
-            imT2_tot.append(imT2)
-            joints1_tot.append(joints1)
-            joints2_tot.append(joints2)
-            index += 1
-        dic_in, dic_out = self.group_batches(im1_tot, rot1_tot, rot1T_tot, backgroundT_tot,
-                                             imT_tot, joints1_tot,
-                                             im2_tot, rot2_tot, rot2T_tot, backgroundT2_tot,
-                                             imT2_tot, joints2_tot)
-
+            batches = self.return_batch(index + i)
+            im, R, RT, backgroundT, imT,joints = batches[0]
+            self.update_dic_in(dic_in,im, R, RT, backgroundT)
+            self.update_dic_out(dic_out, imT, joints)
+            im, R, RT, backgroundT, imT, joints = batches[1]
+            self.update_dic_in(dic_in_app, im, R, RT, backgroundT)
+            self.update_dic_out(dic_out_app, imT, joints)
+        dic_in = self.joint_dic_in(dic_in, dic_in_app)
+        dic_out = self.join_dic_out(dic_out, dic_in_app)
         self.track_epochs()
         return encoder_dictionary_to_pytorch(dic_in), encoder_dictionary_to_pytorch(dic_out)
-
-    def __len__(self):
-        return len(self.index_file_cameras) // (self.batch_size//2)
-
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__=="__main__":

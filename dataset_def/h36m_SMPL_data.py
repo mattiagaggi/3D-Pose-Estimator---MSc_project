@@ -9,7 +9,7 @@ from utils.utils_H36M.common import H36M_CONF
 from sample.config.encoder_decoder import PARAMS
 from dataset_def.h36m_preprocess import Data_Base_class
 from utils.utils_H36M.transformations import get_patch_image, bounding_box_pixel, rotate_z
-from utils.trans_numpy_torch import numpy_to_tensor, image_numpy_to_pytorch, numpy_to_long
+from utils.trans_numpy_torch import numpy_to_tensor, image_numpy_to_pytorch, numpy_to_long, tensor_to_numpy
 
 class SMPL_Data(Data_Base_class):
     def __init__(self,
@@ -47,7 +47,7 @@ class SMPL_Data(Data_Base_class):
         else:
             self._logger.error("Subsampling not understood")
         if self.randomise:
-            shuffle(self.index_file_cameras)
+            shuffle(self.index_file)
         self.elements_taken=0
         self._current_epoch=0
 
@@ -83,22 +83,22 @@ class SMPL_Data(Data_Base_class):
 
     def crop_img(self, img, bbpx,rotation_angle):
         imwarped, trans = get_patch_image(img, bbpx,
-                                          (PARAMS.encoder_decoder.im_size,
-                                           PARAMS.encoder_decoder.im_size),
+                                          (PARAMS.data.im_size,
+                                           PARAMS.data.im_size),
                                           rotation_angle)
         return imwarped, trans
 
 
     def extract_image_info(self, s, act, subact, ca, fno, rotation_angle=None):
 
-        metadata = self.all_metadata[s][act][subact][ca][fno]
+        metadata = self.all_metadata[s][act][subact][ca]
         im, joints_world, R, T, f, c= self.extract_info(metadata, s, act, subact, ca, fno)
         bbpx = bounding_box_pixel(joints_world, H36M_CONF.joints.root_idx, R, T, f,c)
         im, trans = self.crop_img(im, bbpx, rotation_angle)
         return im, joints_world
 
     def extract_masks_info(self,s,act,subact,ca,fno, rotation_angle=None):
-        metadata = self.all_metadata[s][act][subact][ca][fno]
+        metadata = self.all_metadata[s][act][subact][ca]
         im, joints_world, R, T, f, c = self.extract_mask_info(metadata, s, act, subact, ca, fno)
         bbpx = bounding_box_pixel(joints_world, H36M_CONF.joints.root_idx, R, T, f, c)
         im, trans = self.crop_img(im, bbpx, rotation_angle)
@@ -137,9 +137,10 @@ class SMPL_Data(Data_Base_class):
         return dic
 
 
-    def update_dic_with_mask(self,dic, i,  s, act, subact,mask_number, fno, rotation_angle):
+    def update_dic_with_mask(self,dic, i,  s, act, subact, mask_number, fno, rotation_angle):
         im, R, T, f, c, trans = self.extract_masks_info(s,act,subact,mask_number,fno,rotation_angle)
         dic['masks'][mask_number]['idx'].append(i)
+        dic['masks'][mask_number]['image'].append(numpy_to_tensor(im))
         dic['masks'][mask_number]['R'].append(numpy_to_tensor(R))
         dic['masks'][mask_number]['T'].append(numpy_to_tensor(T))
         dic['masks'][mask_number]['f'].append(numpy_to_tensor(f))
@@ -172,7 +173,7 @@ class SMPL_Data(Data_Base_class):
         len(self.index_file_cameras) // self.batch_size
 
 
-        
+    # remember subtract the root index !!!!!!!
     def __getitem__(self, item):
         idx = item * self.batch_size
         dic = self.create_dictionary_data()
@@ -186,6 +187,56 @@ class SMPL_Data(Data_Base_class):
         dic = self.dic_final_processing(dic)
         self.track_epochs()
         return dic
+
+if __name__== '__main__' :
+    from sample.parsers.parser_enc_dec import EncParser
+    from utils.utils_H36M.transformations_torch import world_to_camera_batch,camera_to_pixels_batch, transform_2d_joints_batch
+    import matplotlib.pyplot as plt
+    from utils.utils_H36M.visualise import Drawer
+
+    el=4
+    idx=0
+
+
+    d = Drawer()
+    parser= EncParser("pars")
+    arg=parser.get_arguments()
+    c = SMPL_Data(arg,5)
+    dic=c[el]
+    el_idx = el * arg.batch_size
+    s,act,sub,ca,fno = c.index_file[el_idx+idx]
+    print(s,act,sub,ca,fno)
+    joints=dic['joints_im']
+    im = dic['image']
+    im= tensor_to_numpy(im, from_gpu=False).transpose(0,2,3,1)
+    im=im[idx]
+    for i in range(1,5):
+        mask_dic=dic['masks'][i]
+        cam = world_to_camera_batch(joints,17,mask_dic['R'],mask_dic['T'])
+        pix = camera_to_pixels_batch(cam, 17, mask_dic['f'], mask_dic['c'])
+        tranpi = transform_2d_joints_batch(pix,mask_dic['trans_crop'])
+        tranpi = tensor_to_numpy(tranpi)
+        mask=tensor_to_numpy( mask_dic['image'][idx])
+        if i==ca:
+            fig = plt.figure()
+            imjj = d.pose_2d(mask, tranpi[idx], False)
+            plt.imshow(imjj)
+            plt.figure()
+            plt.imshow(im)
+            plt.scatter(tranpi[idx,:,0],tranpi[idx,:,1])
+            plt.show()
+            mask = mask.reshape(128,128,1)*im
+        plt.figure()
+        imjj=d.pose_2d(mask,tranpi[idx],False)
+        plt.imshow(imjj)
+        plt.show()
+
+
+
+
+
+
+
 
 
 

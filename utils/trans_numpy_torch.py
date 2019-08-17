@@ -1,7 +1,7 @@
 import torch
 from sample.config.encoder_decoder import PARAMS
 
-device=PARAMS.encoder_decoder.device
+device=PARAMS.data.device
 
 
 
@@ -28,9 +28,10 @@ def encoder_dictionary_to_pytorch(dic):
 
 
 
-def tensor_to_numpy(tensor):
-
-    return tensor.data.cpu().numpy()
+def tensor_to_numpy(tensor,from_gpu=True):
+    if from_gpu:
+        return tensor.data.cpu().numpy()
+    return tensor.data.numpy()
 
 
 def image_pytorch_to_numpy(image, batch_idx=False):
