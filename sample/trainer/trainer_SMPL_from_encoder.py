@@ -22,7 +22,7 @@ else:
     no_cuda=False
 device = PARAMS['data']['device']
 
-class Trainer_Enc_Dec_Pose(BaseTrainer):
+class Trainer_Enc_Dec_SMPL(BaseTrainer):
     """
     Trainer class, inherited from BaseTrainer
     """
@@ -44,10 +44,9 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
                          args.verbosity, args.train_log_step,
                          args.verbosity_iter)
 
-        self.model.fix_encoder_decoder()
-
         self.loss = loss
         self.metrics = metrics
+        self.model.fix_encoder_decoder()
         self.data_train = data_train
         self.data_test = data_test
 
@@ -63,7 +62,8 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         self.length_test_set = len(self.data_test)
         self.len_trainset = len(self.data_train)
         self.drawer = Drawer()
-        mean= self.data_train.get_mean_pose()
+        #calculate mean SMPL pose
+
         self.mean_pose = numpy_to_tensor(mean.reshape(1,17,3))
         #std = self.data_train.get_std_pose(mean).reshape(1, 17, 3)
         #self.std_pose = numpy_to_tensor(std)
@@ -87,8 +87,8 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
                 string += " "
                 string += " %s," % elements
         info['details'] = string
-        info['optimiser']=str(self.optimizer)
-        info['loss']=str(self.loss.__class__.__name__)
+        info['optimiser'] = str(self.optimizer)
+        info['loss'] = str(self.loss.__class__.__name__)
         info['sampling'] = str(self.data_train.sampling)
         return info
 
@@ -145,6 +145,8 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
 
         self.optimizer.zero_grad()
         out_pose_norm = self.model(dic_in)
+
+
         gt, mean = self.gt_cam_mean_cam(dic_in, dic_out)
         #normalise gt
         gt_norm = gt-mean

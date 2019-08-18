@@ -16,7 +16,7 @@ def numpy_to_tensor(data):
 
 
 def numpy_to_long(data):
-    return  torch.LongTensor(data).to(device)
+    return torch.LongTensor(data).to(device)
 
 def encoder_dictionary_to_pytorch(dic):
     for key in dic.keys():

@@ -24,9 +24,9 @@ from data.config import backgrounds_location
 d=Data_Base_class(sampling=1,index_as_dict=True)
 d.create_index_file('s',[[1]])
 print(d.index_file)
-path=d.index_file[1][2][1][4][1]
+path=d.index_file[1][2][2][2][1]
 #
-path2=d.index_file[1][2][1][4][2]
+path2=d.index_file[1][2][2][2][2]
 sample_metadata=d.load_metadata(get_parent(path))
 img=d.extract_image(path)
 sample_metadata2=d.load_metadata(get_parent(path2))
@@ -107,7 +107,7 @@ joint_px=world_to_pixel(
 
 
 bbpx_px=bounding_box_pixel(joints_world, 0, sample_metadata['R'], sample_metadata['T'], sample_metadata['f'], sample_metadata['c'])
-imwarped,trans = get_patch_image(img, bbpx_px, (256,256), 0)#np.pi/4) # in degrees rotation around z axis
+imwarped,trans = get_patch_image(img, bbpx_px, (512,512), 0)#np.pi/4) # in degrees rotation around z axis
 trans_torch = numpy_to_tensor(trans.reshape(1,2,3))
 trsft_joints_torch = transform_2d_joints_batch(joints_pix_torch, trans_torch)
 trsf_joints = transform_2d_joints(joint_px, trans)
@@ -115,8 +115,10 @@ trsft_joints_torch = tensor_to_numpy(trsft_joints_torch).reshape(17,2)
 
 
 b=Drawer()
-ax=plt.subplot()
-ax=b.pose_2d(ax,imwarped,trsft_joints_torch)
+fig=plt.figure()
+plt.imshow(imwarped)
+plt.scatter(trsft_joints_torch[7,0],trsft_joints_torch[7,1])
+#fig=b.pose_2d(imwarped,trsft_joints_torch, True, fig)
 plt.show()
 
 

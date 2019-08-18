@@ -15,7 +15,8 @@ class Drawer:
 
     def __init__(self, line=1, marker=2, visibility=None):
 
-        self.limbs_names=['hip','right_up_leg','right_leg','right_foot','left_up_leg','left_leg', 'left_foot','spine1','neck', 'head','head-top','left-arm','left_forearm','left_hand','right_arm','right_forearm','right_hand']
+        self.limbs_names=['hip','right_up_leg','right_leg','right_foot','left_up_leg','left_leg', 'left_foot','spine1', 'neck', 'head','head-top',
+                          'left-arm','left_forearm','left_hand','right_arm','right_forearm','right_hand']
         self._limb_color = [0, 1, 2, 0, 3, 4, 5, 6, 7, 7, 5, 5, 8, 9, 5, 5,10,11,7]
         self._limbs = [[0, 1], [1, 2], [2, 3], [0, 4], [4, 5], [5, 6], [1, 7], [7, 8],
                   [8, 9], [9, 10], [7, 11], [4, 7], [11, 12], [12, 13], [7,14], [14,11], [14,15],[15,16], [0,7]]
@@ -153,6 +154,7 @@ class Drawer:
 
 
     def pose_3d(self, pose, plot = False, fig = None, azim=-90, elev=-90):
+        #in world coordinate -90,0 instead
         if plot:
             assert fig is not None
         else:
@@ -172,8 +174,8 @@ class Drawer:
                        marker='o', edgecolor=col, s=self.marker)
         if self.equal_axes:
             self._scale_plot(pose, ax)
-        if not self.planes:
-            self._hide_planes(ax)
+        #if not self.planes:
+        #    self._hide_planes(ax)
 
         fig.canvas.draw()
         if plot:

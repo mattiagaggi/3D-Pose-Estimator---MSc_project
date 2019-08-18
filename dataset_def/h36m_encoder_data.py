@@ -191,8 +191,8 @@ class Data_3dpose(Data_Base_class):
         new_act, new_subact, new_ca, new_ca2, new_fno = self.return_apperance_contents(s,act)
         #print(s,new_act, new_subact, new_ca, new_ca2, new_fno)
         im1, R1, background1, joints1 = self.extract_all_info_memory_background(s, new_act, new_subact, new_ca, new_fno)
-        imT, R2T, background1T, jointsT = self.extract_all_info_memory_background(s, new_act, new_subact, new_ca2, new_fno)
-        return im1, R1, background1, joints1, imT, R2T, background1T, jointsT
+        imT, RT, background1T, jointsT = self.extract_all_info_memory_background(s, new_act, new_subact, new_ca2, new_fno)
+        return im1, R1, background1, joints1, imT, RT, background1T, jointsT
 
     def testing_all(self,index):
 

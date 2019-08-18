@@ -25,7 +25,7 @@ class BaseTrainer(FrameworkClass):
     Base class for all trainers
     """
 
-    def __init__(self, model, loss, metrics, optimizer, no_cuda, eval_epoch, epochs,
+    def __init__(self, model, optimizer, no_cuda, eval_epoch, epochs,
                  name, output, save_freq, verbosity,
                  train_log_step, verbosity_iter,reset=False, **kwargs):
         """Init class"""
@@ -34,8 +34,6 @@ class BaseTrainer(FrameworkClass):
 
 
         self.model = model
-        self.loss = loss
-        self.metrics = metrics
         self.optimizer = optimizer
         self.epochs = epochs
         self.training_name = name
@@ -130,7 +128,7 @@ class BaseTrainer(FrameworkClass):
             info = io.read_from_json(info_file_path)
         self.training_info = info
 
-    def _update_summary(self, global_step, loss, metrics):
+    def _update_summary(self, global_step, loss):
         """Update training summary details
 
         Arguments:
@@ -141,11 +139,6 @@ class BaseTrainer(FrameworkClass):
 
         self.training_info['global_step'] = global_step
         self.training_info['val_loss'] = loss
-        for idx, metric in enumerate(self.metrics):
-            m = metrics[idx]
-            if isinstance(m, np.ndarray):
-                m = m.tolist()
-            self.training_info['val_{}'.format(metric._desc)] = m
 
         info_file_path = os.path.join(self.save_dir,
                                       self.training_name,

@@ -35,13 +35,14 @@ class Trainer_Enc_Dec(BaseTrainer):
                  eval_epoch = False
                  ):
 
-        super().__init__(model, loss, metrics, optimizer,
+        super().__init__(model, optimizer,
                          no_cuda,eval_epoch, args.epochs,
                  args.name, args.output, args.save_freq, args.verbosity,
                  args.train_log_step, args.verbosity_iter
                          )
 
-
+        self.loss = loss
+        self.metrics = metrics
         self.data_train = data_train
         self.data_test = data_test
         #test while training
@@ -73,7 +74,8 @@ class Trainer_Enc_Dec(BaseTrainer):
         """
         info = dict()
         info['creation'] = str(datetime.datetime.now())
-        info['size_dataset'] = len(self.data_train)
+        info['size_batches'] = len(self.data_train)
+        info['batch_size'] = self.model.batch_size
         string=""
         for number,contents in enumerate(self.data_train.index_file_list):
             string += "\n content :" + self.data_train.index_file_content[number]

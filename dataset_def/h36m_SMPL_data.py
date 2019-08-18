@@ -8,7 +8,7 @@ import torch
 from utils.utils_H36M.common import H36M_CONF
 from sample.config.encoder_decoder import PARAMS
 from dataset_def.h36m_preprocess import Data_Base_class
-from utils.utils_H36M.transformations import get_patch_image, bounding_box_pixel, rotate_z
+from utils.utils_H36M.transformations import get_patch_image, bounding_box_pixel
 from utils.trans_numpy_torch import numpy_to_tensor, image_numpy_to_pytorch, numpy_to_long, tensor_to_numpy
 
 class SMPL_Data(Data_Base_class):
@@ -50,34 +50,6 @@ class SMPL_Data(Data_Base_class):
             shuffle(self.index_file)
         self.elements_taken=0
         self._current_epoch=0
-
-
-    def get_mean_pose(self):
-        summed = np.zeros((17,3))
-        N = 0
-        for s in self.all_metadata:
-            for act in self.all_metadata[s]:
-                for subact in self.all_metadata[s][act]:
-                    for ca in self.all_metadata[s][act][subact]:
-                        metadata=self.all_metadata[s][act][subact][ca]['joint_world']
-                        N += metadata.shape[0]
-                        summed += np.sum(metadata, axis=0)
-
-        return summed/N
-
-    def get_std_pose(self,mean):
-        summed = np.zeros((17,3))
-        mean=mean.reshape(1,17,3)
-        N = 0
-        for s in self.all_metadata:
-            for act in self.all_metadata[s]:
-                for subact in self.all_metadata[s][act]:
-                    for ca in self.all_metadata[s][act][subact]:
-                        metadata=self.all_metadata[s][act][subact][ca]['joint_world']
-                        N+= metadata.shape[0]
-                        summed += np.sum((metadata-mean)**2, axis=0)
-        summed /= N-1
-        return np.sqrt(summed)
 
 
 
@@ -129,7 +101,6 @@ class SMPL_Data(Data_Base_class):
         return dic
 
 
-
     def update_dic_with_image(self, dic, s, act, subact, ca, fno, rotation_angle):
         im, joints_world=self.extract_image_info(s, act, subact, ca, fno, rotation_angle=rotation_angle)
         dic['image'].append(image_numpy_to_pytorch(im))
@@ -149,8 +120,11 @@ class SMPL_Data(Data_Base_class):
         return dic
 
     def dic_final_processing(self,dic):
+
         dic['image'] = torch.stack(dic['image'], dim=0)
         dic['joints_im'] = torch.stack(dic['joints_im'], dim=0)
+        dic['root_pos'] = dic['joints_im'][:, H36M_CONF.joints.root_idx, : ]
+        dic['root_pos'] = dic['root_pos'].view(-1, 1, 3)
         for mask in dic['masks'].keys():
             for key in dic['masks'][mask].keys():
                 if key == 'idx':
@@ -173,7 +147,6 @@ class SMPL_Data(Data_Base_class):
         len(self.index_file_cameras) // self.batch_size
 
 
-    # remember subtract the root index !!!!!!!
     def __getitem__(self, item):
         idx = item * self.batch_size
         dic = self.create_dictionary_data()
@@ -207,12 +180,28 @@ if __name__== '__main__' :
     s,act,sub,ca,fno = c.index_file[el_idx+idx]
     print(s,act,sub,ca,fno)
     joints=dic['joints_im']
+    j_plot = tensor_to_numpy(joints[idx])
+    f = plt.figure()
+    f = d.pose_3d(j_plot, True, f, -90, 0)
+    plt.show()
+    f=plt.figure()
+    from utils.utils_H36M.transformations import rotate_z, rotate_x, rotate_y
+    j_plot = j_plot @ rotate_x(-90/180*np.pi).T
+    f = d.pose_3d(j_plot, True, f,-90,90)
+    plt.show()
+
+    """
     im = dic['image']
     im= tensor_to_numpy(im, from_gpu=False).transpose(0,2,3,1)
     im=im[idx]
     for i in range(1,5):
         mask_dic=dic['masks'][i]
         cam = world_to_camera_batch(joints,17,mask_dic['R'],mask_dic['T'])
+        j_plot = tensor_to_numpy(cam[idx])
+        if ca ==i:
+            f = plt.figure()
+            f = d.pose_3d(j_plot, True, f, -90, -90)
+            plt.show()
         pix = camera_to_pixels_batch(cam, 17, mask_dic['f'], mask_dic['c'])
         tranpi = transform_2d_joints_batch(pix,mask_dic['trans_crop'])
         tranpi = tensor_to_numpy(tranpi)
@@ -230,8 +219,7 @@ if __name__== '__main__' :
         imjj=d.pose_2d(mask,tranpi[idx],False)
         plt.imshow(imjj)
         plt.show()
-
-
+    """
 
 
 
