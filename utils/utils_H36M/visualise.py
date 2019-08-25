@@ -228,6 +228,20 @@ class Drawer:
         plt.close()
         return image
 
+    def plot_image_on_axis(self,idx, images_list, points_list, indexes_list):
+
+        assert len(images_list) == 4
+        fig, axs = plt.subplots(2, 2)
+        for i in range(4):
+            if idx in indexes_list[i]:
+                axs[ i // 2, i % 2].axis('off')
+                position = indexes_list[i].index(idx)
+                axs[ i // 2, i % 2].imshow(images_list[i][position], cmap='gray')
+                if points_list is not None:
+                    axs[i // 2, i % 2].scatter(points_list[i][position][:,0], points_list[i][position][:,1], s=1, alpha=0.5)
+                axs[i // 2, i % 2].set_title('projection ca %s' % i)
+        return fig
+
 
 
 

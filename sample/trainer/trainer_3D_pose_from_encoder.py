@@ -10,8 +10,8 @@ import os
 import numpy.random as random
 from collections import OrderedDict
 import matplotlib.pyplot as plt
-from sample.config.encoder_decoder import PARAMS
-from utils.trans_numpy_torch import numpy_to_tensor
+from sample.config.data_conf import PARAMS
+from utils.trans_numpy_torch import numpy_to_tensor_float
 
 
 
@@ -64,9 +64,9 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         self.len_trainset = len(self.data_train)
         self.drawer = Drawer()
         mean= self.data_train.get_mean_pose()
-        self.mean_pose = numpy_to_tensor(mean.reshape(1,17,3))
+        self.mean_pose = numpy_to_tensor_float(mean.reshape(1, 17, 3))
         #std = self.data_train.get_std_pose(mean).reshape(1, 17, 3)
-        #self.std_pose = numpy_to_tensor(std)
+        #self.std_pose = numpy_to_tensor_float(std)
         # load model
         #self._resume_checkpoint(args.resume)
 
@@ -217,7 +217,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
             if bid % self.save_freq == 0:
                 if total_loss:
                     self._save_checkpoint(epoch, total_loss / bid)
-                    self._update_summary(self.global_step,total_loss/bid,metrics=self.metrics)
+                    self._update_summary(self.global_step,total_loss/bid)
             self.global_step += 1
             total_loss += loss.item()
         avg_loss = total_loss / len(self.data_train)
@@ -239,7 +239,6 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         gt, mean = self.gt_cam_mean_cam(in_test_dic, out_test_dic)
         out_pose_norm = self.model(in_test_dic)
         out_pose = out_pose_norm + mean
-
         for m in self.metrics:
             value = m(out_pose, gt)
             m.log_model(self.model_logger.val, self.global_step, value.item())

@@ -235,7 +235,12 @@ def rotation_xy(cx,cy,angle):
 
 
 def get_rotation_angle():
-    return 0
+
+    degree = np.random.normal(loc=0, scale=5)
+    while degree > 20:
+        degree = np.random.normal(loc=0, scale=5)
+    radians = degree/180 * np.pi
+    return radians
 
 
 

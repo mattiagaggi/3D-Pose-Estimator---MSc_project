@@ -1,8 +1,10 @@
 import torch
-from sample.config.encoder_decoder import PARAMS
+import torch.nn
+from sample.config.data_conf import PARAMS
 
+from torch.autograd import Variable
 device=PARAMS.data.device
-
+device_type = PARAMS.data.device_type
 
 
 def create_zero_float_tensor(shape):
@@ -11,26 +13,36 @@ def create_zero_float_tensor(shape):
 def create_one_float_tensor(shape):
     return create_zero_float_tensor(shape) + 1
 
-def numpy_to_tensor(data):
+def numpy_to_tensor_float(data):
     return torch.from_numpy(data).float().to(device)
 
+def numpy_to_tensor(data):
+    return torch.from_numpy(data).to(device)
 
-def numpy_to_long(data):
-    return torch.LongTensor(data).to(device)
+
+def numpy_to_long(arr):
+    return torch.LongTensor(arr).to(device)
+
+
+
+
+def numpy_to_param(data):
+    data = numpy_to_tensor_float(data)
+    return torch.nn.Parameter(data, requires_grad=True)
 
 def encoder_dictionary_to_pytorch(dic):
     for key in dic.keys():
         if key == 'invert_segments':
             dic[key] = numpy_to_long(dic[key])
         else:
-            dic[key] = numpy_to_tensor(dic[key])
+            dic[key] = numpy_to_tensor_float(dic[key])
     return dic
 
 
 
-def tensor_to_numpy(tensor,from_gpu=True):
-    if from_gpu:
-        return tensor.data.cpu().numpy()
+def tensor_to_numpy(tensor):
+    if device_type == 'gpu': #transfer to cpu
+        return tensor.cpu().data.numpy()
     return tensor.data.numpy()
 
 
@@ -43,9 +55,9 @@ def image_pytorch_to_numpy(image, batch_idx=False):
 def image_numpy_to_pytorch(image, batch_idx=False):
 
     if batch_idx:
-        return numpy_to_tensor(image.transpose(0,3, 1, 2))
+        return numpy_to_tensor_float(image.transpose(0, 3, 1, 2))
     else:
-        return numpy_to_tensor(image.transpose(2, 0, 1))
+        return numpy_to_tensor_float(image.transpose(2, 0, 1))
 
 
 

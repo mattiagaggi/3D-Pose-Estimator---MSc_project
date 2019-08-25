@@ -1,5 +1,6 @@
 import torch
-from utils.trans_numpy_torch import create_one_float_tensor
+from utils.trans_numpy_torch import create_one_float_tensor, numpy_to_tensor_float
+from utils.utils_H36M.transformations import rotate_x, rotate_y, rotate_z
 
 
 #R x4, t x4 , f x4 , trans x4 , joints, mean_pose
@@ -57,7 +58,7 @@ def camera_to_world_batch(joints,n_joints,rot, t):
 
 
 
-def camera_to_pixels_batch(joints_cam,n_joints, f, c):
+def camera_to_pixels_batch(joints_cam,n_joints, f, c, return_z = False):
     check_joints_input(joints_cam, n_joints)
     check_f_c_input(c)
     check_f_c_input(f)
@@ -70,17 +71,47 @@ def camera_to_pixels_batch(joints_cam,n_joints, f, c):
     cy = c[:, 0, 1].view(-1,1)
     new_x = torch.div(x,z) * fx + cx
     new_y = torch.div(y,z) * fy + cy
-    joints_px = torch.stack([new_x,new_y], dim=2)
+    if return_z:
+        joints_px = torch.stack([new_x, new_y, z], dim=2)
+    else:
+        joints_px = torch.stack([new_x,new_y], dim=2)
     return joints_px
+
+
 
 
 
 def transform_2d_joints_batch(joints_px, transformation):
 
     check_transformation_input(transformation)
-    n, j,d = list(joints_px.size())
+    n, j, d = list(joints_px.size())
     ones = create_one_float_tensor([n, j, 1])
-    joints_concat = torch.cat([joints_px, ones], dim=2)
-    return torch.bmm(joints_concat, transformation.transpose(1,2))
+    if d == 2:
+        joints_concat = torch.cat([joints_px, ones], dim=2)
+        return torch.bmm(joints_concat, transformation.transpose(1, 2))
+    elif d == 3:
+        joints_concat = torch.cat([joints_px[:, :, :2], ones], dim=2)
+        joints_xy = torch.bmm(joints_concat, transformation.transpose(1, 2))
+        return torch.cat([joints_xy, joints_px[:, :, 2].view(n, j, 1)], dim=2)
+    raise NameError("wrong dim")
 
 
+def rotate_x_batch(angle_rad, batch_size):
+
+    R = numpy_to_tensor_float(rotate_x(angle_rad))
+    stacked = torch.stack([R]*batch_size, dim=0)
+    return stacked
+
+
+def rotate_y_torch(angle_rad, batch_size):
+
+    R = numpy_to_tensor_float(rotate_x(angle_rad))
+    stacked = torch.stack([R] * batch_size, dim=0)
+    return stacked
+
+
+def rotate_z_torch(angle_rad, batch_size):
+
+    R = numpy_to_tensor_float(rotate_x(angle_rad))
+    stacked = torch.stack([R] * batch_size, dim=0)
+    return stacked

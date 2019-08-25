@@ -1,7 +1,7 @@
 from sample.base.base_parser import BaseParser
 
 
-name='enc_dec_S15678_no_rot'
+name='enc_dec_S15678_rot'
 name1=name+"3D"
 
 

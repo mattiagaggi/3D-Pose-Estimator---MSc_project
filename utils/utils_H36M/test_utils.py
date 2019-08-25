@@ -17,7 +17,7 @@ import pickle as pkl
 #######################################################################
 from dataset_def.h36m_preprocess import Data_Base_class
 from utils.io import *
-from utils.trans_numpy_torch import tensor_to_numpy,numpy_to_tensor
+from utils.trans_numpy_torch import tensor_to_numpy,numpy_to_tensor_float
 from data.config import backgrounds_location
 #
 #
@@ -85,11 +85,11 @@ from utils.utils_H36M.transformations_torch import world_to_camera_batch, camera
 
 joints_world=sample_metadata['joint_world'][0].astype(np.float32)
 joint_cam=world_to_camera(joints_world, 17, sample_metadata['R'].astype(np.float32), sample_metadata['T'].astype(np.float32))
-joints_world_torch = numpy_to_tensor(joints_world.reshape(1,17,3))
-R_torch = numpy_to_tensor(sample_metadata['R'].astype(np.float32).reshape(1,3,3))
-T_torch =numpy_to_tensor(sample_metadata['T'].astype(np.float32).reshape(1,1,3))
-f_torch = numpy_to_tensor(sample_metadata['f'].astype(np.float32).reshape(1,1,2))
-c_torch =numpy_to_tensor(sample_metadata['c'].astype(np.float32).reshape(1,1,2))
+joints_world_torch = numpy_to_tensor_float(joints_world.reshape(1, 17, 3))
+R_torch = numpy_to_tensor_float(sample_metadata['R'].astype(np.float32).reshape(1, 3, 3))
+T_torch =numpy_to_tensor_float(sample_metadata['T'].astype(np.float32).reshape(1, 1, 3))
+f_torch = numpy_to_tensor_float(sample_metadata['f'].astype(np.float32).reshape(1, 1, 2))
+c_torch =numpy_to_tensor_float(sample_metadata['c'].astype(np.float32).reshape(1, 1, 2))
 joints_cam_torch = world_to_camera_batch(joints_world_torch,17,R_torch,T_torch)
 joints_pix_torch = camera_to_pixels_batch(joints_cam_torch,17, f_torch, c_torch)
 
@@ -108,7 +108,7 @@ joint_px=world_to_pixel(
 
 bbpx_px=bounding_box_pixel(joints_world, 0, sample_metadata['R'], sample_metadata['T'], sample_metadata['f'], sample_metadata['c'])
 imwarped,trans = get_patch_image(img, bbpx_px, (512,512), 0)#np.pi/4) # in degrees rotation around z axis
-trans_torch = numpy_to_tensor(trans.reshape(1,2,3))
+trans_torch = numpy_to_tensor_float(trans.reshape(1, 2, 3))
 trsft_joints_torch = transform_2d_joints_batch(joints_pix_torch, trans_torch)
 trsf_joints = transform_2d_joints(joint_px, trans)
 trsft_joints_torch = tensor_to_numpy(trsft_joints_torch).reshape(17,2)

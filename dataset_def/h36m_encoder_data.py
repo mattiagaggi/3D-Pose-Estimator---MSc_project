@@ -5,7 +5,7 @@ from numpy.random import normal
 from random import shuffle
 
 from utils.utils_H36M.common import H36M_CONF
-from sample.config.encoder_decoder import PARAMS
+from sample.config.data_conf import PARAMS
 from dataset_def.h36m_preprocess import Data_Base_class
 from utils.trans_numpy_torch import encoder_dictionary_to_pytorch
 from utils.utils_H36M.transformations import bounding_box_pixel, get_patch_image, cam_pointing_root, rotate_z, transform_2d_joints, world_to_pixel
@@ -60,6 +60,8 @@ class Data_3dpose(Data_Base_class):
                     self.index_file_cameras.append([s,act,subact,ca,fno,ca2])
         if self.randomise:
             shuffle(self.index_file_cameras)
+
+        self.invert_segments = list(range(self.batch_size//2, self.batch_size)) + list(range(self.batch_size//2))
         self.elements_taken=0
         self._current_epoch=0
 
@@ -117,14 +119,15 @@ class Data_3dpose(Data_Base_class):
 
     def crop_img(self, img, bbpx,rotation_angle):
         imwarped, trans = get_patch_image(img, bbpx,
-                                          (PARAMS.encoder_decoder.im_size,
-                                           PARAMS.encoder_decoder.im_size),
+                                          (PARAMS.data.im_size,
+                                           PARAMS.data.im_size),
                                           rotation_angle)
         return imwarped, trans
 
 
-    def extract_all_info(self, metadata, background,s, act, subact, ca, fno, rotation_angle=None):
-        #rotation_angle = self.get_angle()
+    def extract_all_info(self, metadata, background,s, act, subact, ca, fno,):
+
+        rotation_angle = get_rotation_angle()
         im, joints_world, R, T, f, c = self.extract_info(metadata, s, act, subact,ca, fno)
         bbpx = bounding_box_pixel(joints_world,H36M_CONF.joints.root_idx, R, T, f,c)
         im,  trans = self.crop_img(im, bbpx, rotation_angle)
@@ -255,14 +258,14 @@ class Data_3dpose(Data_Base_class):
         return dic
 
     def joint_dic_in(self, dic1, dic2):
-        assert self.batch_size//2 == dic1['im_in']
-        assert self.batch_size//2 == dic2['im_in']
+        assert self.batch_size//2 == len(dic1['im_in'])
+        assert self.batch_size//2 == len(dic2['im_in'])
         new_dic = {}
         for key in dic1.keys():
             new_dic[key] = np.stack(dic1[key] + dic2[key], axis=0)
         new_dic['im_in'] = np.transpose(new_dic['im_in'], axes=[0,3,1,2])
         new_dic['background_target'] = np.transpose(new_dic['background_target'], axes=[0,3,1,2])
-        new_dic['invert_segments']= list(range(self.batch_size//2, self.batch_size)) + list(range(self.batch_size//2))
+        new_dic['invert_segments'] = self.invert_segments
         return new_dic
 
     def join_dic_out(self, dic1, dic2):
@@ -306,12 +309,15 @@ class Data_3dpose(Data_Base_class):
             self.update_dic_in(dic_in_app, im, R, RT, backgroundT)
             self.update_dic_out(dic_out_app, imT, joints)
         dic_in = self.joint_dic_in(dic_in, dic_in_app)
-        dic_out = self.join_dic_out(dic_out, dic_in_app)
+        dic_out = self.join_dic_out(dic_out, dic_out_app)
         self.track_epochs()
         return encoder_dictionary_to_pytorch(dic_in), encoder_dictionary_to_pytorch(dic_out)
 
 
 if __name__=="__main__":
+    from sample.parsers.parser_enc_dec import EncParser
+    p = EncParser("smsm")
+    arg = p.get_arguments()
     def check_data_feed():
         d = Data_3dpose(randomise=False)
         oo = 0
@@ -331,7 +337,7 @@ if __name__=="__main__":
                         plt.imshow(e[el])
                         plt.show()
     def final_check():
-        d = Data_3dpose()
+        d = Data_3dpose(arg, sampling=1)
         print(len(d))
         for i in range(len(d)):
             dic1,dic2= d[i]
@@ -356,4 +362,4 @@ if __name__=="__main__":
                         plt.title("k app is " + k)
                         plt.imshow(np.transpose(dic2[k][5, ...], axes=[1, 2, 0]))
                 plt.show()
-    #final_check()
+    final_check()

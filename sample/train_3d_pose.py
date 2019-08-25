@@ -3,7 +3,7 @@ import torch.nn
 import os
 from dataset_def.h36m_encoder_data import Data_3dpose
 from sample.models.pose_encoder_decoder import Pose_3D
-from sample.config.encoder_decoder import PARAMS
+from sample.config.data_conf import PARAMS
 from sample.parsers.parser_enc_dec import Pose_Parser
 from sample.losses.poses import MPJ, Aligned_MPJ, Normalised_MPJ
 from sample.trainer.trainer_3D_pose_from_encoder import Trainer_Enc_Dec_Pose

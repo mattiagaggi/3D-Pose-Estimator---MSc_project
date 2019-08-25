@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from utils.trans_numpy_torch import create_zero_float_tensor, numpy_to_tensor
+from utils.trans_numpy_torch import create_zero_float_tensor, numpy_to_tensor_float
 
 from torch import svd
 from torch import det
@@ -11,7 +11,7 @@ from torch import det
 def tiled_identity(length):
     ident = np.eye(3)
     iden_batch = np.tile(ident, (length, 1, 1))
-    return numpy_to_tensor(iden_batch)
+    return numpy_to_tensor_float(iden_batch)
 
 
 

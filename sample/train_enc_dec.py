@@ -2,25 +2,24 @@ import torch.nn
 import os
 from dataset_def.h36m_encoder_data import Data_3dpose
 from sample.models.pose_encoder_decoder import Pose_3D
-from torch.utils.data import DataLoader
 from sample.parsers.parser_enc_dec import EncParser
-from sample.config.encoder_decoder import PARAMS
+from sample.config.data_conf import PARAMS
 from sample.losses.images import L2_Resnet_Loss
 from sample.trainer.trainer_encoder_decoder import Trainer_Enc_Dec
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 device=PARAMS['data']['device']
-sampling_train=PARAMS.data.sampling_train
+sampling_train= PARAMS.data.sampling_train
 sampling_test= PARAMS.data.sampling_test
 parser = EncParser("Encoder parser")
-args_enc =parser.get_arguments()
+args_enc = parser.get_arguments()
 
 
 
 data_train = Data_3dpose(args_enc,  #subsampling_fno = 1,
                          index_file_content =['s'],
                          #index_file_list=[[1, 5, 6, 7],[1,2]])
-                         index_file_list=[[1,5,6,7,8]],
+                         index_file_list=[[1,5,6,7,8]], #15678
                          sampling=sampling_train) #8,9
 
 
@@ -30,8 +29,6 @@ data_test = Data_3dpose(args_enc,  #subsampling_fno = 2,
                         index_file_list=[[9,11]],
                         sampling=sampling_test
                         ) #8,9
-
-train_data_loader = DataLoader(data_train,shuffle=True, num_workers=args_enc.num_threads)
 
 
 
@@ -54,10 +51,10 @@ trainer = Trainer_Enc_Dec(
 
 
 # Start training!
-#trainer._resume_checkpoint("data/checkpoints/enc_dec_S15678_no_rot")
+#trainer._resume_checkpoint("data/checkpoints/enc_dec_S15678_rot")
 #model.encoder_decoder = trainer.model
 
-#trainer.train()
+trainer.train()
 
 
 

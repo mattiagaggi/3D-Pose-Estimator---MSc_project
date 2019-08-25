@@ -1,7 +1,8 @@
 import torch
 
 from utils.smpl_torch.pytorch.smpl_layer import SMPL_Layer
-from utils.smpl_torch.display_utils import display_model
+from utils.smpl_torch.display_utils import Drawer
+
 
 if __name__ == '__main__':
     cuda = False
@@ -9,10 +10,12 @@ if __name__ == '__main__':
     # Create the SMPL layer
     smpl_layer = SMPL_Layer(
         center_idx=0,
-        gender='female',
+        gender='neutral',
         model_root='data/models_smpl')
+    d = Drawer(kintree_table=smpl_layer.kintree_table)
+
     # Generate random pose and shape parameters
-    pose_params = torch.rand(batch_size, 72) * 0
+    pose_params = torch.rand(batch_size, 72) * 0.2
     shape_params = torch.rand(batch_size, 10) * 0.3
     # GPU mode
     if cuda:
@@ -21,15 +24,9 @@ if __name__ == '__main__':
         smpl_layer.cuda()
     # Forward from the SMPL layer
     verts, Jtr = smpl_layer(pose_params, th_betas=shape_params)
-    print(Jtr.size())
-    print(torch.sqrt(torch.sum(torch.mul(Jtr,Jtr))))
-    print(smpl_layer.th_faces)
+
+
     # Draw output vertices and joints
-    display_model(
-        {'verts': verts.cpu().detach(),
-         'joints': Jtr.cpu().detach()},
-        model_faces= smpl_layer.th_faces,
-        with_joints=True,
-        kintree_table=smpl_layer.kintree_table,
-        savepath='image.png',
-        show=True)
+    import matplotlib.pyplot as plt
+
+    plt.show()

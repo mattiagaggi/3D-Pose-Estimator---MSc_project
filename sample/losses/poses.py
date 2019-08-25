@@ -14,8 +14,7 @@ class MPJ(BaseMetric):
 
 
     def forward(self, pose_pred, pose_label):
-        assert pose_pred.size()[1] == 17
-        assert pose_label.size()[1] == 17
+
         assert pose_pred.size()[2] == 3
         assert pose_label.size()[2] == 3
         squared = torch.pow((pose_pred-pose_label),exponent=2)
@@ -58,8 +57,7 @@ class Aligned_MPJ(BaseMetric):
 
 
     def forward(self, pose_pred, pose_label):
-        assert pose_pred.size()[1] == 17
-        assert pose_label.size()[1] == 17
+
         assert pose_pred.size()[2] == 3
         assert pose_label.size()[2] == 3
         #Kabsch algorithm

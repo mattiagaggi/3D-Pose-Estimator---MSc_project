@@ -77,23 +77,7 @@ class BaseTrainer(FrameworkClass):
         io.ensure_dir(os.path.join(self.save_dir,
                                    self.training_name))
 
-    def _get_var(self, var):
-        """Generate variable based on CUDA availability
 
-        Arguments:
-            var {undefined} -- variable to be converted
-
-        Returns:
-            tensor -- pytorch tensor
-        """
-
-        var = torch.FloatTensor(var)
-        var = Variable(var)
-
-        if self.with_cuda:
-            var = var.cuda()
-
-        return var
 
     def train(self):
         """Train model"""
@@ -107,6 +91,8 @@ class BaseTrainer(FrameworkClass):
                 self._logger.info('Training epoch %d of %d',
                                   epoch, self.epochs)
             epoch_loss = self._train_epoch(epoch)
+            if len(epoch_loss) > 1: #in case there is more than one loss store total loss
+                epoch_loss = epoch_loss[0]
             if self.eval_epoch:
                 self._logger.info('Evaluating epoch %d of %d',
                                   epoch, self.epochs)

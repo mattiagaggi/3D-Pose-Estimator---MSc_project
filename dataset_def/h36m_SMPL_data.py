@@ -1,15 +1,12 @@
 
-from dataset_def.h36m_preprocess import Data_Base_class
 import numpy as np
-from numpy.random import randint
-from numpy.random import normal
 from random import shuffle
 import torch
 from utils.utils_H36M.common import H36M_CONF
-from sample.config.encoder_decoder import PARAMS
+from sample.config.data_conf import PARAMS
 from dataset_def.h36m_preprocess import Data_Base_class
 from utils.utils_H36M.transformations import get_patch_image, bounding_box_pixel
-from utils.trans_numpy_torch import numpy_to_tensor, image_numpy_to_pytorch, numpy_to_long, tensor_to_numpy
+from utils.trans_numpy_torch import numpy_to_tensor_float, image_numpy_to_pytorch, numpy_to_long, tensor_to_numpy, numpy_to_tensor
 
 class SMPL_Data(Data_Base_class):
     def __init__(self,
@@ -104,19 +101,19 @@ class SMPL_Data(Data_Base_class):
     def update_dic_with_image(self, dic, s, act, subact, ca, fno, rotation_angle):
         im, joints_world=self.extract_image_info(s, act, subact, ca, fno, rotation_angle=rotation_angle)
         dic['image'].append(image_numpy_to_pytorch(im))
-        dic['joints_im'].append(numpy_to_tensor(joints_world))
+        dic['joints_im'].append(numpy_to_tensor_float(joints_world))
         return dic
 
 
     def update_dic_with_mask(self,dic, i,  s, act, subact, mask_number, fno, rotation_angle):
         im, R, T, f, c, trans = self.extract_masks_info(s,act,subact,mask_number,fno,rotation_angle)
         dic['masks'][mask_number]['idx'].append(i)
-        dic['masks'][mask_number]['image'].append(numpy_to_tensor(im))
-        dic['masks'][mask_number]['R'].append(numpy_to_tensor(R))
-        dic['masks'][mask_number]['T'].append(numpy_to_tensor(T))
-        dic['masks'][mask_number]['f'].append(numpy_to_tensor(f))
-        dic['masks'][mask_number]['c'].append(numpy_to_tensor(c))
-        dic['masks'][mask_number]['trans_crop'].append(numpy_to_tensor(trans))
+        dic['masks'][mask_number]['image'].append(numpy_to_tensor_float(im))
+        dic['masks'][mask_number]['R'].append(numpy_to_tensor_float(R))
+        dic['masks'][mask_number]['T'].append(numpy_to_tensor_float(T))
+        dic['masks'][mask_number]['f'].append(numpy_to_tensor_float(f))
+        dic['masks'][mask_number]['c'].append(numpy_to_tensor_float(c))
+        dic['masks'][mask_number]['trans_crop'].append(numpy_to_tensor_float(trans))
         return dic
 
     def dic_final_processing(self,dic):
@@ -132,6 +129,7 @@ class SMPL_Data(Data_Base_class):
                 else:
                     dic['masks'][mask][key] = torch.stack(dic['masks'][mask][key], dim=0)
         return dic
+
 
     def track_epochs(self):
 
@@ -161,7 +159,15 @@ class SMPL_Data(Data_Base_class):
         self.track_epochs()
         return dic
 
+
+
+
+
+
 if __name__== '__main__' :
+    import os
+    os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
     from sample.parsers.parser_enc_dec import EncParser
     from utils.utils_H36M.transformations_torch import world_to_camera_batch,camera_to_pixels_batch, transform_2d_joints_batch
     import matplotlib.pyplot as plt
@@ -169,8 +175,6 @@ if __name__== '__main__' :
 
     el=4
     idx=0
-
-
     d = Drawer()
     parser= EncParser("pars")
     arg=parser.get_arguments()
@@ -180,46 +184,114 @@ if __name__== '__main__' :
     s,act,sub,ca,fno = c.index_file[el_idx+idx]
     print(s,act,sub,ca,fno)
     joints=dic['joints_im']
-    j_plot = tensor_to_numpy(joints[idx])
-    f = plt.figure()
-    f = d.pose_3d(j_plot, True, f, -90, 0)
-    plt.show()
-    f=plt.figure()
-    from utils.utils_H36M.transformations import rotate_z, rotate_x, rotate_y
-    j_plot = j_plot @ rotate_x(-90/180*np.pi).T
-    f = d.pose_3d(j_plot, True, f,-90,90)
-    plt.show()
 
-    """
     im = dic['image']
-    im= tensor_to_numpy(im, from_gpu=False).transpose(0,2,3,1)
+    im= tensor_to_numpy(im).transpose(0,2,3,1)
     im=im[idx]
+    from utils.smpl_torch.pytorch.smpl_layer import SMPL_Layer
+    from utils.smpl_torch.display_utils import Drawer as DrawerS
+    smpl_layer = SMPL_Layer(
+        center_idx=0,
+        gender='neutral',
+        model_root='data/models_smpl')
+    ds = DrawerS(kintree_table=smpl_layer.kintree_table)
+    # Generate random pose and shape parameters
+    batch_size=1
+    pose_params = torch.rand(batch_size, 72) * 0
+    shape_params = torch.rand(batch_size, 10) * 0.3
+
+    pose_params = pose_params.cuda()
+    shape_params = shape_params.cuda()
+    smpl_layer.cuda()
+    import neural_renderer as nr
+    import torch.nn as nn
+    from skimage.io import imread, imsave
+    import tqdm
+    import imageio
+
+
+
+
+    verts, Jtr = smpl_layer(pose_params, th_betas=shape_params)
+    from utils.conversion_SMPL_h36m_torch import from_smpl_to_h36m_torch
+
+    verts = from_smpl_to_h36m_torch(verts,dic['root_pos'])
     for i in range(1,5):
         mask_dic=dic['masks'][i]
+
         cam = world_to_camera_batch(joints,17,mask_dic['R'],mask_dic['T'])
-        j_plot = tensor_to_numpy(cam[idx])
-        if ca ==i:
-            f = plt.figure()
-            f = d.pose_3d(j_plot, True, f, -90, -90)
-            plt.show()
+        verts_cam = world_to_camera_batch(verts,verts.size()[1],mask_dic['R'],mask_dic['T'])
         pix = camera_to_pixels_batch(cam, 17, mask_dic['f'], mask_dic['c'])
+        verts_pix = camera_to_pixels_batch(verts_cam, verts.size()[1], mask_dic['f'], mask_dic['c'], return_z=True)
         tranpi = transform_2d_joints_batch(pix,mask_dic['trans_crop'])
+        verts_fin= transform_2d_joints_batch(verts_pix,mask_dic['trans_crop'])
         tranpi = tensor_to_numpy(tranpi)
-        mask=tensor_to_numpy( mask_dic['image'][idx])
-        if i==ca:
-            fig = plt.figure()
-            imjj = d.pose_2d(mask, tranpi[idx], False)
-            plt.imshow(imjj)
-            plt.figure()
-            plt.imshow(im)
-            plt.scatter(tranpi[idx,:,0],tranpi[idx,:,1])
-            plt.show()
-            mask = mask.reshape(128,128,1)*im
+
+
+
+        faces = np.expand_dims(smpl_layer.th_faces.cpu(), 0)
+
+        #faces = np.repeat(faces,repeats=batch_size, axis=0)
+        faces1 = numpy_to_tensor(faces).int()
+
+        from neural_renderer.rasterize import rasterize_silhouettes
+        from neural_renderer.vertices_to_faces import vertices_to_faces
+
+        #faces1 = torch.cat((faces1, faces1[:, :, list(reversed(range(faces1.shape[-1])))]), dim=1)
+        print(faces1.size(),verts_fin.size())
+        print(faces1)
+
+        verts_fin=verts_fin/64
+        verts_fin =verts_fin-1
+        faces=vertices_to_faces(verts_fin[0].view(1,-1,3), faces1)
+        print(faces.size())
+        tranpi_SMPL = tensor_to_numpy(verts_fin)
+        verts_fin = (verts_fin + 1) * 64
+        vc = tensor_to_numpy(verts_fin[0].detach())
+
+        import torch
+        image=rasterize_silhouettes(faces, 128)
+        ii = numpy_to_long(np.array(list(reversed(range(image.shape[-1])))))
+        image=torch.index_select(image, dim=1, index=ii)
+        implotting = tensor_to_numpy( image[0].detach())
+        print(implotting[implotting!=0])
+
         plt.figure()
-        imjj=d.pose_2d(mask,tranpi[idx],False)
-        plt.imshow(imjj)
+
+        plt.imshow(implotting)
+
+        plt.scatter(vc[:, 0], vc[:, 1], alpha=0.1)
         plt.show()
-    """
+
+        plt.figure()
+        im= implotting.flatten()
+        plt.hist(im)
+        plt.show()
+
+
+        mask=tensor_to_numpy( mask_dic['image'][idx])
+        plt.figure()
+        plt.imshow(mask)
+        plt.scatter(vc[:, 0], vc[:, 1])
+        plt.show()
+        #if i==ca:
+            #fig = plt.figure()
+            #imjj = d.pose_2d(mask, tranpi[idx],  False)
+            #plt.imshow(imjj)
+            #plt.figure()
+            #plt.imshow(im)
+            #plt.scatter(tranpi_SMPL[idx, :, 0],tranpi_SMPL[idx,:,1])
+            #plt.show()
+            #mask = mask.reshape(128,128,1)*im
+        #plt.figure()
+        #imjj=d.pose_2d(mask, tranpi[idx],False)
+        #plt.imshow(imjj)
+        #plt.show()
+
+
+
+
+
 
 
 

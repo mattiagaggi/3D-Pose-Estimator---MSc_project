@@ -8,11 +8,12 @@ from sample.base.base_trainer import BaseTrainer
 from tqdm import tqdm
 import torchvision.utils as vutils
 import numpy.random as random
-from sample.config.encoder_decoder import PARAMS
+from sample.config.data_conf import PARAMS
+from utils.trans_numpy_torch import encoder_dictionary_to_pytorch
 
 
 
-if PARAMS.encoder_decoder.device_type == 'cpu':
+if PARAMS.data.device_type == 'cpu':
     no_cuda=True
 else:
     no_cuda=False
@@ -204,7 +205,7 @@ class Trainer_Enc_Dec(BaseTrainer):
             if bid % self.save_freq == 0:
                 if total_loss:
                     self._save_checkpoint(epoch, total_loss / bid)
-                    self._update_summary(self.global_step,total_loss/bid,metrics=self.metrics)
+                    self._update_summary(self.global_step, total_loss/bid)
             self.global_step += 1
             total_loss += loss.item()
         avg_loss = total_loss / len(self.data_train)
@@ -226,7 +227,7 @@ class Trainer_Enc_Dec(BaseTrainer):
         for m in self.metrics:
             value = m(out_test,out_test_dic['im_target'])
             m.log_model(self.model_logger.test, self.global_step, value.item())
-            m.log_train(self,self.train_logger, self.global_step, value.item())
+            m.log_train(self, self.train_logger, self.global_step, value.item())
         self.model.train()
 
 

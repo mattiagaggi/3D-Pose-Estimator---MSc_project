@@ -13,7 +13,7 @@ import os
 from data.config import backgrounds_location
 from dataset_def.h36m_preprocess import Data_Base_class
 from utils.utils_H36M.common import H36M_CONF
-from sample.config.encoder_decoder import PARAMS
+from sample.config.data_conf import PARAMS
 from utils.io import file_exists
 
 

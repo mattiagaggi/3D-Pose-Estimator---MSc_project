@@ -48,6 +48,17 @@ class TrainingLogger:
             self.scalars = pkl.load(open(path, "rb"))
 
 
+    def save_dics(self,name, dic_in, dic_out, idx):
+
+        self.record_index(name, idx)
+        dir_path = os.path.join(self.path, name)
+        ensure_dir(dir_path)
+        path_in = os.path.join(dir_path, 'dic_in_%s.pkl' % idx)
+        path_out = os.path.join(dir_path, 'dic_out_%s.pkl' % idx)
+        pkl.dump(dic_in, open(path_in, "wb"))
+        pkl.dump(dic_out, open(path_out, "wb"))
+
+
     def save_batch_images(self, name, image, idx, image_pred=None, image_target=None, pose_pred=None, pose_gt=None):
 
         name = name+"_images"

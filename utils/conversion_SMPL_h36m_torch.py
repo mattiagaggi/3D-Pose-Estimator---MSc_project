@@ -1,5 +1,36 @@
 from utils.trans_numpy_torch import numpy_to_long
+from utils.utils_H36M.transformations_torch import rotate_x_batch
+from utils.utils_H36M.transformations_torch import world_to_camera_batch, camera_to_pixels_batch, transform_2d_joints_batch
 import torch
+import numpy as np
+from sample.config.smpl_config import PARAMS as SMPL_PARAMS
+
+n_vertices = SMPL_PARAMS.fixed.n_vertices
+
+
+
+
+def from_smpl_to_h36m_torch(points_smpl, root_position):
+    batch_size = points_smpl.size()[0]
+    #rotate so it matches h36m convertion
+    angle = 90. / 180 * np.pi
+    R = rotate_x_batch(angle, batch_size)
+    points_smpl = torch.bmm(points_smpl, R.transpose(1, 2))
+    #rescale
+    points_smpl = points_smpl * 1000
+    points_smpl = points_smpl + root_position
+    return points_smpl
+
+
+def project_vertices_onto_mask(smpl_converted, mask_dic):
+
+    verts_cam = world_to_camera_batch( smpl_converted , n_vertices, mask_dic['R'], mask_dic['T'])
+    verts_pix = camera_to_pixels_batch(verts_cam, n_vertices, mask_dic['f'], mask_dic['c'], return_z=True)
+    verts_fin = transform_2d_joints_batch(verts_pix, mask_dic['trans_crop'])
+    return verts_fin
+
+
+
 
 class Convert_joints():
 
@@ -37,6 +68,7 @@ class Convert_joints():
         smpl_joints = self .index_SMPL(smpl_joints, batch)
         h36m_joints = self.index_h36m(h36m_joints, batch)
         return smpl_joints, h36m_joints
+
 
 
 
