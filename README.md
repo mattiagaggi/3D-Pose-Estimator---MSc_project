@@ -31,16 +31,16 @@ add comments to functions and classes
 1. Download Python 3.7 and install requirements.
  Additional requirements that might have to be installed manually are:
 
-- SMPL model
-(Download the SMPL model files [here](http://smplify.is.tue.mpg.de/downloads).
-Here we use the neutral model
+    - SMPL model
+    (Download the SMPL model files [here](http://smplify.is.tue.mpg.de/downloads).
+    Here we use the neutral model
 
 
--  Install all the prerequisites. 
+    -  Install all the prerequisites. 
 
-This include the neural rendering package which is an implementation of the paper Neural 3D Mesh Rende (http://hiroharu-kato.com/projects_en/neural_renderer.html). The implementation used can be found on the github page  https://github.com/daniilidis-group/neural_renderer.
+    This include the neural rendering package which is an implementation of the paper Neural 3D Mesh Rende (http://hiroharu-kato.com/projects_en/neural_renderer.html). The implementation used can be found on the github page  https://github.com/daniilidis-group/neural_renderer.
 
-Note that this package requires a GPU to be run, while everything else can be run on the cpu.
+    Note that this package requires a GPU to be run, while everything else can be run on the cpu.
 
 
 2. Download Human 3.6 M dataset (http://vision.imar.ro/human3.6m/description.php). Here explain the arrangement of data.  The dataset should be arranged as follows:
