@@ -13,7 +13,7 @@ The file *train_enc_dec* trains an encoder decoder network from the paper "Unsup
 
 The file *train_3d_pose_from_enc.py* trains a network to predict the 3d pose from the embeddings of the encoder (from the same paper) whic has been appropriately saved in a pickle file format.
 
-The file "train_SMPL_from_enc.py" trains the SMPL model from the embeddings of the encoder.
+The file *train_SMPL_from_enc.py* trains the SMPL model from the embeddings of the encoder.
 These files can be used to get started on the code.
 
 THINGS LEFT TO DO:
