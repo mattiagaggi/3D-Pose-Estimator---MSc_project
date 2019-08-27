@@ -46,7 +46,7 @@ add comments to functions and classes
 2. Download Human 3.6 M dataset (http://vision.imar.ro/human3.6m/description.php). Here explain the arrangement of data. 
 The dataset should be arranged as follows:
 
-<img src="images/dataset_structure.png" width=300>
+<img src="images/dataset_structure.png" width=500>
 
 
 where "s" denotes the subject, "act" the act, "subact" the subatct, "ca" the camera and the number the frames.
