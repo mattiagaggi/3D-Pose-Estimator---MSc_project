@@ -43,22 +43,10 @@ add comments to functions and classes
     Note that this package requires a GPU to be run, while everything else can be run on the cpu.
 
 
-2. Download Human 3.6 M dataset (http://vision.imar.ro/human3.6m/description.php). Here explain the arrangement of data.  The dataset should be arranged as follows:
+2. Download Human 3.6 M dataset (http://vision.imar.ro/human3.6m/description.php). Here explain the arrangement of data. 
+The dataset should be arranged as follows:
 
-Dataset
-├── s_01_act_02_subact_01_ca_01 (folder)
-│       ├── h36m_meta.mat - file with camera parameters
-│       ├── s_01_act_02_subact_01_ca_01_000001.jpg
-│       ├── ...
-│       └── s_01_act_16_subact_02_ca_04_001234.jpg
-│
-├── ...
-│
-└── s_11_act_16_subact_02_ca_04 (folder)
-            ├── h36m_meta.mat - file with camera parameters
-            ├── s_11_act_16_subact_02_ca_04_000001.jpg
-            ├── ...
-            └── s_11_act_16_subact_02_ca_04_001234.jpg
+<img src="images/dataset_structure.png" width=300>
 
 
 where "s" denotes the subject, "act" the act, "subact" the subatct, "ca" the camera and the number the frames.
@@ -69,20 +57,19 @@ These should be arranged the exact same way as the images except that they have 
 
 
 4. Create a data folder in the folder "sample".
-The data folder should have the following:
+	The data folder should have the following:
+	
+	a) A  "config.py" file. Copy and paste this:
 
-a) A  "config.py" file. Copy and paste this:
 
+			h36m_location = *** H 3.6 M location ***
+			index_location = *** index file location *** # these are created automatically by the scripts in dataset_def and might be saved.
+			backgrounds_location = *** locations of the background files *** # see dataset_def/h36m_get_background.py. This file generated background given all the subjects by taking the median of the images.
 
+			masks_location = *** H 3.6 M masks location ***
+			device=*** 'cpu' or 'gpu' ***
 
-h36m_location = *** H 3.6 M location ***
-index_location = *** index file location *** # these are created automatically by the scripts in dataset_def and might be saved.
-backgrounds_location = *** locations of the background files *** # see dataset_def/h36m_get_background.py. This file generated background given all the subjects by taking the median of the images.
-
-masks_location = *** H 3.6 M masks location ***
-device=*** 'cpu' or 'gpu' ***
-
-b) a folder called models_smpl with the SMPL models (using their standard names).
+	b) a folder called models_smpl with the SMPL models (using their standard names).
 
 
 3. Set up as working directory the folder with all the code (this will make sure importing is done correctly).
