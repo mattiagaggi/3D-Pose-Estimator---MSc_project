@@ -29,12 +29,10 @@ class SMPL_Data(Data_Base_class):
 
         super().__init__(sampling, get_intermediate_frames=get_intermediate_frames)
         self.batch_size = args.batch_size
-        assert self.batch_size % 2 == 0
         self.create_index_file(index_file_content, index_file_list)
         self.index_file_content = index_file_content
         self.index_file_list = index_file_list
         self.randomise= randomise
-        self.index_file_cameras =[]
         if subsampling_fno==0:
             pass
         elif subsampling_fno == 1:
@@ -142,7 +140,8 @@ class SMPL_Data(Data_Base_class):
                 shuffle(self.index_file)
 
     def __len__(self):
-        len(self.index_file_cameras) // self.batch_size
+
+        return  len(self.index_file) // self.batch_size
 
 
     def __getitem__(self, item):

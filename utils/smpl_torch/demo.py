@@ -12,7 +12,7 @@ if __name__ == '__main__':
         center_idx=0,
         gender='neutral',
         model_root='data/models_smpl')
-    d = Drawer(kintree_table=smpl_layer.kintree_table)
+    d = Drawer(kintree_table=smpl_layer.kintree_table,smpl_layer.fa)
 
     # Generate random pose and shape parameters
     pose_params = torch.rand(batch_size, 72) * 0.2

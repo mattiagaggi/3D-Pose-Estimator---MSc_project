@@ -85,7 +85,7 @@ class Backgrounds(Data_Base_class):
 if __name__=="__main__":
 
     b=Backgrounds()
-    b.save_backgrounds([5,6,7,8,9,11])
+    b.save_backgrounds([1,5,6,7,8,9,11])
 #     s=1
 #     path=os.path.join(backgrounds_location,"background_subject%s.npy"%s)
 #     m=np.load(path)

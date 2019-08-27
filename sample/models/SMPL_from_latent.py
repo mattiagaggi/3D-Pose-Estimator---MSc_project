@@ -4,12 +4,6 @@ import numpy as np
 from sample.base.base_model import BaseModel
 from utils.smpl_torch.pytorch.smpl_layer import SMPL_Layer
 from utils.trans_numpy_torch import numpy_to_param
-from utils.conversion_SMPL_h36m_torch import
-from sample.config.data_conf import PARAMS
-
-
-
-
 
 
 class SMPL_from_Latent(BaseModel):
@@ -25,12 +19,9 @@ class SMPL_from_Latent(BaseModel):
         SMPL_shape_params = 10
         self.scale= numpy_to_param(np.array([[[1]]]))
 
-
-        #self.SMPL_layer_male = SMPL_Layer(center_idx=0,gender='male',model_root='data/models_smpl')
-        #self.SMPL_layer_female = SMPL_Layer(center_idx=0, gender='female', model_root='data/models_smpl')
         self.SMPL_layer_neutral = SMPL_Layer(center_idx=0, gender='neutral', model_root='data/models_smpl')
         self.faces = self.SMPL_layer_neutral.th_faces
-
+        self.kintree_table = self.SMPL_layer_neutral.kintree_table
         self.dropout = dropout
 
         module_list = [torch.nn.Linear(d_in_app+d_in_3d, d_hidden),

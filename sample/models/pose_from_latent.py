@@ -3,7 +3,7 @@ from sample.base.base_model import BaseModel
 
 
 
-class MLP_from_Latent(BaseModel):
+class Pose_from_Latent(BaseModel):
     def __init__(self,batch_size, d_in, d_hidden=2048, d_out=51, n_hidden=2, dropout=0.5):
         super().__init__()
         self._logger.info("Make sure weights encoder decoder are set as not trainable")

@@ -17,7 +17,7 @@ from sample.config.data_conf import PARAMS
 
 
 
-if PARAMS.encoder_decoder.device_type == 'cpu':
+if PARAMS.data.device_type == 'cpu':
     no_cuda=True
 else:
     no_cuda=False
@@ -63,7 +63,7 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         self.length_test_set = len(self.data_test)
         self.len_trainset = len(self.data_train)
         self.drawer = Drawer()
-        self.drawerSMPL = DrawerSMPL()
+        self.drawerSMPL = DrawerSMPL(self.model.SMPL_from_latent.kintree_table)
 
         # load model
         #self._resume_checkpoint(args.resume)
