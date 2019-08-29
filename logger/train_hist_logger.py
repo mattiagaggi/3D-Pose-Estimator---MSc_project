@@ -19,16 +19,21 @@ class TrainingLogger:
         self._logger= ConsoleLogger()
         self.path=os.path.join(self.dir_path, 'training_logger/')
         ensure_dir(self.path)
-        self.scalars ={}
+        self.scalars = {}
+        self.scalars_saved = 0
 
     def record_scalar(self,scalar_type, scalar, idx):
 
         if scalar_type not in self.scalars.keys():
             self.scalars[scalar_type]=[]
             self.scalars[scalar_type+"_idx"]=[]
-
+        if idx in self.scalars[scalar_type+"_idx"]:
+            self.scalars[scalar_type].remove(scalar)
+            self.scalars[scalar_type + "_idx"].remove(idx)
         self.scalars[scalar_type].append(scalar)
         self.scalars[scalar_type+"_idx"].append(idx)
+
+
 
     def record_index(self,idx_type, idx):
         if idx_type not in self.scalars.keys():
@@ -37,16 +42,20 @@ class TrainingLogger:
 
 
     def save_logger(self):
-        path=os.path.join(self.path,'scalars.pkl')
-        pkl.dump(self.scalars, open(path, "wb"))
+        self.scalars_saved += 1
+        path=os.path.join(self.path,'scalars%s.pkl' % self.scalars_saved)
+        lst = [self.scalars_saved, self.scalars]
+        pkl.dump(lst, open(path, "wb"))
+        self.scalars = {}
+
 
     def load_logger(self):
-        path = os.path.join(self.path, 'scalars.pkl')
-        if not file_exists(path):
-            self._logger.error("Train log not loaded")
-        else:
-            self.scalars = pkl.load(open(path, "rb"))
-
+        current = 0
+        while file_exists(os.path.join(self.path, 'scalars%s.pkl' % current)):
+            current += 1
+        current -= 1
+        self.scalars_saved = current
+        
 
     def save_dics(self,name, dic_in, dic_out, idx):
 

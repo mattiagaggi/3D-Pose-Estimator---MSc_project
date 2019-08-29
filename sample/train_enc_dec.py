@@ -51,8 +51,8 @@ trainer = Trainer_Enc_Dec(
 
 
 # Start training!
-#trainer._resume_checkpoint("data/checkpoints/enc_dec_S15678_rot")
-#model.encoder_decoder = trainer.model
+trainer._resume_checkpoint("data/checkpoints/enc_dec_S15678_rot")
+model.encoder_decoder = trainer.model
 
 trainer.train()
 

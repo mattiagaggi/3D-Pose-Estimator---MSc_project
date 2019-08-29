@@ -50,9 +50,7 @@ class Trainer_Enc_Dec(BaseTrainer):
         self.test_log_step = None
         self.img_log_step = args.img_log_step
         if data_test is not None:
-            self.test_log_step = self.train_log_step
-            if self.img_log_step % self.test_log_step != 0:
-                self._logger.error("Test images never recorded!")
+            self.test_log_step = args.test_log_step
 
         self.log_images_start_training =[10,100,500,1000]
         self.parameters_show = self.train_log_step * 300

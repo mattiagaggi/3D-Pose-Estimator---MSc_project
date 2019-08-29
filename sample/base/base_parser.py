@@ -1,12 +1,7 @@
-# -*- coding: utf-8 -*-
-"""
-Base parser class for parsing arguments
 
-@author: Denis Tome'
-
-"""
 import argparse
 from sample.base.base_logger import FrameworkClass
+from logger.console_logger import ConsoleLogger
 
 
 class BaseParser(FrameworkClass):
@@ -17,6 +12,8 @@ class BaseParser(FrameworkClass):
         super().__init__()
 
         self.parser = argparse.ArgumentParser(description=description)
+        self._logger=ConsoleLogger("Parser")
+
 
     def _add_batch_size(self, default):
         """Add batch-size argument
@@ -178,7 +175,7 @@ class BaseParser(FrameworkClass):
             type=int,
             help='training checkpoint frequency in iterations(default: {:d})'.format(iterations))
 
-    def _add_verbose(self, text, train,img_log_step):
+    def _add_verbose(self, text, train,img_log_step, test_log_step):
         """Add arguments for verbose
 
         Arguments:
@@ -213,6 +210,17 @@ class BaseParser(FrameworkClass):
                 default=img_log_step,
                 type=int,
                 help='log frequency for image (default: {:d})'.format(img_log_step))
+        if test_log_step > 0:
+            self.parser.add_argument(
+                '--test-log-step',
+                default=test_log_step,
+                type=int,
+                help='log frequency for training (default: {:d})'.format(train))
+        if img_log_step % train !=0:
+            self._logger.error("train images might be never recorder")
+        if img_log_step % test_log_step !=0:
+            self._logger.error("test images might be never recorder")
+
     def get_arguments(self):
         """Get arguments"""
 
