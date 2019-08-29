@@ -1,5 +1,5 @@
 
-# MSc project
+# MSc project - 3D Human Pose Estimation
 
 
 
