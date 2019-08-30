@@ -5,6 +5,7 @@ from sample.models.encoder_decoder import Encoder_Decoder
 from sample.models.SMPL_from_latent import SMPL_from_Latent
 from utils.conversion_SMPL_h36m_torch import from_smpl_to_h36m_torch, project_vertices_onto_mask
 from utils.rendering.rasterizer_silhuette import Rasterizer
+import torch
 
 class SMPL_enc_dec(BaseModel):
     def __init__(self, batch_size):
@@ -23,12 +24,17 @@ class SMPL_enc_dec(BaseModel):
             par.requires_grad = False
 
     def forward(self, dic):
-        im= dic['im_in']
-        dic = self.encoder_decoder.encoder(im)
-        out_smpl = self.SMPL_from_latent(dic)
+
+        im= dic['image']
+        out_enc = self.encoder_decoder.encoder(im)
+        out_smpl = self.SMPL_from_latent(out_enc)
         joints_converted = from_smpl_to_h36m_torch( out_smpl['joints'], dic['root_pos'])
         vertices_converted = from_smpl_to_h36m_torch(out_smpl['verts'], dic['root_pos'])
+        #convert to world coord
+        joints_converted = torch.bmm(joints_converted, dic['R']) #need in world coords
+        vertices_converted = torch.bmm(vertices_converted, dic['R'])
         dic_out = {}
+        dic_out["SMPL_params"] = (out_smpl['pose'], out_smpl['shape'])
         dic_out["SMPL_output"] = (out_smpl['joints'], out_smpl['verts'])
         dic_out['joints_im'] = joints_converted
         dic_out['masks'] = {1: {},
@@ -37,6 +43,7 @@ class SMPL_enc_dec(BaseModel):
                             4: {}
                             }
         for ca in range(1,5):
+
             pix_vertices_ca = project_vertices_onto_mask(vertices_converted, dic['masks'][ca])
             dic_out['masks'][ca]['verts'] = pix_vertices_ca
             image = self.rasterizer(pix_vertices_ca)

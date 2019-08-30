@@ -62,7 +62,7 @@ class SMPL_Data(Data_Base_class):
         im, joints_world, R, T, f, c= self.extract_info(metadata, s, act, subact, ca, fno)
         bbpx = bounding_box_pixel(joints_world, H36M_CONF.joints.root_idx, R, T, f,c)
         im, trans = self.crop_img(im, bbpx, rotation_angle)
-        return im, joints_world
+        return im, joints_world, R
 
     def extract_masks_info(self,s,act,subact,ca,fno, rotation_angle=None):
         metadata = self.all_metadata[s][act][subact][ca]
@@ -88,6 +88,7 @@ class SMPL_Data(Data_Base_class):
     def create_dictionary_data(self):
         dic= {"image" : [],
               "joints_im" : [],
+              "R": [],
               "masks" : {1 : self.create_mask_dic(),
                          2 : self.create_mask_dic(),
                          3 : self.create_mask_dic(),
@@ -97,9 +98,10 @@ class SMPL_Data(Data_Base_class):
 
 
     def update_dic_with_image(self, dic, s, act, subact, ca, fno, rotation_angle):
-        im, joints_world=self.extract_image_info(s, act, subact, ca, fno, rotation_angle=rotation_angle)
+        im, joints_world, R = self.extract_image_info(s, act, subact, ca, fno, rotation_angle=rotation_angle)
         dic['image'].append(image_numpy_to_pytorch(im))
         dic['joints_im'].append(numpy_to_tensor_float(joints_world))
+        dic['R'].append(numpy_to_tensor_float(R))
         return dic
 
 
@@ -118,6 +120,7 @@ class SMPL_Data(Data_Base_class):
 
         dic['image'] = torch.stack(dic['image'], dim=0)
         dic['joints_im'] = torch.stack(dic['joints_im'], dim=0)
+        dic['R'] = torch.stack(dic['R'], dim=0)
         dic['root_pos'] = dic['joints_im'][:, H36M_CONF.joints.root_idx, : ]
         dic['root_pos'] = dic['root_pos'].view(-1, 1, 3)
         for mask in dic['masks'].keys():

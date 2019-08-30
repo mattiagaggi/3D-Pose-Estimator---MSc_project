@@ -48,7 +48,7 @@ class SMPL_Parser(BaseParser):
         # add default values ususally used for training
         # and can be individually changed as arguments
         self._add_learning_rate(0.001)
-        self._add_batch_size(1)
+        self._add_batch_size(64)
         self._add_epochs(5)
         self._add_name(name2)
         self._add_output_dir("data/checkpoints")

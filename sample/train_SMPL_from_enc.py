@@ -18,6 +18,7 @@ args_SMPL = parser.get_arguments()
 
 
 
+
 data_train = SMPL_Data(args_SMPL,
                          index_file_content =['s'],
                          index_file_list=[[1]],

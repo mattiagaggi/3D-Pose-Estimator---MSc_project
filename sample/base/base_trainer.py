@@ -149,7 +149,7 @@ class BaseTrainer(FrameworkClass):
             iteration {int} -- iteration number
             loss {float} -- loss value
         """
-        self.train_logger.save_logger(epoch)
+        self.train_logger.save_logger()
         if loss < self.min_loss:
             self.min_loss = loss
         arch = type(self.model).__name__

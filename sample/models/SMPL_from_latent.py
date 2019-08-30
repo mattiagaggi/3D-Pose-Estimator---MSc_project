@@ -11,13 +11,12 @@ class SMPL_from_Latent(BaseModel):
         super().__init__()
         self._logger.info("Make sure weights encoder decoder are set as not trainable")
         self.batch_size = batch_size
-        d_hidden = 2048
-        d_out = 51
-        n_hidden = 4
-        dropout = 0.5
+        d_hidden = 2024
+        n_hidden = 3
+        dropout = 0.3
         SMPL_pose_params = 72
         SMPL_shape_params = 10
-        self.scale= numpy_to_param(np.array([[[1]]]))
+        #self.scale= numpy_to_param(np.array([[[1]]]))
 
         self.SMPL_layer_neutral = SMPL_Layer(center_idx=0, gender='neutral', model_root='data/models_smpl')
         self.faces = self.SMPL_layer_neutral.th_faces
@@ -34,23 +33,23 @@ class SMPL_from_Latent(BaseModel):
                 torch.nn.Linear(d_hidden, d_hidden),
                 torch.nn.ReLU(),
                 torch.nn.BatchNorm1d(d_hidden, affine=True),
-                torch.nn.Dropout(inplace=True, p=self.dropout)]
-                )
-        module_list.append(torch.nn.Linear(d_hidden, d_out))
+                torch.nn.Dropout(inplace=True, p=self.dropout)
+                ])
 
         self.fully_connected = torch.nn.Sequential(*module_list)
-        to_vertices = [torch.nn.Linear(d_hidden, d_hidden),
-                    torch.nn.ReLU(),
-                   torch.nn.BatchNorm1d(d_hidden, affine=True),
+        to_vertices = [
+
                     torch.nn.Linear(d_hidden, SMPL_shape_params),
                     torch.nn.ReLU(),
-                   torch.nn.BatchNorm1d(SMPL_shape_params, affine=True)]
-        to_pose = [torch.nn.Linear(d_hidden, d_hidden),
-                    torch.nn.ReLU(),
-                   torch.nn.BatchNorm1d(d_hidden, affine=True),
+                    torch.nn.BatchNorm1d(SMPL_shape_params, affine=True)
+        ]
+
+        to_pose = [
+
                     torch.nn.Linear(d_hidden, SMPL_pose_params),
                     torch.nn.ReLU(),
-                   torch.nn.BatchNorm1d(SMPL_pose_params, affine=True)]
+                    torch.nn.BatchNorm1d(SMPL_pose_params, affine=True)
+        ]
 
         self.to_shape = torch.nn.Sequential(*to_vertices)
         self.to_pose = torch.nn.Sequential(*to_pose)
@@ -66,15 +65,19 @@ class SMPL_from_Latent(BaseModel):
         L_app = L_app.view(self.batch_size, -1)
         L = torch.cat([L_3D, L_app], dim=1)
         output = self.fully_connected(L)
-        pose_params = self.to_pose(output)
-        shape_params = self.to_shape
+
+        pose_params = self.to_pose(output)/10 #HACK THIS
+        shape_params = self.to_shape(output)
+
         verts, joints = self.SMPL_layer_neutral(pose_params, th_betas=shape_params)
         #rescale should multiply by 1000
-        verts = torch.mul(verts, self.scale)
-        joints = torch.mul(joints, self.scale)
+        #verts = torch.mul(verts, self.scale)
+        #joints = torch.mul(joints, self.scale)
         dic_out={
+            'pose' : pose_params,
+            'shape' : shape_params,
             'verts' : verts,
-            'joints' : joints,
+            'joints' : joints
             }
         #make sure it is translated
 

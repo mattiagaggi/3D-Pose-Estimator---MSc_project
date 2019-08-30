@@ -45,6 +45,12 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
                          args.verbosity, args.train_log_step,
                          args.verbosity_iter)
 
+
+        self.model.clip_gradients()
+        self._logger.error("Gradients clipped here")
+
+        self._logger.error("Loss accumulated")
+
         self.loss = loss
         self.metrics = metrics
         self.model.fix_encoder_decoder()
@@ -112,7 +118,7 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         self.model_logger.train.add_image(str(string) + str(i) + "Image", image, self.global_step)
 
         gt_cpu = dic_in["joints_im"][idx].cpu().data.numpy()
-        pp_cpu = dic_out["joints_im"][i].cpu().data.numpy()
+        pp_cpu = dic_out["joints_im"][idx].cpu().data.numpy()
         fig = plt.figure()
         fig = self.drawer.poses_3d(pp_cpu, gt_cpu, plot=True, fig=fig, azim=-90, elev=0)
         self.model_logger.train.add_figure(str(string) + str(i) + "GT", fig, self.global_step)
@@ -133,15 +139,13 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
             out_masks_list.append(dic_out["masks"][ca]["image"].cpu().data.numpy())
         fig = self.drawer.plot_image_on_axis( idx, mask_list,out_verts_list, index_list)
         self.model_logger.train.add_figure(str(string) + str(i) + "masks_vertices", fig, self.global_step)
-        fig = self.drawer.plot_image_on_axis( idx, mask_list, None, index_list)
+        fig = self.drawer.plot_image_on_axis( idx, out_masks_list, None, index_list)
         self.model_logger.train.add_figure(str(string) + str(i) + "rasterized", fig, self.global_step)
 
     def log_smpl(self, string, i, idx, dic_out):
 
         joints, verts = dic_out["SMPL_output"]
         fig = plt.figure()
-
-        # print(smpl_layer.th_faces.shape)
         fig = self.drawerSMPL.display_model(
             {'verts': verts.cpu().detach(),
              'joints': joints.cpu().detach()},
@@ -174,10 +178,21 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
 
     def train_step(self, bid, dic, pbar, epoch):
 
-        self.optimizer.zero_grad()
+        if bid % 10 == 0:
+            self.optimizer.zero_grad()
+
         dic_out = self.model(dic)
+        #self._logger.error("actual", dic['joints_im'][0])
+        #self._logger.error("pred",dic_out['joints_im'][0])
+
+        #dic_out['joints_im'].register_hook(lambda grad: print(grad))
+        #self._logger.error("masking",dic_out["masks"][1]["image"])
         loss, loss_pose, loss_vert = self.loss(dic, dic_out, self.global_step )
+
+        #loss.register_hook(lambda grad: print(grad))
         loss.backward()
+        self.model.plot_grad_flow()
+        plt.show()
         self.optimizer.step()
         if (bid % self.verbosity_iter == 0) and (self.verbosity == 2):
             pbar.set_description(' Epoch {} Loss {:.3f}'.format(
@@ -211,7 +226,7 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         self.model.eval()
         idx = random.randint(self.length_test_set)
         dic= self.data_test[idx]
-        dic_out = self.model(in_test_dic)
+        dic_out = self.model(dic)
         loss, loss_pose, loss_vert = self.loss(dic, dic_out, self.global_step)
         self.model.train()
         self.model_logger.val.add_scalar('loss/iterations', loss.item(),
@@ -250,7 +265,9 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         pbar = tqdm(self.data_train)
         for bid, dic in enumerate(pbar):
             loss, pbar = self.train_step(bid, dic, pbar, epoch)
+
             if self.test_log_step is not None and (bid % self.test_log_step == 0):
+
                 self.test_step_on_random(bid)
             if bid % self.save_freq == 0:
                 if total_loss:

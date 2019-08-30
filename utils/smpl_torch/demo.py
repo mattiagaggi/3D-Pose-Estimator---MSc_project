@@ -12,11 +12,11 @@ if __name__ == '__main__':
         center_idx=0,
         gender='neutral',
         model_root='data/models_smpl')
-    d = Drawer(kintree_table=smpl_layer.kintree_table,smpl_layer.fa)
+    d = Drawer(kintree_table=smpl_layer.kintree_table)
 
     # Generate random pose and shape parameters
-    pose_params = torch.rand(batch_size, 72) * 0.2
-    shape_params = torch.rand(batch_size, 10) * 0.3
+    pose_params = torch.rand(batch_size, 72) * 0
+    shape_params = torch.rand(batch_size, 10) * 0
     # GPU mode
     if cuda:
         pose_params = pose_params.cuda()
@@ -28,5 +28,14 @@ if __name__ == '__main__':
 
     # Draw output vertices and joints
     import matplotlib.pyplot as plt
-
+    fig = plt.figure()
+    fig = d.display_model(
+        {'verts': verts.cpu().detach(),
+         'joints': Jtr.cpu().detach()},
+        model_faces=smpl_layer.th_faces,
+        with_joints=True,
+        batch_idx=0,
+        plot=True,
+        fig=fig,
+        savepath=None)
     plt.show()

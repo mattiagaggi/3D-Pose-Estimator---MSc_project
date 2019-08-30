@@ -47,6 +47,7 @@ def world_to_camera_batch(joints, n_joints, rot, t):
     check_joints_input(joints,n_joints)
     check_rot_input(rot)
     check_t_input(t)
+
     return torch.bmm(joints - t, rot.transpose(1,2))
 
 def camera_to_world_batch(joints,n_joints,rot, t):

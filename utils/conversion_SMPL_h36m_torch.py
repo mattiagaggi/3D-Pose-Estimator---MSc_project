@@ -21,6 +21,15 @@ def from_smpl_to_h36m_torch(points_smpl, root_position):
     points_smpl = points_smpl + root_position
     return points_smpl
 
+def from_h36m_to_smpl_torch(points_h36m, root_position):
+    batch_size = points_h36m.size()[0]
+    points_h36m = points_h36m - root_position
+    points_h36m = points_h36m / 1000
+    angle = -90. / 180 * np.pi
+    R = rotate_x_batch(angle, batch_size)
+    points_h36m = torch.bmm(points_h36m, R.transpose(1, 2))
+    return points_h36m
+
 
 def project_vertices_onto_mask(smpl_converted, mask_dic):
 
@@ -54,20 +63,20 @@ class Convert_joints():
         self.index_h36m = [0, 2, 3, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16]
         self.index_h36m = numpy_to_long(self.index_h36m)
 
-    def index_SMPL(self, smpl_joints, batch=True):
+    def indexing_SMPL(self, smpl_joints, batch=True):
         if batch:
             return torch.index_select(smpl_joints, dim=1, index=self.index_smpl)
         return torch.index_select(smpl_joints, dim=0, index=self.index_smpl)
 
-    def index_h36m(self, h36m_joints, batch=True):
+    def indexing_h36m(self, h36m_joints, batch=True):
         if batch:
             return torch.index_select(h36m_joints, dim=1, index=self.index_h36m)
         return torch.index_select(h36m_joints, dim=0, index=self.index_h36m)
 
     def match_joints(self, smpl_joints, h36m_joints, batch):
-        smpl_joints = self .index_SMPL(smpl_joints, batch)
-        h36m_joints = self.index_h36m(h36m_joints, batch)
-        return smpl_joints, h36m_joints
+        smpl_joints_new = self.indexing_SMPL(smpl_joints, batch)
+        h36m_joints_new = self.indexing_h36m(h36m_joints, batch)
+        return smpl_joints_new, h36m_joints_new
 
 
 

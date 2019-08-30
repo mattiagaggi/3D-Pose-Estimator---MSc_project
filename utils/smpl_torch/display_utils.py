@@ -39,7 +39,7 @@ class Drawer:
         else:
             mesh = Poly3DCollection(verts[model_faces], alpha=0.2) #[model_faces]
 
-            print("LLL",verts.shape,verts[model_faces].shape)
+
             face_color = (141 / 255, 184 / 255, 226 / 255)
             edge_color = (50 / 255, 50 / 255, 50 / 255)
             mesh.set_edgecolor(edge_color)
