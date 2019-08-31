@@ -49,7 +49,6 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         self.model.clip_gradients()
         self._logger.error("Gradients clipped here")
 
-        self._logger.error("Loss accumulated")
 
         self.loss = loss
         self.metrics = metrics
@@ -178,8 +177,8 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
 
     def train_step(self, bid, dic, pbar, epoch):
 
-        if bid % 10 == 0:
-            self.optimizer.zero_grad()
+
+        self.optimizer.zero_grad()
 
         dic_out = self.model(dic)
         #self._logger.error("actual", dic['joints_im'][0])

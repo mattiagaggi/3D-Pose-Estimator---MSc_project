@@ -10,18 +10,25 @@ n_vertices = SMPL_PARAMS.fixed.n_vertices
 
 
 
-def from_smpl_to_h36m_torch(points_smpl, root_position):
+def from_smpl_to_h36m_world_torch(points_smpl, root_position, from_camera=False, R_world_cam=None):
     batch_size = points_smpl.size()[0]
     #rotate so it matches h36m convertion
-    angle = 90. / 180 * np.pi
+    if not from_camera:
+        angle = 90. / 180 * np.pi
+    else:
+        assert R_world_cam is not None
+        angle = np.pi
     R = rotate_x_batch(angle, batch_size)
     points_smpl = torch.bmm(points_smpl, R.transpose(1, 2))
     #rescale
     points_smpl = points_smpl * 1000
+    if from_camera:
+        #change to world coords
+        points_smpl = torch.bmm(points_smpl, R_world_cam)
     points_smpl = points_smpl + root_position
     return points_smpl
 
-def from_h36m_to_smpl_torch(points_h36m, root_position):
+def from_h36m_world_to_smpl_torch(points_h36m, root_position):
     batch_size = points_h36m.size()[0]
     points_h36m = points_h36m - root_position
     points_h36m = points_h36m / 1000

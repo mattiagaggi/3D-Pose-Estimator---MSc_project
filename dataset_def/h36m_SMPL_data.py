@@ -215,9 +215,9 @@ if __name__== '__main__' :
 
 
     verts, Jtr = smpl_layer(pose_params, th_betas=shape_params)
-    from utils.conversion_SMPL_h36m_torch import from_smpl_to_h36m_torch
+    from utils.conversion_SMPL_h36m_torch import from_smpl_to_h36m_world_torch
 
-    verts = from_smpl_to_h36m_torch(verts,dic['root_pos'])
+    verts = from_smpl_to_h36m_world_torch(verts, dic['root_pos'])
     for i in range(1,5):
         mask_dic=dic['masks'][i]
 

@@ -49,7 +49,7 @@ class Pose_Loss(BaseMetric):
     def forward(self, h36m_pose_ground, smpl_pose_pred ):
 
         smpl_joints, h36m_joints = self.conversion.match_joints(smpl_pose_pred, h36m_pose_ground, batch=True)
-        return self.pose_loss( h36m_joints[:,1:,:], smpl_joints[:,1:,:])
+        return self.pose_loss( h36m_joints, smpl_joints)
 
 
 
@@ -84,10 +84,10 @@ class SMPL_Loss(BaseMetric):
     def forward(self, dic_in, dic_out, global_iter):
 
         loss_mask = self.masks_criterium(dic_in['masks'], dic_out['masks'])
-        if global_iter < 50:
-            loss_pose = self.SMPL_init(dic_out["SMPL_params"])
-        else:
-            loss_pose = self.pose_criterium(dic_in['joints_im'], dic_out['joints_im'])
+        #if global_iter < 50:
+        #    loss_pose = self.SMPL_init(dic_out["SMPL_params"])
+        #else:
+        loss_pose = self.pose_criterium(dic_in['joints_im'], dic_out['joints_im'])
         if global_iter < 100:
             total_loss = loss_pose * self.w_p
         else:

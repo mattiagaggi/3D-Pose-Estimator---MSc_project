@@ -16,6 +16,7 @@ if __name__ == '__main__':
 
     # Generate random pose and shape parameters
     pose_params = torch.rand(batch_size, 72) * 0
+    pose_params[:,0:2]= pose_params[:,0:2]
     shape_params = torch.rand(batch_size, 10) * 0
     # GPU mode
     if cuda:
@@ -38,4 +39,5 @@ if __name__ == '__main__':
         plot=True,
         fig=fig,
         savepath=None)
+
     plt.show()

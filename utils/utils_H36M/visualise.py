@@ -18,9 +18,14 @@ class Drawer:
         self.limbs_names=['hip','right_up_leg','right_leg','right_foot','left_up_leg','left_leg', 'left_foot','spine1', 'neck', 'head','head-top',
                           'left-arm','left_forearm','left_hand','right_arm','right_forearm','right_hand']
         self._limb_color = [0, 1, 2, 0, 3, 4, 5, 6, 7, 7, 5, 5, 8, 9, 5, 5,10,11,7]
-        self._limbs = [[0, 1], [1, 2], [2, 3], [0, 4], [4, 5], [5, 6], [1, 7], [7, 8],
+        self._limbs_h36m = [[0, 1], [1, 2], [2, 3], [0, 4], [4, 5], [5, 6], [1, 7], [7, 8],
                   [8, 9], [9, 10], [7, 11], [4, 7], [11, 12], [12, 13], [7,14], [14,11], [14,15],[15,16], [0,7]]
                                     #d11      #d                         # dd       #dd
+
+        self._limbs_smpl = [[0, 1], [0, 2], [0, 3], [1, 4], [2, 5], [3, 6],
+                           [4, 7], [5, 8], [6, 9], [7, 10], [8, 11], [9, 12], [9, 13], [9, 14], [12, 15], [13, 16],
+                           [14, 17], [16, 18], [17, 19], [18, 20], [19, 21], [20, 22], [21, 23]]
+
 
         self._colors = [[255, 255, 100], [0, 100, 0], [0, 255, 0], [0, 165, 255],
                    [0, 255, 255], [255, 255, 0], [100, 0, 0], [255, 0, 0],
@@ -133,7 +138,7 @@ class Drawer:
             fig=plt.figure()
         img=self.get_image(img)
         # plot joints over image
-        for lid, (p0, p1) in enumerate(self._limbs):
+        for lid, (p0, p1) in enumerate(self._limbs_h36m):
             x0, y0 = pose[p0].astype(np.int)
             x1, y1 = pose[p1].astype(np.int)
             if self.visibility[p0]:
@@ -162,7 +167,7 @@ class Drawer:
         assert pose.shape == (H36M_CONF.joints.number,3)
         ax = fig.add_subplot(111, projection='3d')
         ax.view_init(azim=azim,elev=elev)
-        for lid, (p0, p1) in enumerate(self._limbs):
+        for lid, (p0, p1) in enumerate(self._limbs_h36m):
             col = self.rgb_to_string(self._get_color(lid))
             ax.plot([pose[p0, 0], pose[p1, 0]],
                     [pose[p0, 1], pose[p1, 1]],
@@ -193,8 +198,17 @@ class Drawer:
             fig=plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.view_init(azim=azim,elev=elev)
-        for lid,(p0, p1) in enumerate(self._limbs):
-            col = self.rgb_to_string(self._get_color(lid))
+
+        if predicted.shape[0]==H36M_CONF.joints.number:
+            table = self._limbs_h36m
+        else:
+            table = self._limbs_smpl
+
+        for lid,(p0, p1) in enumerate(table):
+            if predicted.shape[0]==H36M_CONF.joints.number:
+                col = self.rgb_to_string(self._get_color(lid))
+            else:
+                col= self.rgb_to_string([255, 0, 0]) #red
             # plotting predicted pose
             ax.plot([predicted[p0, 0], predicted[p1, 0]],
                     [predicted[p0, 1], predicted[p1, 1]],

@@ -66,7 +66,7 @@ class SMPL_from_Latent(BaseModel):
         L = torch.cat([L_3D, L_app], dim=1)
         output = self.fully_connected(L)
 
-        pose_params = self.to_pose(output)/10 #HACK THIS
+        pose_params = self.to_pose(output)
         shape_params = self.to_shape(output)
 
         verts, joints = self.SMPL_layer_neutral(pose_params, th_betas=shape_params)

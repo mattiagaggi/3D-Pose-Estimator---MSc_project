@@ -47,7 +47,7 @@ class SMPL_Parser(BaseParser):
         super().__init__(description)
         # add default values ususally used for training
         # and can be individually changed as arguments
-        self._add_learning_rate(0.001)
+        self._add_learning_rate(0.01)
         self._add_batch_size(64)
         self._add_epochs(5)
         self._add_name(name2)
