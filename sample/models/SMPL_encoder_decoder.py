@@ -30,8 +30,8 @@ class SMPL_enc_dec(BaseModel):
         out_smpl = self.SMPL_from_latent(out_enc)
         joints_converted_world = from_smpl_to_h36m_world_torch(out_smpl['joints'], dic['root_pos'],
                                                              from_camera=True, R_world_cam=dic['R'])
-        vertices_converted_world = from_smpl_to_h36m_world_torch(out_smpl['verts'], dic['root_pos'],
-                                                               from_camera=True, R_world_cam=dic['R'])
+        #vertices_converted_world = from_smpl_to_h36m_world_torch(out_smpl['verts'], dic['root_pos'],
+        #                                                       from_camera=True, R_world_cam=dic['R'])
         #convert to world coord
 
         dic_out = {}
@@ -43,10 +43,10 @@ class SMPL_enc_dec(BaseModel):
                             3: {},
                             4: {}
                             }
-        for ca in range(1,5):
+        #for ca in range(1,5):
 
-            pix_vertices_ca = project_vertices_onto_mask(vertices_converted_world, dic['masks'][ca])
-            dic_out['masks'][ca]['verts'] = pix_vertices_ca
-            image = self.rasterizer(pix_vertices_ca)
-            dic_out['masks'][ca]['image'] = image
+        #    pix_vertices_ca = project_vertices_onto_mask(vertices_converted_world, dic['masks'][ca])
+        #    dic_out['masks'][ca]['verts'] = pix_vertices_ca
+        #    image = self.rasterizer(pix_vertices_ca)
+        #    dic_out['masks'][ca]['image'] = image
         return dic_out

@@ -41,5 +41,4 @@ def transfer_partial_weights(state_dict_other, obj, submodule=0, prefix=None, ad
             skipCount += 1
             #print('Warning, no match for {}, ignoring'.format(name))
             # print(' since own_state.keys() = ',own_state.keys())
-    #print('Copied {} elements, {} skipped, and {} target params without source'.format(copyCount, skipCount,
-    #                                                                                   paramCount - copyCount))
+    #print('Copied {} elements, {} skipped, and {} target params without source'.format(copyCount, skipCount,                                                                                   paramCount - copyCount))

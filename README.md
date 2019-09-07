@@ -36,9 +36,17 @@ add comments to functions and classes
     Here we use the neutral model
 
 
-    -  Install all the prerequisites. 
-
-    This include the neural rendering package which is an implementation of the paper Neural 3D Mesh Rende (http://hiroharu-kato.com/projects_en/neural_renderer.html). The implementation used can be found on the github page  https://github.com/daniilidis-group/neural_renderer.
+    -  Install all the prerequisites. This can be done using the command
+    conda create --name ** ENV_NAME ** --file requirements.txt
+    This will not install packages installed using pip so you might need to do:
+    
+    pip install chumpy    #used for the SMPL model
+    
+    pip install neural-renderer-pytorch
+    
+    Alternatively you can recreate the environment from requirements.yml, although that will give an error when encountering the pip packages
+    
+   The neural rendering package  is an implementation of the paper Neural 3D Mesh Rende (http://hiroharu-kato.com/projects_en/neural_renderer.html). The implementation used can be found on the github page  https://github.com/daniilidis-group/neural_renderer.
 
     Note that this package requires a GPU to be run, while everything else can be run on the cpu.
 

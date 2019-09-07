@@ -46,8 +46,8 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
                          args.verbosity_iter)
 
 
-        self.model.clip_gradients()
-        self._logger.error("Gradients clipped here")
+        #self.model.clip_gradients()
+        #self._logger.error("Gradients clipped here")
 
 
         self.loss = loss
@@ -162,7 +162,7 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         for i in range(5):
             idx=np.random.randint(self.model.batch_size)
             self.log_image_and_pose(string, i, idx, dic_in, dic_out)
-            self.log_masks_vertices(string, i, idx, dic_in, dic_out)
+            #self.log_masks_vertices(string, i, idx, dic_in, dic_out)
             self.log_smpl(string, i, idx, dic_out)
 
     def log_gradients(self):
@@ -186,7 +186,9 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
 
         #dic_out['joints_im'].register_hook(lambda grad: print(grad))
         #self._logger.error("masking",dic_out["masks"][1]["image"])
+
         loss, loss_pose, loss_vert = self.loss(dic, dic_out, self.global_step )
+
 
         #loss.register_hook(lambda grad: print(grad))
         loss.backward()

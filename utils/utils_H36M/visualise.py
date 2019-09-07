@@ -220,6 +220,7 @@ class Drawer:
                        marker='o', edgecolor=col, s=self.marker)
 
             # plotting ground truth predicted
+        for lid, (p0, p1) in enumerate(self._limbs_h36m):
             ax.plot([gt[p0, 0], gt[p1, 0]],
                     [gt[p0, 1], gt[p1, 1]],
                     [gt[p0, 2], gt[p1,2]], c='k',

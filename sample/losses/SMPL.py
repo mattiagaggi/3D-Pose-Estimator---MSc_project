@@ -68,6 +68,8 @@ class Loss_Pose_Zero(BaseMetric):
 
 class SMPL_Loss(BaseMetric):
 
+    #cross entropy loss!!!!
+
     def __init__(self, batch_size):
 
         super().__init__()
@@ -83,16 +85,16 @@ class SMPL_Loss(BaseMetric):
 
     def forward(self, dic_in, dic_out, global_iter):
 
-        loss_mask = self.masks_criterium(dic_in['masks'], dic_out['masks'])
+        #loss_mask = self.masks_criterium(dic_in['masks'], dic_out['masks'])
         #if global_iter < 50:
         #    loss_pose = self.SMPL_init(dic_out["SMPL_params"])
         #else:
         loss_pose = self.pose_criterium(dic_in['joints_im'], dic_out['joints_im'])
-        if global_iter < 100:
-            total_loss = loss_pose * self.w_p
-        else:
-            total_loss = loss_mask * self.w_m + loss_pose * self.w_p
-        return total_loss, loss_pose, loss_mask
+        #if global_iter < 100:
+        total_loss = loss_pose #* self.w_p
+        #else:
+        #    total_loss = loss_mask * self.w_m + loss_pose * self.w_p
+        return total_loss, loss_pose, loss_pose#, loss_mask
 
 
         # im_loss 0.03 #pose loss 80

@@ -5,7 +5,7 @@ import torch
 from utils.utils_H36M.common import H36M_CONF
 from sample.config.data_conf import PARAMS
 from dataset_def.h36m_preprocess import Data_Base_class
-from utils.utils_H36M.transformations import get_patch_image, bounding_box_pixel
+from utils.utils_H36M.transformations import get_patch_image, bounding_box_pixel, cam_pointing_root, rotate_z
 from utils.trans_numpy_torch import numpy_to_tensor_float, image_numpy_to_pytorch, numpy_to_long, tensor_to_numpy, numpy_to_tensor
 
 class SMPL_Data(Data_Base_class):
@@ -62,7 +62,11 @@ class SMPL_Data(Data_Base_class):
         im, joints_world, R, T, f, c= self.extract_info(metadata, s, act, subact, ca, fno)
         bbpx = bounding_box_pixel(joints_world, H36M_CONF.joints.root_idx, R, T, f,c)
         im, trans = self.crop_img(im, bbpx, rotation_angle)
-        return im, joints_world, R
+        R_centre = cam_pointing_root(joints_world, H36M_CONF.joints.root_idx, H36M_CONF.joints.number, R, T)
+        if rotation_angle is not None:
+            R_centre = np.dot(rotate_z(rotation_angle), R_centre)
+        R_pointing_centre = np.dot( R_centre, R)
+        return im, joints_world, R_pointing_centre
 
     def extract_masks_info(self,s,act,subact,ca,fno, rotation_angle=None):
         metadata = self.all_metadata[s][act][subact][ca]
