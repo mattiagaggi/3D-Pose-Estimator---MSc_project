@@ -9,7 +9,7 @@ from sample.losses.poses import MPJ, Aligned_MPJ, Normalised_MPJ
 from sample.trainer.trainer_3D_pose_from_encoder import Trainer_Enc_Dec_Pose
 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
 device=PARAMS['data']['device']
 sampling_train=PARAMS.data.sampling_train
 sampling_test= PARAMS.data.sampling_test

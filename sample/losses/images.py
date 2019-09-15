@@ -3,6 +3,20 @@ import torch.nn
 from sample.models.resnet18 import resnet18_loss
 
 
+class Cross_Entropy_loss(torch.nn.Module):
+    def __init__(self, batch_size):
+        super().__init__()
+        self.batch_size = batch_size
+        self.epsilon = 10**(-6)
+
+    def forward(self, pred, label):
+        pred = pred.view(self.batch_size, -1)
+        label = label.view(self.batch_size, -1)
+        loss = - (label * torch.log(pred+self.epsilon) + (1-label) * torch.log(self.epsilon + 1-pred))
+        return torch.mean(torch.sum(loss, dim=1))
+
+
+
 class ImageNetCriterium(torch.nn.Module):
     """
     Computes difference in the feature space of a NN pretrained on ImageNet

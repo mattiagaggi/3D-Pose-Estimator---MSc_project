@@ -9,7 +9,7 @@ from sample.losses.SMPL import SMPL_Loss
 from sample.trainer.trainer_SMPL_from_encoder import Trainer_Enc_Dec_SMPL
 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
 device=PARAMS['data']['device']
 sampling_train=PARAMS.data.sampling_train
 sampling_test= PARAMS.data.sampling_test

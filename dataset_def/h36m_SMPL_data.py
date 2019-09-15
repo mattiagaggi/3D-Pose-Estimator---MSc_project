@@ -90,10 +90,10 @@ class SMPL_Data(Data_Base_class):
 
 
     def create_dictionary_data(self):
-        dic= {"image" : [],
-              "joints_im" : [],
+        dic= {"image": [],
+              "joints_im": [],
               "R": [],
-              "masks" : {1 : self.create_mask_dic(),
+              "masks": {1 : self.create_mask_dic(),
                          2 : self.create_mask_dic(),
                          3 : self.create_mask_dic(),
                          4 : self.create_mask_dic()}
@@ -171,8 +171,7 @@ class SMPL_Data(Data_Base_class):
 
 
 if __name__== '__main__' :
-    import os
-    os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
 
     from sample.parsers.parser_enc_dec import EncParser
     from utils.utils_H36M.transformations_torch import world_to_camera_batch,camera_to_pixels_batch, transform_2d_joints_batch
@@ -256,7 +255,9 @@ if __name__== '__main__' :
         vc = tensor_to_numpy(verts_fin[0].detach())
 
         import torch
-        image=rasterize_silhouettes(faces, 128)
+
+        faces = torch.cat((faces, faces[:, :, list(reversed(range(faces.shape[-1])))]), dim=1)
+        image=rasterize_silhouettes(faces, 128, anti_aliasing=True)
         ii = numpy_to_long(np.array(list(reversed(range(image.shape[-1])))))
         image=torch.index_select(image, dim=1, index=ii)
         implotting = tensor_to_numpy( image[0].detach())

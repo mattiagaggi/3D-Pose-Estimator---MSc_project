@@ -3,9 +3,10 @@ import matplotlib.pyplot as plt
 import matplotlib
 #matplotlib.use('Agg')
 from logger.train_hist_logger import TrainingLogger
+import pickle as pkl
 
-log=TrainingLogger("data/checkpoints/enc_dec_S15678_no_rot/log_results")
-log.load_logger()
+log=TrainingLogger("data/checkpoints/enc_dec_S15678_rot/log_results")
+log.scalars=pkl.load(open("data/checkpoints/enc_dec_S15678_rot/log_results/training_logger/scalars.pkl","rb"))
 print(log.scalars.keys())
 
 

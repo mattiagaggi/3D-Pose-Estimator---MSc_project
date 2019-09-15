@@ -20,6 +20,7 @@ class SMPL_from_Latent(BaseModel):
 
         self.SMPL_layer_neutral = SMPL_Layer(center_idx=0, gender='neutral', model_root='data/models_smpl')
         self.faces = self.SMPL_layer_neutral.th_faces
+
         self.kintree_table = self.SMPL_layer_neutral.kintree_table
         self.dropout = dropout
 
@@ -53,8 +54,8 @@ class SMPL_from_Latent(BaseModel):
         """
         #self.regression_module = torch.nn.Sequential(*regression_lst)
         #self.initial_pose = numpy_to_param(np.zeros((batch_size, self.SMPL_pose_params)))
-        self.initial_shape = numpy_to_tensor_float(np.zeros((batch_size, self.SMPL_shape_params)))
-        """
+        #self.initial_shape = numpy_to_tensor_float(np.zeros((batch_size, self.SMPL_shape_params)))
+
         shape_list = [
             torch.nn.Linear(d_hidden, d_hidden),
             torch.nn.ReLU(),
@@ -63,7 +64,7 @@ class SMPL_from_Latent(BaseModel):
 
         ]
         self.to_shape = torch.nn.Sequential(*shape_list)
-        """
+
 
         pose_list = [
             torch.nn.Linear(d_hidden, d_hidden),
@@ -73,7 +74,6 @@ class SMPL_from_Latent(BaseModel):
 
         ]
 
-
         self.to_pose = torch.nn.Sequential(*pose_list)
 
 
@@ -81,6 +81,7 @@ class SMPL_from_Latent(BaseModel):
         #change to IEF
 
         L_3D = dic_in["L_3d"]
+        optimise_vertices = dic_in['optimise_vertices']
         #L_app = dic_in["L_app"]
         #L_3D = L_3D.view(self.batch_size, -1)
         #L_app = L_app.view(self.batch_size, -1)
@@ -97,14 +98,25 @@ class SMPL_from_Latent(BaseModel):
         #pose = pose + pose_delta
         #shape = shape + shape_delta
         output = self.fully_connected(L_3D)
+        #print("out")
+        #output.register_hook(lambda grad: print(grad))
         pose = self.to_pose(output)
-        #shape = self.to_shape(output)
+        if optimise_vertices:
+            shape = self.to_shape(output)
+        else:
+            shape = numpy_to_tensor_float(np.zeros((self.batch_size, self.SMPL_shape_params)))
+        #print("pose sh")
+        #pose.register_hook(lambda grad: print(grad))
+        #shape.register_hook(lambda grad: print(grad))
 
-        verts, joints = self.SMPL_layer_neutral(pose, th_betas=self.initial_shape)
+        verts, joints = self.SMPL_layer_neutral(pose, th_betas=shape)
+        #print("joints")
+        #joints.register_hook(lambda grad: print(grad))
+        #verts.register_hook(lambda grad: print(grad))
 
         dic_out={
             'pose' : pose,
-            'shape' : self.initial_shape,
+            'shape' : shape,
             'verts' : verts,
             'joints' : joints
             }

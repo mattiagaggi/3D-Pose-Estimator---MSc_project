@@ -44,6 +44,7 @@ def world_to_camera_batch(joints, n_joints, rot, t):
     :param t:
     :return:
     """
+
     check_joints_input(joints,n_joints)
     check_rot_input(rot)
     check_t_input(t)
@@ -65,7 +66,7 @@ def camera_to_pixels_batch(joints_cam,n_joints, f, c, return_z = False):
     check_f_c_input(f)
     x = joints_cam[:, :, 0]
     y = joints_cam[:, :, 1]
-    z = joints_cam[:, :, 2]
+    z = joints_cam[:, :, 2] - 10**(-6)
     fx = f[:, 0, 0].view(-1,1)
     fy = f[:, 0, 1].view(-1,1)
     cx = c[:, 0, 0].view(-1,1)

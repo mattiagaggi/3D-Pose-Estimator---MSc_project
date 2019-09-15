@@ -53,7 +53,7 @@ class SMPL_Parser(BaseParser):
         self._add_name(name2)
         self._add_output_dir("data/checkpoints")
         self._add_model_checkpoints(5000)
-        self._add_verbose(50, 10, 500, 100) #verb iter, train_log_step,img log_step
+        self._add_verbose(50, 5, 5, 100) #verb iter, train_log_step,img log_step
 
 
 

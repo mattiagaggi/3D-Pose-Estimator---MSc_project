@@ -55,7 +55,7 @@ class TrainingLogger:
             current += 1
         current -= 1
         self.scalars_saved = current
-        
+
 
     def save_dics(self,name, dic_in, dic_out, idx):
 

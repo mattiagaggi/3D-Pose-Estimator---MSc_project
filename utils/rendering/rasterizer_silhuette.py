@@ -20,6 +20,7 @@ class Rasterizer(BaseModel):
         faces = np.expand_dims(faces, 0)
         faces = np.repeat(faces,repeats=batch_size, axis=0)
         self.faces = numpy_to_tensor(faces).int() # needs to be int (see neural renderer)
+        self.faces = torch.cat((self.faces, self.faces[:, :, list(reversed(range(self.faces.shape[-1])))]), dim=1)
         self.reverse_rows = numpy_to_long(np.array(list(reversed(range(IM_SIZE)))))
 
 
@@ -34,7 +35,7 @@ class Rasterizer(BaseModel):
     def forward(self, vertices):
 
         in_rast = self.pixel_coords_to_rasterization(vertices)
-        out_rast = rasterize_silhouettes(in_rast, IM_SIZE)
+        out_rast = rasterize_silhouettes(in_rast, IM_SIZE, anti_aliasing=True)
         image = self.rasterized_to_image(out_rast)
         return image
 

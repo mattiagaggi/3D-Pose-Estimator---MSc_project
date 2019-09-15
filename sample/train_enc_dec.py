@@ -7,7 +7,7 @@ from sample.config.data_conf import PARAMS
 from sample.losses.images import L2_Resnet_Loss
 from sample.trainer.trainer_encoder_decoder import Trainer_Enc_Dec
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
 device=PARAMS['data']['device']
 sampling_train= PARAMS.data.sampling_train
 sampling_test= PARAMS.data.sampling_test

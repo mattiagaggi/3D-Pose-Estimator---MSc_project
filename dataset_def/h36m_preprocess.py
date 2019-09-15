@@ -489,14 +489,21 @@ class Data_Base_class(BaseDataset):
     ########IMAGE FUNCTIONS #####################################
 
     def extract_image(self, path):
-        im = cv2.imread(path)
-        im=im[:H36M_CONF.max_size, :H36M_CONF.max_size, :]
+        try:
+            im = cv2.imread(path)
+            im = im[:H36M_CONF.max_size, :H36M_CONF.max_size, :]
+        except:
+            self._logger.error("Processing mistake path ",path)
         im = im.astype(np.float32)
         im /= 256
         return im
+
     def extract_mask(self, path):
-        im = cv2.imread(path, 0)
-        im = im[:H36M_CONF.max_size, :H36M_CONF.max_size]
+        try:
+            im = cv2.imread(path, 0)
+            im = im[:H36M_CONF.max_size, :H36M_CONF.max_size]
+        except:
+            self._logger.error("Processing mistake path ",path)
         im = cv2.threshold(im, 128, 255, cv2.THRESH_BINARY)[1]
         im = im.astype(np.float32)
         im /= 255

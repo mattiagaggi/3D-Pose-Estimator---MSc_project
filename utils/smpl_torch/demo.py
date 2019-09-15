@@ -39,5 +39,4 @@ if __name__ == '__main__':
         plot=True,
         fig=fig,
         savepath=None)
-
     plt.show()

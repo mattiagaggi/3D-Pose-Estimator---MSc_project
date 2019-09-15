@@ -57,6 +57,8 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         self.data_test = data_test
 
         #test while training
+        self.start_optimising_vertices = 30
+        self.optimise_vertices = False
         self.test_log_step = None
         self.img_log_step = args.img_log_step
         if data_test is not None:
@@ -162,7 +164,8 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         for i in range(5):
             idx=np.random.randint(self.model.batch_size)
             self.log_image_and_pose(string, i, idx, dic_in, dic_out)
-            #self.log_masks_vertices(string, i, idx, dic_in, dic_out)
+            if self.optimise_vertices:
+                self.log_masks_vertices(string, i, idx, dic_in, dic_out)
             self.log_smpl(string, i, idx, dic_out)
 
     def log_gradients(self):
@@ -178,22 +181,23 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
     def train_step(self, bid, dic, pbar, epoch):
 
 
+
+        if self.start_optimising_vertices == self.global_step:
+            self._logger.info("Start optimising vertices")
+            self.optimise_vertices = True
+            self.model.optimise_vertices = True
+            self.loss.optimise_vertices = True
         self.optimizer.zero_grad()
-
         dic_out = self.model(dic)
-        #self._logger.error("actual", dic['joints_im'][0])
-        #self._logger.error("pred",dic_out['joints_im'][0])
-
-        #dic_out['joints_im'].register_hook(lambda grad: print(grad))
-        #self._logger.error("masking",dic_out["masks"][1]["image"])
-
-        loss, loss_pose, loss_vert = self.loss(dic, dic_out, self.global_step )
-
-
+        if self.optimise_vertices:
+            loss, loss_pose, loss_vert = self.loss(dic, dic_out, self.global_step )
+        else:
+            loss, loss_pose = self.loss(dic, dic_out, self.global_step)
+        #print("loss")
         #loss.register_hook(lambda grad: print(grad))
         loss.backward()
-        self.model.plot_grad_flow()
-        plt.show()
+        #self.model.plot_grad_flow()
+        #plt.show()
         self.optimizer.step()
         if (bid % self.verbosity_iter == 0) and (self.verbosity == 2):
             pbar.set_description(' Epoch {} Loss {:.3f}'.format(
@@ -205,15 +209,17 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
                                                self.global_step)
             self.model_logger.train.add_scalar('loss_pose', loss_pose.item(),
                                                self.global_step)
-            self.model_logger.train.add_scalar('loss_verts', loss_vert.item(),
-                                               self.global_step)
+            if self.optimise_vertices:
+                self.model_logger.train.add_scalar('loss_verts', loss_vert.item(),
+                                                self.global_step)
 
             self.train_logger.record_scalar('train_loss', loss.item(),
                                                self.global_step)
             self.train_logger.record_scalar('train_loss_pose', loss_pose.item(),
                                                self.global_step)
-            self.train_logger.record_scalar('train_loss_vert', loss_vert.item(),
-                                               self.global_step)
+            if self.optimise_vertices:
+                self.train_logger.record_scalar('train_loss_vert', loss_vert.item(),
+                                                self.global_step)
 
         if (bid % self.img_log_step == 0) or (self.global_step in self.log_images_start_training):
 
@@ -228,21 +234,26 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         idx = random.randint(self.length_test_set)
         dic= self.data_test[idx]
         dic_out = self.model(dic)
-        loss, loss_pose, loss_vert = self.loss(dic, dic_out, self.global_step)
+        if self.optimise_vertices:
+            loss, loss_pose, loss_vert = self.loss(dic, dic_out, self.global_step)
+        else:
+            loss, loss_pose = self.loss(dic, dic_out, self.global_step)
         self.model.train()
         self.model_logger.val.add_scalar('loss/iterations', loss.item(),
                                            self.global_step)
         self.model_logger.val.add_scalar('loss_pose', loss_pose.item(),
                                            self.global_step)
-        self.model_logger.val.add_scalar('loss_verts', loss_vert.item(),
-                                           self.global_step)
+        if self.optimise_vertices:
+            self.model_logger.val.add_scalar('loss_verts', loss_vert.item(),
+                                            self.global_step)
 
         self.train_logger.record_scalar('test_loss', loss.item(),
                                         self.global_step)
         self.train_logger.record_scalar('test_loss_pose', loss_pose.item(),
                                         self.global_step)
-        self.train_logger.record_scalar('test_loss_vert', loss_vert.item(),
-                                        self.global_step)
+        if self.optimise_vertices:
+            self.train_logger.record_scalar('test_loss_vert', loss_vert.item(),
+                                            self.global_step)
         if bid % self.img_log_step == 0:
 
             self.log_images("test", dic, dic_out)
