@@ -23,13 +23,31 @@ data_train = Data_3dpose(args_enc,  #subsampling_fno = 1,
                          sampling=sampling_train) #8,9
 
 
+
 data_test = Data_3dpose(args_enc,  #subsampling_fno = 2,
                         index_file_content =['s'],
                         #index_file_list=[[1, 5, 6, 7],[1,2]])
                         index_file_list=[[9,11]],
                         sampling=sampling_test
                         ) #8,9
+"""
+import os
+lst=[]
+for i in data_train.index_file:
+    path, name, parent_path=data_train.get_name( i[0], i[1], i[2], i[3], i[4])
+    lst.append(path)
+    im=data_train.extract_image(path)
+    os.remove(path)
 
+for i in data_test.index_file:
+    path, name, parent_path=data_test.get_name( i[0], i[1], i[2], i[3], i[4])
+    lst.append(path)
+    os.remove(path)
+    im=data_test.extract_image(path)
+
+import pickle as pkl
+pkl.dump(lst, open("data/missing.pkl", "wb"))
+"""
 
 
 

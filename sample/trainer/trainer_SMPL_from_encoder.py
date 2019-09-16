@@ -133,11 +133,14 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         index_list =[]
         out_verts_list =[]
         out_masks_list =[]
+        from sample.losses.images import Cross_Entropy_loss
+        #c = Cross_Entropy_loss(64)
         for ca in range(1,5):
-            mask_list.append(dic_in["masks"][ca]["image"].cpu().data.numpy())
-            index_list.append(dic_in["masks"][ca]["idx"].cpu().data.numpy())
-            out_verts_list.append(dic_out["masks"][ca]["verts"].cpu().data.numpy())
-            out_masks_list.append(dic_out["masks"][ca]["image"].cpu().data.numpy())
+            mask_list.append(dic_in["masks"][ca]["image"].cpu().data.numpy()) #subset mask image according to idx
+            index_list.append(dic_in["masks"][ca]["idx"].cpu().data.numpy()) #subset mask image according to idx
+            out_verts_list.append(dic_out["masks"][ca]["verts"].cpu().data.numpy()) #subset mask image according to idx
+            out_masks_list.append(dic_out["masks"][ca]["image"].cpu().data.numpy()) ##subset mask image according to idx
+
         fig = self.drawer.plot_image_on_axis( idx, mask_list,out_verts_list, index_list)
         self.model_logger.train.add_figure(str(string) + str(i) + "masks_vertices", fig, self.global_step)
         fig = self.drawer.plot_image_on_axis( idx, out_masks_list, None, index_list)
@@ -215,12 +218,14 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
 
             self.train_logger.record_scalar('train_loss', loss.item(),
                                                self.global_step)
+
             self.train_logger.record_scalar('train_loss_pose', loss_pose.item(),
                                                self.global_step)
+            self._logger.info("pose loss",loss_pose.item() )
             if self.optimise_vertices:
                 self.train_logger.record_scalar('train_loss_vert', loss_vert.item(),
                                                 self.global_step)
-
+                self._logger.info("verts loss", loss_vert.item())
         if (bid % self.img_log_step == 0) or (self.global_step in self.log_images_start_training):
 
             self.log_images("train", dic, dic_out)

@@ -54,3 +54,15 @@ trainer_SMPL =Trainer_Enc_Dec_SMPL(
 trainer_SMPL.resume_encoder("data/checkpoints/enc_dec_S15678_no_rot")
 
 trainer_SMPL.train()
+
+
+# find out missing data
+
+# modify data loader
+
+
+# add L_app
+
+#erase indices not needed
+
+#check losses - ask denis

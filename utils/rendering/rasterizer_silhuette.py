@@ -25,7 +25,7 @@ class Rasterizer(BaseModel):
 
 
     def pixel_coords_to_rasterization(self, pixel_coords):
-        return (pixel_coords / (IM_SIZE//2)) - 1
+        return (pixel_coords / (IM_SIZE/2)) - 1
 
 
     def rasterized_to_image(self, out_rasterisation):
@@ -34,8 +34,9 @@ class Rasterizer(BaseModel):
 
     def forward(self, vertices):
 
-        in_rast = self.pixel_coords_to_rasterization(vertices)
-        out_rast = rasterize_silhouettes(in_rast, IM_SIZE, anti_aliasing=True)
+        verts = self.pixel_coords_to_rasterization(vertices)
+        faces = vertices_to_faces(verts, self.faces)
+        out_rast = rasterize_silhouettes(faces, IM_SIZE, anti_aliasing=True)
         image = self.rasterized_to_image(out_rast)
         return image
 

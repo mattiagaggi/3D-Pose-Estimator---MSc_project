@@ -38,11 +38,11 @@ def from_h36m_world_to_smpl_torch(points_h36m, root_position):
     return points_h36m
 
 
-def project_vertices_onto_mask(smpl_converted, mask_dic):
+def project_vertices_onto_mask(smpl_converted, dic):
 
-    verts_cam = world_to_camera_batch( smpl_converted , n_vertices, mask_dic['R'], mask_dic['T'])
-    verts_pix = camera_to_pixels_batch(verts_cam, n_vertices, mask_dic['f'], mask_dic['c'], return_z=True)
-    verts_fin = transform_2d_joints_batch(verts_pix, mask_dic['trans_crop'])
+    verts_cam = world_to_camera_batch( smpl_converted , n_vertices, dic['mask_R'], dic['mask_T'])
+    verts_pix = camera_to_pixels_batch(verts_cam, n_vertices, dic['mask_f'], dic['mask_c'], return_z=True)
+    verts_fin = transform_2d_joints_batch(verts_pix, dic['mask_transcrop'])
     return verts_fin
 
 

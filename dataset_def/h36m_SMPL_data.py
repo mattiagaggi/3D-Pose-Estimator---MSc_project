@@ -93,10 +93,17 @@ class SMPL_Data(Data_Base_class):
         dic= {"image": [],
               "joints_im": [],
               "R": [],
-              "masks": {1 : self.create_mask_dic(),
-                         2 : self.create_mask_dic(),
-                         3 : self.create_mask_dic(),
-                         4 : self.create_mask_dic()}
+              "mask_image": [],
+              "mask_idx_all": [],
+              "mask_R": [],
+              "mask_T": [],
+              "mask_f": [],
+              "mask_c": [],
+              "mask_trans_crop": [],
+              "mask_idx_1":[],
+              "mask_idx_2": [],
+              "mask_idx_3": [],
+              "mask_idx_4": []
               }
         return dic
 
@@ -111,13 +118,15 @@ class SMPL_Data(Data_Base_class):
 
     def update_dic_with_mask(self,dic, i,  s, act, subact, mask_number, fno, rotation_angle):
         im, R, T, f, c, trans = self.extract_masks_info(s,act,subact,mask_number,fno,rotation_angle)
-        dic['masks'][mask_number]['idx'].append(i)
-        dic['masks'][mask_number]['image'].append(numpy_to_tensor_float(im))
-        dic['masks'][mask_number]['R'].append(numpy_to_tensor_float(R))
-        dic['masks'][mask_number]['T'].append(numpy_to_tensor_float(T))
-        dic['masks'][mask_number]['f'].append(numpy_to_tensor_float(f))
-        dic['masks'][mask_number]['c'].append(numpy_to_tensor_float(c))
-        dic['masks'][mask_number]['trans_crop'].append(numpy_to_tensor_float(trans))
+        dic['mask_idx_all'].append(i)
+        dic['mask_image'].append(numpy_to_tensor_float(im))
+        dic['mask_R'].append(numpy_to_tensor_float(R))
+        dic['mask_T'].append(numpy_to_tensor_float(T))
+        dic['mask_f'].append(numpy_to_tensor_float(f))
+        dic['mask_c'].append(numpy_to_tensor_float(c))
+        dic['mask_trans_crop'].append(numpy_to_tensor_float(trans))
+        dic['mask_idx_n'].append(mask_number)
+
         return dic
 
     def dic_final_processing(self,dic):
@@ -127,12 +136,11 @@ class SMPL_Data(Data_Base_class):
         dic['R'] = torch.stack(dic['R'], dim=0)
         dic['root_pos'] = dic['joints_im'][:, H36M_CONF.joints.root_idx, : ]
         dic['root_pos'] = dic['root_pos'].view(-1, 1, 3)
-        for mask in dic['masks'].keys():
-            for key in dic['masks'][mask].keys():
-                if key == 'idx':
-                    dic['masks'][mask][key] = numpy_to_long(dic['masks'][mask][key])
-                else:
-                    dic['masks'][mask][key] = torch.stack(dic['masks'][mask][key], dim=0)
+        for key in dic.keys():
+            if 'idx' in key:
+                dic[key] = numpy_to_long(dic[key])
+            else:
+                dic[key] = torch.stack(dic[key], dim=0)
         return dic
 
 
@@ -202,8 +210,28 @@ if __name__== '__main__' :
     ds = DrawerS(kintree_table=smpl_layer.kintree_table)
     # Generate random pose and shape parameters
     batch_size=1
-    pose_params = torch.rand(batch_size, 72) * 0
-    shape_params = torch.rand(batch_size, 10) * 0.3
+    pose_params = torch.rand(batch_size, 72)
+
+
+    pose_params_1 = numpy_to_tensor_float(np.array([ 1.3438e-01,  1.0050e-03,  1.2732e-01,  8.8333e-02, -1.3887e+00,
+        -1.5473e-01,  5.2549e-01, -5.0818e-01,  3.5654e-01,  4.1361e-01,
+        -3.5565e-03, -2.1754e-01, -1.2578e-01, -2.0454e-01,  3.0172e-01,
+        -1.0112e+00,  4.8895e-01,  3.9189e-01,  3.7336e-01,  5.0514e-01,
+        -4.0682e-01,  4.8758e-01, -2.8710e-02, -2.0994e-02,  2.2309e-01,
+         1.5088e-01, -1.1272e+00, -1.0828e+00,  8.7898e-02, -2.2011e-02,
+         2.2926e-02, -2.0094e-01,  1.3080e-01, -1.3582e-01, -7.7722e-02,
+        -3.1845e-01,  1.8695e-01, -5.3144e-01,  2.7748e-01,  6.7985e-02,
+        -4.3104e-01, -1.5006e-01,  3.8521e-02, -5.5779e-01,  1.4236e-01,
+        -1.8640e-01, -8.4205e-02,  6.0946e-01,  1.5840e-01,  1.3520e+00,
+        -1.7617e-01, -1.2128e-01, -4.4586e-01, -5.8661e-01,  4.0632e-01,
+         8.6259e-01,  3.4038e-01,  1.8232e-01, -3.3726e-01, -5.7435e-01,
+         6.5781e-02, -2.7820e-01, -2.8747e-01, -1.7012e-01, -2.2815e-01,
+        -2.5051e-01,  5.8695e-01, -9.4217e-02,  6.6951e-02, -1.7207e-01,
+         4.9331e-02,  9.0434e-02]))
+    shape_params_1 = numpy_to_tensor_float(np.array([-0.8954, -0.0059, -0.3579, -0.2993, -0.4143, -0.3281, -0.1679, -0.1420,
+         0.0835,  0.5819]))
+    pose_params = torch.stack([pose_params_1]*batch_size, dim=0)
+    shape_params = torch.stack([shape_params_1]*batch_size, dim=0)
 
     pose_params = pose_params.cuda()
     shape_params = shape_params.cuda()
@@ -256,7 +284,7 @@ if __name__== '__main__' :
 
         import torch
 
-        faces = torch.cat((faces, faces[:, :, list(reversed(range(faces.shape[-1])))]), dim=1)
+        #faces = torch.cat((faces, faces[:, :, list(reversed(range(faces.shape[-1])))]), dim=1)
         image=rasterize_silhouettes(faces, 128, anti_aliasing=True)
         ii = numpy_to_long(np.array(list(reversed(range(image.shape[-1])))))
         image=torch.index_select(image, dim=1, index=ii)

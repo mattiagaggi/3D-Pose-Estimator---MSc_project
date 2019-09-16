@@ -29,7 +29,7 @@ class SMPL_enc_dec(BaseModel):
 
         im= dic['image']
         out_enc = self.encoder_decoder.encoder(im)
-        out_enc['optimise_vertices']=self.optimise_vertices
+        out_enc['optimise_vertices'] = self.optimise_vertices
         out_smpl = self.SMPL_from_latent(out_enc)
         joints_converted_world = from_smpl_to_h36m_world_torch(out_smpl['joints'], dic['root_pos'],
                                                              from_camera=True, R_world_cam=dic['R'])
@@ -40,6 +40,8 @@ class SMPL_enc_dec(BaseModel):
 
         dic_out = {}
         dic_out["SMPL_params"] = (out_smpl['pose'], out_smpl['shape'])
+        #self._logger.info("pose", out_smpl['pose'][0])
+        #self._logger.info("shape", out_smpl['shape'][0])
         dic_out["SMPL_output"] = (out_smpl['joints'], out_smpl['verts'])
         dic_out['joints_im'] = joints_converted_world
         dic_out['masks'] = {1: {},
@@ -48,17 +50,15 @@ class SMPL_enc_dec(BaseModel):
                             4: {}
                             }
         if self.optimise_vertices:
-            for ca in range(1,5):
-                #check losss
-                pix_vertices_ca = project_vertices_onto_mask(vertices_converted_world, dic['masks'][ca])
-                dic_out['masks'][ca]['verts'] = pix_vertices_ca
-                #px = pix_vertices_ca.cpu().data.numpy()[0]
-                #plt.figure()
-                #plt.scatter(px[:,0],px[:,1])
-                image = self.rasterizer(pix_vertices_ca)
-                #im= image.cpu().data.numpy()[0]
-                #plt.figure()
-                #plt.imshow(im)
-                #plt.show()
-                dic_out['masks'][ca]['image'] = image
+            pix_vertices_ca = project_vertices_onto_mask(vertices_converted_world, dic)
+            dic_out['mask_verts'] = pix_vertices_ca
+            #px = pix_vertices_ca.cpu().data.numpy()[0]
+            #plt.figure()
+            #plt.scatter(px[:,0],px[:,1])
+            image = self.rasterizer(pix_vertices_ca)
+            #im= image.cpu().data.numpy()[0]
+            #plt.figure()
+            #plt.imshow(im)
+            #plt.show()
+            dic_out['mask_image'] = image
         return dic_out

@@ -492,18 +492,19 @@ class Data_Base_class(BaseDataset):
         try:
             im = cv2.imread(path)
             im = im[:H36M_CONF.max_size, :H36M_CONF.max_size, :]
+            im = im.astype(np.float32)
+            im /= 256
+            return im
         except:
-            self._logger.error("Processing mistake path ",path)
-        im = im.astype(np.float32)
-        im /= 256
-        return im
+            self._logger.error("Processing mistake path %s" % path)
+
 
     def extract_mask(self, path):
         try:
             im = cv2.imread(path, 0)
             im = im[:H36M_CONF.max_size, :H36M_CONF.max_size]
         except:
-            self._logger.error("Processing mistake path ",path)
+            self._logger.error("Processing mistake path %s" % path)
         im = cv2.threshold(im, 128, 255, cv2.THRESH_BINARY)[1]
         im = im.astype(np.float32)
         im /= 255
