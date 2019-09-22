@@ -34,8 +34,7 @@ class Normalised_MPJ(BaseMetric):
 
 
     def forward(self, pose_pred, pose_label):
-        assert pose_pred.size()[1] == 17
-        assert pose_label.size()[1] == 17
+
         assert pose_pred.size()[2] == 3
         assert pose_label.size()[2] == 3
         dot_pose_pose = torch.mul(pose_pred,pose_pred).sum(dim=2).sum(dim=1)

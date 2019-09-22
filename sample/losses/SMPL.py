@@ -18,22 +18,21 @@ class Masks_Loss(BaseMetric):
         self.batch_size = batch_size
         self.cross_entropy = Cross_Entropy_loss(self.batch_size)
 
-    def forward(self, mask_dic_in, mask_dic_out):
-        total_loss = numpy_to_tensor_float(np.zeros((1)))
-        for ca in range(1,5):
-            image_in = mask_dic_in[ca]['image']
-            image_out = mask_dic_out[ca]['image']
-            total_loss = total_loss + self.cross_entropy(image_out, image_in)
+    def forward(self, pred, gt):
+
+        total_loss = self.cross_entropy(pred, gt)
         return torch.mean(total_loss)
 
 
-class Pose_Loss(BaseMetric):
-    def __init__(self):
+class Pose_Loss_SMPL(BaseMetric):
+    def __init__(self, criterium = None):
         super().__init__()
         self.conversion = Convert_joints()
-        self.pose_loss = MPJ()
-
-    def forward(self, h36m_pose_ground, smpl_pose_pred ):
+        if criterium is None:
+            self.pose_loss = MPJ()
+        else:
+            self.pose_loss = criterium
+    def forward(self, smpl_pose_pred, h36m_pose_ground ):
 
         smpl_joints, h36m_joints = self.conversion.match_joints(smpl_pose_pred, h36m_pose_ground, batch=True)
         #exclude root
@@ -63,7 +62,7 @@ class SMPL_Loss(BaseMetric):
         self.init__ = super().__init__()
         self.batch_size = batch_size
         self.masks_criterium = Masks_Loss(batch_size)
-        self.pose_criterium = Pose_Loss()
+        self.pose_criterium = Pose_Loss_SMPL()
         self.SMPL_init = Loss_Pose_Zero()
 
 
@@ -73,12 +72,9 @@ class SMPL_Loss(BaseMetric):
 
 
     def forward(self, dic_in, dic_out, global_iter):
-
-
-
-        loss_pose = self.pose_criterium(dic_in['joints_im'], dic_out['joints_im'])
+        loss_pose = self.pose_criterium(dic_out['joints_im'], dic_in['joints_im']) #symmetric
         if self.optimise_vertices:
-            loss_mask = self.masks_criterium(dic_in['masks'], dic_out['masks'])
+            loss_mask = self.masks_criterium(dic_out['mask_image'], dic_in['mask_image'])
             total_loss = self.w_m*loss_mask + loss_pose
             return total_loss, loss_pose, loss_mask  # , loss_mask
         total_loss = loss_pose

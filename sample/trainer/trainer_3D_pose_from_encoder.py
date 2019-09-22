@@ -16,11 +16,12 @@ from utils.trans_numpy_torch import numpy_to_tensor_float
 
 
 
-if PARAMS.encoder_decoder.device_type == 'cpu':
+if PARAMS.data.device_type == 'cpu':
     no_cuda=True
 else:
     no_cuda=False
 device = PARAMS['data']['device']
+
 
 class Trainer_Enc_Dec_Pose(BaseTrainer):
     """
@@ -44,6 +45,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
                          args.verbosity, args.train_log_step,
                          args.verbosity_iter)
 
+        self.batch_size = args.batch_size
         self.model.fix_encoder_decoder()
 
         self.loss = loss
@@ -62,7 +64,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         self.length_test_set = len(self.data_test)
         self.len_trainset = len(self.data_train)
         self.drawer = Drawer()
-        mean= self.data_train.get_mean_pose()
+        mean= self.data_train.dataset.get_mean_pose()
         self.mean_pose = numpy_to_tensor_float(mean.reshape(1, 17, 3))
         #std = self.data_train.get_std_pose(mean).reshape(1, 17, 3)
         #self.std_pose = numpy_to_tensor_float(std)
@@ -78,17 +80,17 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         info = dict()
         info['creation'] = str(datetime.datetime.now())
         info['size_batches'] = len(self.data_train)
-        info['batch_size'] = self.model.batch_size
+        info['batch_size'] = self.batch_size
         string=""
-        for number,contents in enumerate(self.data_train.index_file_list):
-            string += "\n content :" + self.data_train.index_file_content[number]
+        for number,contents in enumerate(self.data_train.dataset.index_file_list):
+            string += "\n content :" + self.data_train.dataset.index_file_content[number]
             for elements in contents:
                 string += " "
                 string += " %s," % elements
         info['details'] = string
         info['optimiser']=str(self.optimizer)
         info['loss']=str(self.loss.__class__.__name__)
-        info['sampling'] = str(self.data_train.sampling)
+        info['sampling'] = str(self.data_train.dataset.sampling)
         return info
 
     def resume_encoder(self,resume_path):
@@ -114,7 +116,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
     def log_images(self, string, image_in, pose_out, ground_truth,):
 
         for i in range(5):
-            idx=np.random.randint(self.model.batch_size)
+            idx=np.random.randint(self.batch_size)
             pt=pose_out[idx]
             gt=ground_truth[idx]
             pt_cpu=pt.cpu().data.numpy()
@@ -135,7 +137,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
 
 
     def gt_cam_mean_cam(self, dic_in, dic_out):
-        mean = torch.bmm( self.mean_pose.repeat(self.model.batch_size,1,1), dic_in['R_world_im'].transpose(1,2))
+        mean = torch.bmm( self.mean_pose.repeat(self.batch_size,1,1), dic_in['R_world_im'].transpose(1,2))
         gt = torch.bmm( dic_out['joints_im'], dic_in['R_world_im'].transpose(1,2))
         return gt, mean
 
@@ -169,13 +171,18 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
             self.train_logger.save_batch_images('train', dic_in['im_in'], self.global_step,
                                                 pose_pred=out_pose, pose_gt=gt)
 
-        return loss, pbar
+        return loss.item(), pbar
 
 
     def test_step_on_random(self,bid):
         self.model.eval()
         idx = random.randint(self.length_test_set)
         in_test_dic, out_test_dic = self.data_test[idx]
+        if not no_cuda:
+            for k in in_test_dic.keys():
+                in_test_dic[k] = in_test_dic[k].cuda()
+            for k in out_test_dic.keys():
+                out_test_dic[k] = out_test_dic[k].cuda()
         gt, mean = self.gt_cam_mean_cam(in_test_dic, out_test_dic)
         out_pose_norm = self.model(in_test_dic)
         self.model.train()
@@ -210,6 +217,11 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         total_loss = 0
         pbar = tqdm(self.data_train)
         for bid, (dic_in,dic_out) in enumerate(pbar):
+            if not no_cuda:
+                for k in dic_in.keys():
+                    dic_in[k] = dic_in[k].cuda()
+                for k in dic_out.keys():
+                    dic_out[k] = dic_out[k].cuda()
             loss, pbar = self.train_step(bid, dic_in, dic_out, pbar, epoch)
             if self.test_log_step is not None and (bid % self.test_log_step == 0):
                 self.test_step_on_random(bid)
@@ -218,7 +230,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
                     self._save_checkpoint(epoch, total_loss / bid)
                     self._update_summary(self.global_step,total_loss/bid)
             self.global_step += 1
-            total_loss += loss.item()
+            total_loss += loss
         avg_loss = total_loss / len(self.data_train)
         self.model_logger.train.add_scalar('loss/epochs', avg_loss, epoch)
         self.train_logger.record_scalar('loss/epochs', avg_loss, epoch)
@@ -235,6 +247,11 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         self.model.eval()
         idx = random.randint(self.length_test_set)
         in_test_dic, out_test_dic = self.data_test[idx]
+        if not no_cuda:
+            for k in in_test_dic.keys():
+                in_test_dic[k] = in_test_dic[k].cuda()
+            for k in out_test_dic.keys():
+                out_test_dic[k] = out_test_dic[k].cuda()
         gt, mean = self.gt_cam_mean_cam(in_test_dic, out_test_dic)
         out_pose_norm = self.model(in_test_dic)
         out_pose = out_pose_norm + mean

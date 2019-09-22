@@ -5,14 +5,14 @@ from sample.models.encoder_decoder import Encoder_Decoder
 from sample.models.pose_from_latent import Pose_from_Latent
 
 class Pose_3D(BaseModel):
-    def __init__(self, batch_size):
+    def __init__(self):
 
         super().__init__()
 
-        self.batch_size = batch_size
-        self.encoder_decoder=Encoder_Decoder(batch_size)
+
+        self.encoder_decoder=Encoder_Decoder()
         dimension_L_3D=self.encoder_decoder.dimension_L_3D
-        self.pose_from_latent = Pose_from_Latent(batch_size, d_in=dimension_L_3D)
+        self.pose_from_latent = Pose_from_Latent(d_in=dimension_L_3D)
 
     def fix_encoder_decoder(self):
         for par in self.encoder_decoder.parameters():

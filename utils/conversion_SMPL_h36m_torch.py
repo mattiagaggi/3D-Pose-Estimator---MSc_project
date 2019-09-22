@@ -42,7 +42,7 @@ def project_vertices_onto_mask(smpl_converted, dic):
 
     verts_cam = world_to_camera_batch( smpl_converted , n_vertices, dic['mask_R'], dic['mask_T'])
     verts_pix = camera_to_pixels_batch(verts_cam, n_vertices, dic['mask_f'], dic['mask_c'], return_z=True)
-    verts_fin = transform_2d_joints_batch(verts_pix, dic['mask_transcrop'])
+    verts_fin = transform_2d_joints_batch(verts_pix, dic['mask_trans_crop'])
     return verts_fin
 
 

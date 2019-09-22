@@ -16,9 +16,17 @@ def create_one_float_tensor(shape):
 def numpy_to_tensor_float(data):
     return torch.from_numpy(data).float().to(device)
 
+def numpy_to_tensor_float_cpu(data):
+    return torch.from_numpy(data).float().to(torch.device('cpu'))
+
+def numpy_to_long_cpu(arr):
+    return torch.LongTensor(arr).to(torch.device('cpu'))
+
 def numpy_to_tensor(data):
     return torch.from_numpy(data).to(device)
 
+def numpy_to_tensor_cpu(data):
+    return torch.from_numpy(data).to(torch.device('cpu'))
 
 def numpy_to_long(arr):
     return torch.LongTensor(arr).to(device)

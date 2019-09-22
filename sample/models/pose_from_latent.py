@@ -4,10 +4,10 @@ from sample.base.base_model import BaseModel
 
 
 class Pose_from_Latent(BaseModel):
-    def __init__(self,batch_size, d_in, d_hidden=2048, d_out=51, n_hidden=2, dropout=0.5):
+    def __init__(self, d_in, d_hidden=2048, d_out=51, n_hidden=2, dropout=0.5):
         super().__init__()
         self._logger.info("Make sure weights encoder decoder are set as not trainable")
-        self.batch_size = batch_size
+        self.d_in=d_in
         self.dropout = dropout
         if n_hidden == 0:
             self.fully_connected = torch.nn.Linear(d_in, d_out)
@@ -29,7 +29,7 @@ class Pose_from_Latent(BaseModel):
             self.fully_connected = torch.nn.Sequential(*module_list)
 
     def forward(self, input_latent):
-        input_flat = input_latent.view(self.batch_size, -1)
+        input_flat = input_latent.view(-1, self.d_in)
         output = self.fully_connected(input_flat)
-        output = output.view(self.batch_size,17,3)
+        output = output.view(-1,17,3)
         return output

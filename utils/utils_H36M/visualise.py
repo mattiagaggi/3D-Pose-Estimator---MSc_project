@@ -8,6 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib
 #matplotlib.use('TkAgg') #make np.string work mac
 from utils.utils_H36M.common import H36M_CONF
+from sample.config.data_conf import PARAMS
 
 
 class Drawer:
@@ -253,7 +254,7 @@ class Drawer:
             if idx in indexes_list[i]:
                 axs[ i // 2, i % 2].axis('off')
                 position = list(indexes_list[i].flatten()).index(idx)
-                axs[ i // 2, i % 2].imshow(images_list[i][position], cmap='gray')
+                axs[ i // 2, i % 2].imshow(np.reshape(images_list[i][position], (PARAMS.data.im_size,  PARAMS.data.im_size)), cmap='gray')
                 if points_list is not None:
                     axs[i // 2, i % 2].scatter(points_list[i][position][:,0], points_list[i][position][:,1], s=1, alpha=0.5)
                 axs[i // 2, i % 2].set_title('projection ca %s' % i)

@@ -10,12 +10,12 @@ from sample.base.base_modules import unetConv2,unetUpNoSKip
 
 
 class Encoder(BaseModel):
-    def __init__(self, batch_size,
+    def __init__(self,
                  input_im_size, filter_list):
 
         super().__init__()
 
-        self.batch_size, self.input_im_size = batch_size, input_im_size
+        self.input_im_size = input_im_size
         num_encoding_layers = len(filter_list)
         self.filters = filter_list
         self.dimension_L_app = 128 #apperance dimensions
@@ -59,7 +59,7 @@ class Encoder(BaseModel):
         out=self.conv4(out)
 
 
-        out1=out.view(self.batch_size, -1)
+        out1=out.view(-1, self.encoder_output_features)
 
         L_3d = self.to_L3d(out1)
 
@@ -72,14 +72,12 @@ class Encoder(BaseModel):
 
 class Rotation(BaseModel):
     def __init__(self,
-                 batch_size,
                  dimensions_3d,
                  rotation_encoding_dimension = 128, implicit_rotation = False):
 
         super().__init__()
 
         self.implicit_rotation = implicit_rotation
-        self.batch_size = batch_size
         if self.implicit_rotation:
             self.dimension_3d = dimensions_3d
             self.rotation_encoding_dimension = rotation_encoding_dimension
@@ -108,7 +106,7 @@ class Rotation(BaseModel):
             concatenated = torch.cat((angle,L_3d), dim=1)
             L_3d_rotated = self.rotate_implicitely(concatenated)
         else:
-            L_3d_rotated = torch.bmm(L_3d.view(self.batch_size,-1,3), rotation_input.transpose(1,2))
+            L_3d_rotated = torch.bmm(L_3d.view(-1,self.dimension_3d//3, 3), rotation_input.transpose(1,2))
             L_3d_rotated = L_3d_rotated.view_as(L_3d)
         return L_3d_rotated
 
@@ -117,11 +115,9 @@ class Rotation(BaseModel):
 
 class Decoder(BaseModel):
     def __init__(self,
-                 batch_size,
                  L_3d_input_channels):
 
         super().__init__()
-        self.batch_size = batch_size
         self. L_3d_input_channels =  L_3d_input_channels
 
         self.decoded_channels_L = 512
@@ -154,13 +150,13 @@ class Decoder(BaseModel):
 
         L_3d=dic["L_3d"]
         L_app=dic["L_app"]
-        L_app = L_app.view(self.batch_size, self.decoded_channels_Lapp, 1, 1).expand(self.batch_size,
+        L_app = L_app.view(-1, self.decoded_channels_Lapp, 1, 1).expand(self.batch_size,
                                                                                         self.decoded_channels_Lapp,
                                                                                         self.encoded_im_size,
                                                                                         self.encoded_im_size)
 
         L_3d_conv = self.full_layer(L_3d)
-        L_3d_conv = L_3d_conv.view(self.batch_size,
+        L_3d_conv = L_3d_conv.view(-1,
                                                self.L3_conv_channels,
                                                self.encoded_im_size,
                                                self.encoded_im_size)
@@ -178,21 +174,19 @@ class Decoder(BaseModel):
 
 class Encoder_Decoder(BaseModel):
     def __init__(self,
-                 batch_size,
                  input_im_size = PARAMS.data.im_size):
 
         super().__init__()
 
-        self.batch_size = batch_size
         #encoder_parameters
         self.filters = [64, 128, 256, 512]
-        self.encoder = Encoder(self.batch_size, input_im_size, self.filters)
+        self.encoder = Encoder(input_im_size, self.filters)
 
         self.dimension_L_app = self.encoder.dimension_L_app
         self.dimension_L_3D = self.encoder.dimension_L_3D
         self.encoder_resolution = self.encoder.encoder_resolution #im size
-        self.rotation = Rotation(self.batch_size,self.dimension_L_3D)
-        self.decoder = Decoder(self.batch_size, self.dimension_L_3D )
+        self.rotation = Rotation(self.dimension_L_3D)
+        self.decoder = Decoder(self.dimension_L_3D )
         self.final_linear = nn.Conv2d(self.filters[0]+3, 3, 1)
 
         #self.to_pose = MLP.MLP_fromLatent(d_in=self.dimension_3d, d_hidden=2048, d_out=51, n_hidden=n_hidden_to3Dpose,

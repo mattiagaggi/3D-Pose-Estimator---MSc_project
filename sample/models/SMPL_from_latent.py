@@ -7,13 +7,14 @@ from utils.trans_numpy_torch import numpy_to_tensor_float
 
 
 class SMPL_from_Latent(BaseModel):
-    def __init__(self,batch_size, d_in_3d, d_in_app):
+    def __init__(self, d_in_3d, d_in_app):
         super().__init__()
         self._logger.info("Make sure weights encoder decoder are set as not trainable")
-        self.batch_size = batch_size
         d_hidden = 1024
         n_hidden = 1
         dropout = 0.3
+        self.d_in_app = d_in_app
+        self.d_in_3d = d_in_3d
         self.SMPL_pose_params = 72
         self.SMPL_shape_params = 10
         self.n_regressions = 3
@@ -26,7 +27,7 @@ class SMPL_from_Latent(BaseModel):
 
 
 
-        module_list = [torch.nn.Linear(d_in_3d, d_hidden),
+        module_list = [torch.nn.Linear(d_in_3d+d_in_app, d_hidden),
                         torch.nn.ReLU(),
                        torch.nn.BatchNorm1d(d_hidden, affine=True)]
 
@@ -82,10 +83,8 @@ class SMPL_from_Latent(BaseModel):
 
         L_3D = dic_in["L_3d"]
         optimise_vertices = dic_in['optimise_vertices']
-        #L_app = dic_in["L_app"]
-        #L_3D = L_3D.view(self.batch_size, -1)
-        #L_app = L_app.view(self.batch_size, -1)
-        #L = torch.cat([L_3D, L_app], dim=1)
+        L_app = dic_in["L_app"]
+        L = torch.cat([L_3D, L_app], dim=1)
 
 
         #pose = self.initial_pose
@@ -97,14 +96,14 @@ class SMPL_from_Latent(BaseModel):
         #shape_delta = deltas[:, self.SMPL_pose_params:]
         #pose = pose + pose_delta
         #shape = shape + shape_delta
-        output = self.fully_connected(L_3D)
+        output = self.fully_connected(L)
         #print("out")
         #output.register_hook(lambda grad: print(grad))
         pose = self.to_pose(output)
         if optimise_vertices:
             shape = self.to_shape(output)
         else:
-            shape = numpy_to_tensor_float(np.zeros((self.batch_size, self.SMPL_shape_params)))
+            shape = numpy_to_tensor_float(np.zeros((pose.size()[0], self.SMPL_shape_params)))
         #print("pose sh")
         #pose.register_hook(lambda grad: print(grad))
         #shape.register_hook(lambda grad: print(grad))

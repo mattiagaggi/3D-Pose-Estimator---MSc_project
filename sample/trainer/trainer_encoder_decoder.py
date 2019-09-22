@@ -41,7 +41,7 @@ class Trainer_Enc_Dec(BaseTrainer):
                  args.name, args.output, args.save_freq, args.verbosity,
                  args.train_log_step, args.verbosity_iter
                          )
-
+        self.batch_size = args.batch_size
         self.loss = loss
         self.metrics = metrics
         self.data_train = data_train
@@ -74,10 +74,10 @@ class Trainer_Enc_Dec(BaseTrainer):
         info = dict()
         info['creation'] = str(datetime.datetime.now())
         info['size_batches'] = len(self.data_train)
-        info['batch_size'] = self.model.batch_size
+        info['batch_size'] = self.batch_size
         string=""
-        for number,contents in enumerate(self.data_train.index_file_list):
-            string += "\n content :" + self.data_train.index_file_content[number]
+        for number,contents in enumerate(self.data_train.dataset.index_file_list):
+            string += "\n content :" + self.data_train.dataset.index_file_content[number]
             for elements in contents:
                 string += " "
                 string += " %s," % elements
@@ -85,7 +85,7 @@ class Trainer_Enc_Dec(BaseTrainer):
         info['one epoch'] = self.len_trainset
         info['optimiser'] = str(self.optimizer)
         info['loss'] = str(self.loss.__class__.__name__)
-        info['sampling'] = str(self.data_train.sampling)
+        info['sampling'] = str(self.data_train.dataset.sampling)
 
         return info
 
@@ -156,7 +156,7 @@ class Trainer_Enc_Dec(BaseTrainer):
                                                 image_target=dic_out['im_target'],
                                                 image_pred= out_im)
 
-        return loss, pbar
+        return loss.item(), pbar
 
 
 
@@ -165,6 +165,11 @@ class Trainer_Enc_Dec(BaseTrainer):
         self.model.eval()
         idx = random.randint(self.length_test_set)
         in_test_dic, out_test_dic = self.data_test[idx]
+        if not no_cuda:
+            for k in in_test_dic.keys():
+                in_test_dic[k] = in_test_dic[k].cuda()
+            for k in out_test_dic.keys():
+                out_test_dic[k] = out_test_dic[k].cuda()
         out_test = self.model(in_test_dic)
         self.model.train()
         loss_test = self.loss(out_test, out_test_dic['im_target'])
@@ -195,6 +200,11 @@ class Trainer_Enc_Dec(BaseTrainer):
         total_loss = 0
         pbar = tqdm(self.data_train)
         for bid, (dic_in,dic_out) in enumerate(pbar):
+            if not no_cuda:
+                for k in dic_in.keys():
+                    dic_in[k] = dic_in[k].cuda()
+                for k in dic_out.keys():
+                    dic_out[k] = dic_out[k].cuda()
             loss, pbar = self.train_step(bid, dic_in, dic_out, pbar, epoch)
             if self.test_log_step is not None and (bid % self.test_log_step == 0):
                 self.test_step_on_random(bid)
@@ -205,7 +215,7 @@ class Trainer_Enc_Dec(BaseTrainer):
                     self._save_checkpoint(epoch, total_loss / bid)
                     self._update_summary(self.global_step, total_loss/bid)
             self.global_step += 1
-            total_loss += loss.item()
+            total_loss += loss
         avg_loss = total_loss / len(self.data_train)
         self.model_logger.train.add_scalar('loss/epochs', avg_loss, epoch)
         self.train_logger.record_scalar('loss/epochs', avg_loss, epoch)
@@ -221,6 +231,11 @@ class Trainer_Enc_Dec(BaseTrainer):
         self.model.eval()
         idx = random.randint(self.length_test_set)
         in_test_dic, out_test_dic = self.data_test[idx]
+        if not no_cuda:
+            for k in in_test_dic.keys():
+                in_test_dic[k] = in_test_dic[k].cuda()
+            for k in out_test_dic.keys():
+                out_test_dic[k] = out_test_dic[k].cuda()
         out_test = self.model(in_test_dic)
         for m in self.metrics:
             value = m(out_test,out_test_dic['im_target'])

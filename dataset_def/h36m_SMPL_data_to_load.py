@@ -72,32 +72,37 @@ class SMPL_Data_Load(Data_Base_class):
 
     def create_dictionary_data(self):
         dic = {
-              "masks": {1: {},
-                        2: {},
-                        3: {},
-                        4: {}
-                        }
-              }
+            "mask_image": [],
+            "mask_idx_all": [],
+            "mask_R": [],
+            "mask_T": [],
+            "mask_f": [],
+            "mask_c": [],
+            "mask_trans_crop": [],
+            "mask_idx_n": []
+        }
         return dic
 
 
     def update_dic_with_image(self, dic, s, act, subact, ca, fno, rotation_angle):
         im, joints_world, R = self.extract_image_info(s, act, subact, ca, fno, rotation_angle=rotation_angle)
-        dic['image'] = im
+        dic['image'] = np.transpose(im, (2, 0, 1))
         dic['joints_im'] = joints_world
         dic['R'] = R
+        dic['root_pos'] = dic['joints_im'][ H36M_CONF.joints.root_idx, :]
+        dic['root_pos'] = dic['root_pos'].reshape(1, 3)
         return dic
 
 
-    def update_dic_with_mask(self,dic, i,  s, act, subact, mask_number, fno, rotation_angle):
+    def update_dic_with_mask(self,dic, s, act, subact, mask_number, fno, rotation_angle):
         im, R, T, f, c, trans = self.extract_masks_info(s,act,subact,mask_number,fno,rotation_angle)
-        dic['masks_'+str(mask_number)+'_idx'] = i
-        dic['masks_' + str(mask_number) + '_image'] = im
-        dic['masks_' + str(mask_number) + '_R'] = R
-        dic['masks_' + str(mask_number) + '_T'] = T
-        dic['masks_' + str(mask_number) + '_f'] = f
-        dic['masks_' + str(mask_number) + '_c'] = c
-        dic['masks_' + str(mask_number) + '_transcrop'] = trans
+        dic['mask_image'].append(np.transpose(np.expand_dims(im, axis=2), (2, 0, 1)))
+        dic['mask_R'].append(R)
+        dic['mask_T'].append(T)
+        dic['mask_f'].append(f)
+        dic['mask_c'].append(c)
+        dic['mask_trans_crop'].append(trans)
+        dic['mask_idx_n'].append(mask_number)
         return dic
 
 
@@ -112,7 +117,7 @@ class SMPL_Data_Load(Data_Base_class):
         dic = self.update_dic_with_image(dic,s, act, subact, ca, fno, rotation_angle)
         for mask_number in range(1,5):
             if mask_number in self.all_metadata[s][act][subact].keys():
-                dic = self.update_dic_with_mask(dic, item, s, act, subact, mask_number, fno, rotation_angle)
+                dic = self.update_dic_with_mask(dic, s, act, subact, mask_number, fno, rotation_angle)
         return dic
 
 

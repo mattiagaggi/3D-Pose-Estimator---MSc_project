@@ -48,6 +48,7 @@ class SMPL_Data(Data_Base_class):
 
 
 
+
     def crop_img(self, img, bbpx,rotation_angle):
         imwarped, trans = get_patch_image(img, bbpx,
                                           (PARAMS.data.im_size,
@@ -100,10 +101,7 @@ class SMPL_Data(Data_Base_class):
               "mask_f": [],
               "mask_c": [],
               "mask_trans_crop": [],
-              "mask_idx_1":[],
-              "mask_idx_2": [],
-              "mask_idx_3": [],
-              "mask_idx_4": []
+              "mask_idx_n":[]
               }
         return dic
 
@@ -129,18 +127,14 @@ class SMPL_Data(Data_Base_class):
 
         return dic
 
-    def dic_final_processing(self,dic):
-
-        dic['image'] = torch.stack(dic['image'], dim=0)
-        dic['joints_im'] = torch.stack(dic['joints_im'], dim=0)
-        dic['R'] = torch.stack(dic['R'], dim=0)
-        dic['root_pos'] = dic['joints_im'][:, H36M_CONF.joints.root_idx, : ]
-        dic['root_pos'] = dic['root_pos'].view(-1, 1, 3)
+    def dic_final_processing(self, dic):
         for key in dic.keys():
             if 'idx' in key:
                 dic[key] = numpy_to_long(dic[key])
             else:
                 dic[key] = torch.stack(dic[key], dim=0)
+        dic['root_pos'] = dic['joints_im'][:, H36M_CONF.joints.root_idx, :]
+        dic['root_pos'] = dic['root_pos'].view(-1, 1, 3)
         return dic
 
 
@@ -156,7 +150,7 @@ class SMPL_Data(Data_Base_class):
 
     def __len__(self):
 
-        return  len(self.index_file) // self.batch_size
+        return len(self.index_file) // self.batch_size
 
 
     def __getitem__(self, item):
@@ -180,7 +174,7 @@ class SMPL_Data(Data_Base_class):
 
 if __name__== '__main__' :
 
-
+    import torch
     from sample.parsers.parser_enc_dec import EncParser
     from utils.utils_H36M.transformations_torch import world_to_camera_batch,camera_to_pixels_batch, transform_2d_joints_batch
     import matplotlib.pyplot as plt
@@ -188,6 +182,9 @@ if __name__== '__main__' :
 
     el=4
     idx=0
+
+    ten=(torch.arange(10, dtype=torch.int32) * 3).cuda()[:, None, None]
+    print(ten[:,0,0])
     d = Drawer()
     parser= EncParser("pars")
     arg=parser.get_arguments()

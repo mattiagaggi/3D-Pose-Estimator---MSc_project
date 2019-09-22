@@ -27,9 +27,6 @@ class TrainingLogger:
         if scalar_type not in self.scalars.keys():
             self.scalars[scalar_type]=[]
             self.scalars[scalar_type+"_idx"]=[]
-        if idx in self.scalars[scalar_type+"_idx"]:
-            self.scalars[scalar_type].remove(scalar)
-            self.scalars[scalar_type + "_idx"].remove(idx)
         self.scalars[scalar_type].append(scalar)
         self.scalars[scalar_type+"_idx"].append(idx)
 
@@ -58,14 +55,20 @@ class TrainingLogger:
 
 
     def save_dics(self,name, dic_in, dic_out, idx):
-
+        dic_in_numpy ={}
+        dic_out_numpy = {}
+        for key in dic_in.keys():
+            dic_in_numpy[key]=dic_in[key].cpu().data.numpy()
+        for key in dic_out.keys():
+            if type(dic_out[key]) != tuple:
+                dic_out_numpy[key] = dic_out[key].cpu().data.numpy()
         self.record_index(name, idx)
         dir_path = os.path.join(self.path, name)
         ensure_dir(dir_path)
         path_in = os.path.join(dir_path, 'dic_in_%s.pkl' % idx)
         path_out = os.path.join(dir_path, 'dic_out_%s.pkl' % idx)
-        pkl.dump(dic_in, open(path_in, "wb"))
-        pkl.dump(dic_out, open(path_out, "wb"))
+        pkl.dump(dic_in_numpy, open(path_in, "wb"))
+        pkl.dump(dic_out_numpy, open(path_out, "wb"))
 
 
     def save_batch_images(self, name, image, idx, image_pred=None, image_target=None, pose_pred=None, pose_gt=None):

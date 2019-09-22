@@ -91,8 +91,6 @@ class BaseTrainer(FrameworkClass):
                 self._logger.info('Training epoch %d of %d',
                                   epoch, self.epochs)
             epoch_loss = self._train_epoch(epoch)
-            if len(epoch_loss) > 1: #in case there is more than one loss store total loss
-                epoch_loss = epoch_loss[0]
             if self.eval_epoch:
                 self._logger.info('Evaluating epoch %d of %d',
                                   epoch, self.epochs)
