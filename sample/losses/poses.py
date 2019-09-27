@@ -2,7 +2,9 @@
 import torch
 
 from sample.base.base_metric import BaseMetric
-from utils.utils_alignment import batch_svd,tiled_identity,determinant
+from scipy.spatial import procrustes
+from utils.trans_numpy_torch import numpy_to_tensor_float, tensor_to_numpy
+
 
 
 
@@ -52,26 +54,22 @@ class Aligned_MPJ(BaseMetric):
     def __init__(self):
         super().__init__()
         self.MPJ = MPJ()
-        self._logger.info("Aligned MPJ does not support Backprop")
+        self._logger.info("Aligned MPJ does not support Backprop - we use numpy")
 
 
     def forward(self, pose_pred, pose_label):
 
         assert pose_pred.size()[2] == 3
         assert pose_label.size()[2] == 3
-        #Kabsch algorithm
-        pose_pred = pose_pred- torch.sum(pose_pred, dim=1).reshape((-1,1,3))
-        pose_label = pose_label - torch.sum(pose_label, dim=1).reshape((-1,1,3))
-        H = torch.bmm(pose_pred.transpose(1, 2), pose_label)
-        U,S,V = batch_svd(H)
-        M=torch.bmm(V, U.transpose(1,2))
-        d = determinant(M)
-        b_size = d.size()[0]
-        D = tiled_identity(b_size)
-        D[:,2,2] = d  #determinant correction -1 or 1
-        UT = U.transpose(1, 2)
-        R = torch.bmm(V, torch.bmm(D, UT))
-        rot_pred = torch.bmm(pose_pred, R.transpose(1,2))
-        return self.MPJ(rot_pred, pose_label)
+        pose_pred = tensor_to_numpy(pose_pred)
+        pose_label = tensor_to_numpy(pose_label)
+        batch_size = pose_label.shape[0]
+        tot=0
+        for i in range(batch_size):
+            _, _, disparity = procrustes(pose_label[i], pose_pred[i])
+            tot += disparity
+        tot /= batch_size
+
+        return numpy_to_tensor_float(tot)
 
 

@@ -307,11 +307,12 @@ class Data_Base_class(BaseDataset):
             for name in file_names:  # add only sequences sampled
                 s, act, subact, ca, fno = self.get_all_content_file_name(name, file=True)
                 if not self.get_intermediate_frames:
-
-                    if (fno-1) % self.sampling != 0 and self.sampling!=1: # starts from 1
+                    #CHANGED FOR LACK OF DATA
+                    if (fno-1) % self.sampling != 0 and self.sampling != 1: # starts from 1
                         continue
                 else:
-                    if (fno+ self.sampling//2) % self.sampling != 1: # starts from 1
+                    # CHANGED FOR LACK OF DATA
+                    if (fno + self.sampling//2) % self.sampling != 1: # starts from 1
                         continue
                 if self.index_as_dict:
                     self.index_file=\
@@ -319,6 +320,7 @@ class Data_Base_class(BaseDataset):
                 else:
                     self.index_file=\
                         self.append_index_to_list(self.index_file, s, act, subact, ca, fno)
+
 
 
     def load_index_file(self):
@@ -513,6 +515,7 @@ class Data_Base_class(BaseDataset):
     def load_image(self,s,act, subact, ca, fno):
 
         if self.index_as_dict:
+
             path = self.index_file[s][act][subact][ca][fno]
         else:
             path, _, _= self.get_name(s,act,subact,ca,fno)

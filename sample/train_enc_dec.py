@@ -1,5 +1,4 @@
 import torch.nn
-import os
 from dataset_def.h36m_encoder_data import Data_3dpose
 from dataset_def.h36m_encoder_data_to_load import Data_3dpose_to_load
 from utils.collating_functions import collate_h36m
@@ -17,29 +16,21 @@ sampling_test= PARAMS.data.sampling_test
 parser = EncParser("Encoder parser")
 args_enc = parser.get_arguments()
 
-"""
 
-data_train = Data_3dpose(args_enc,  #subsampling_fno = 1,
-                         index_file_content =['s'],
-                         #index_file_list=[[1, 5, 6, 7],[1,2]])
-                         index_file_list=[[1,5,6,7,8]], #15678
-                         sampling=sampling_train) #8,9
-"""
 
 data_train_load = Data_3dpose_to_load( #subsampling_fno = 1
                          index_file_content =['s'],
-                         #index_file_list=[[1, 5, 6, 7],[1,2]])
                          index_file_list=[[1,5,6,7,8]], #15678
                          sampling=sampling_train) #8,9
 
 data_test = Data_3dpose(args_enc,  #subsampling_fno = 2,
                         index_file_content =['s'],
                         #index_file_list=[[1, 5, 6, 7],[1,2]])
-                        index_file_list=[[1]],
+                        index_file_list=[[9,11]],
                         sampling=sampling_test
                         ) #8,9
 
-
+print(len(data_test))
 train_data_loader = DataLoader(data_train_load,
                                    batch_size=args_enc.batch_size//2,
                                    shuffle=True,

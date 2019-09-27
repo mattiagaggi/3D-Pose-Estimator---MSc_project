@@ -100,10 +100,9 @@ class SMPL_from_Latent(BaseModel):
         #print("out")
         #output.register_hook(lambda grad: print(grad))
         pose = self.to_pose(output)
-        if optimise_vertices:
-            shape = self.to_shape(output)
-        else:
-            shape = numpy_to_tensor_float(np.zeros((pose.size()[0], self.SMPL_shape_params)))
+
+        shape = self.to_shape(output)
+
         #print("pose sh")
         #pose.register_hook(lambda grad: print(grad))
         #shape.register_hook(lambda grad: print(grad))

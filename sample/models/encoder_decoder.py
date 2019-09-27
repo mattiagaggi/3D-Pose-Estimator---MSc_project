@@ -40,9 +40,10 @@ class Encoder(BaseModel):
                                      nn.ReLU(inplace=False))
 
         self.to_L3d = nn.Sequential(nn.Linear(self.encoder_output_features, self.dimension_L_3D),
-                                    nn.Dropout(inplace=True, p=self.latent_dropout)  # removing dropout degrades results
+                                    nn.Dropout(inplace=True, p=self.latent_dropout),
+                                    nn.ReLU(inplace=False))
 
-                                    )
+
 
     def parallelise(self):
 
@@ -78,8 +79,8 @@ class Rotation(BaseModel):
         super().__init__()
 
         self.implicit_rotation = implicit_rotation
+        self.dimension_3d = dimensions_3d
         if self.implicit_rotation:
-            self.dimension_3d = dimensions_3d
             self.rotation_encoding_dimension = rotation_encoding_dimension
             self.latent_dropout = 0.3
 
@@ -150,10 +151,11 @@ class Decoder(BaseModel):
 
         L_3d=dic["L_3d"]
         L_app=dic["L_app"]
-        L_app = L_app.view(-1, self.decoded_channels_Lapp, 1, 1).expand(self.batch_size,
-                                                                                        self.decoded_channels_Lapp,
-                                                                                        self.encoded_im_size,
-                                                                                        self.encoded_im_size)
+        batch_size = L_app.size()[0]
+        L_app = L_app.view(-1, self.decoded_channels_Lapp, 1, 1).expand(batch_size,
+                                                                                    self.decoded_channels_Lapp,
+                                                                                    self.encoded_im_size,
+                                                                                    self.encoded_im_size)
 
         L_3d_conv = self.full_layer(L_3d)
         L_3d_conv = L_3d_conv.view(-1,

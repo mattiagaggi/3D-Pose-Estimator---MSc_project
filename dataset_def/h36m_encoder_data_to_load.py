@@ -126,6 +126,7 @@ class Data_3dpose_to_load(Data_Base_class):
         R_centre = cam_pointing_root(joints_world, H36M_CONF.joints.root_idx, H36M_CONF.joints.number, R, T)
         if rotation_angle is not None:
             R_centre = np.dot(rotate_z(rotation_angle), R_centre)
+
         R_pointing_centre = np.dot( R_centre, R)
         #self.testing(joints_world, im, background, R, T, f, c, trans)
 

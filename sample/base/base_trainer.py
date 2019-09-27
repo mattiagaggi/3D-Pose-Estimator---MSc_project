@@ -95,8 +95,9 @@ class BaseTrainer(FrameworkClass):
                 self._logger.info('Evaluating epoch %d of %d',
                                   epoch, self.epochs)
                 self._valid_epoch()
+            self._save_checkpoint(self.epochs, epoch_loss)
         self._logger.info('Finished training')
-        self._save_checkpoint(self.epochs, epoch_loss)
+
 
     def _dump_summary_info(self):
         """Save training summary"""

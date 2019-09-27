@@ -1,7 +1,7 @@
 from sample.base.base_parser import BaseParser
 
 
-name='enc_dec_S15678_rot_trial'
+name='enc_dec_S15678_rot_final2'
 name1=name+"3D"
 name2=name+"SMPL"
 
@@ -51,7 +51,7 @@ class SMPL_Parser(BaseParser):
         # and can be individually changed as arguments
         self._add_learning_rate(0.001)
         self._add_batch_size(64)
-        self._add_epochs(20)
+        self._add_epochs(100)
         self._add_name(name2)
         self._add_output_dir("data/checkpoints")
         self._add_model_checkpoints(5000)

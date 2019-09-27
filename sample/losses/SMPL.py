@@ -29,14 +29,14 @@ class Pose_Loss_SMPL(BaseMetric):
         super().__init__()
         self.conversion = Convert_joints()
         if criterium is None:
-            self.pose_loss = MPJ()
+            self.sub_metric = MPJ()
         else:
-            self.pose_loss = criterium
+            self.sub_metric = criterium
     def forward(self, smpl_pose_pred, h36m_pose_ground ):
 
         smpl_joints, h36m_joints = self.conversion.match_joints(smpl_pose_pred, h36m_pose_ground, batch=True)
         #exclude root
-        return self.pose_loss( h36m_joints[:,1:,:], smpl_joints[:,1:,:])
+        return self.sub_metric( h36m_joints[:,1:,:], smpl_joints[:,1:,:])
 
 
 

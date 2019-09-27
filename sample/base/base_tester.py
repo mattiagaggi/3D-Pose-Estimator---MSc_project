@@ -20,14 +20,12 @@ class BaseTester(FrameworkClass):
     Base class for all dataset testers
     """
 
-    def __init__(self, model_op, model_ae, data_loader,
+    def __init__(self, model, model_ae, data_loader,
                  batch_size, output, name, no_cuda, **kwargs):
 
         super().__init__()
 
-        self.model_op = model_op
-        self.model_ae = model_ae
-        self.data_loader = data_loader
+        self.model = model
         self.batch_size = batch_size
         self.output_name = name
         self.save_dir = io.abs_path(output)
@@ -40,9 +38,8 @@ class BaseTester(FrameworkClass):
             self.with_cuda = False
 
         if self.with_cuda and (torch.cuda.device_count() > 1):
-            self.model_op = torch.nn.DataParallel(self.model_op)
-            if self.model_ae:
-                self.model_ae = torch.nn.DataParallel(self.model_ae)
+            self.model = torch.nn.DataParallel(self.model)
+
             self.single_gpu = False
 
         io.ensure_dir(os.path.join(self.save_dir,

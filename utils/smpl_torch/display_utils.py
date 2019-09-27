@@ -47,13 +47,23 @@ class Drawer:
             ax.add_collection3d(mesh)
         if with_joints:
             self.draw_skeleton(joints, ax=ax)
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
+        #ax.set_xlabel('X')
+        #ax.set_ylabel('Y')
+        #ax.set_zlabel('Z')
         ax.set_xlim(-0.7, 0.7)
         ax.set_ylim(-0.7, 0.7)
         ax.set_zlim(-0.7, 0.7)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_zticks([])
+
+        #ax.get_xaxis().set_ticklabels([])
+        #ax.get_yaxis().set_ticklabels([])
+        #ax.set_zticklabels([])
+
         ax.view_init(azim=-90, elev=100)
+        #ax.view_init(azim=0, elev=190)
+
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         if savepath:
             print('Saving figure at {}.'.format(savepath))
@@ -86,6 +96,6 @@ class Drawer:
                     [joints3D[j1, 1], joints3D[j2, 1]],
                     [joints3D[j1, 2], joints3D[j2, 2]],
                     color=colors[i], linestyle='-', linewidth=2, marker='o', markersize=5)
-            if with_numbers:
-                ax.text(joints3D[j2, 0], joints3D[j2, 1], joints3D[j2, 2], j2)
+            #if with_numbers:
+                #ax.text(joints3D[j2, 0], joints3D[j2, 1], joints3D[j2, 2], j2)
         return ax

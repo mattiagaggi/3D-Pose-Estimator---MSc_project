@@ -312,6 +312,8 @@ def get_patch_image(img, bbox, target_shape, rotation_angle=45):
                                target_shape[1],
                                target_shape[0],
                                False,rotation_angle)
+
+
     img_patch = cv2.warpAffine(img, trans,
                                (int(target_shape[1]), int(target_shape[0])),
                                flags=cv2.INTER_LINEAR)

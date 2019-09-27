@@ -172,9 +172,9 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
 
 
     def log_images(self, string, dic_in, dic_out):
-
+        batch_size = dic_in['image'].size()[0]
         for i in range(5):
-            idx=np.random.randint(self.batch_size)
+            idx=np.random.randint(batch_size)
             self.log_image_and_pose(string, i, idx, dic_in, dic_out)
             if self.optimise_vertices:
                 self.log_masks_vertices(string, i, idx, dic_in, dic_out)
@@ -295,9 +295,6 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         total_loss = 0
         pbar = tqdm(self.data_train)
         for bid, dic in enumerate(pbar):
-            for i in dic.keys():
-                print(i)
-                print(dic[i].size())
             loss, pbar = self.train_step(bid, dic, pbar, epoch)
 
             if self.test_log_step is not None and (bid % self.test_log_step == 0):
@@ -332,7 +329,7 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         out_pose = dic_out["joints_im"]
         for m in self.SMPL_metrics:
             value = m(out_pose, gt)
-            m.log_model(self.model_logger.val, self.global_step, value.item())
-            m.log_train(self.train_logger, self.global_step, value.item())
+            m.log_model(self.model_logger.val, self.global_step, value.item(),added_name=m.sub_metric.name)
+            m.log_train(self.train_logger, self.global_step, value.item(),added_name=m.sub_metric.name)
         self.model.train()
 

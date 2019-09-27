@@ -8,7 +8,7 @@ class BaseMetric(Module):
         """Initialize class"""
         super().__init__()
         self.name = self.__class__.__name__
-        self._logger=ConsoleLogger(self.name)
+        self._logger = ConsoleLogger(self.name)
 
     def forward(self, *input):
 
@@ -16,13 +16,18 @@ class BaseMetric(Module):
         raise NotImplementedError('Abstract method in BaseMetric class...')
 
 
-    def log_model(self, logger, iteration, error):
+    def log_model(self, logger, iteration, error, added_name=None):
+        if added_name is None:
+            logger.add_scalar('metrics/{0}'.format(self.name),
+                            error,
+                            iteration)
+        else:
+            logger.add_scalar(added_name,
+                              error,
+                              iteration)
 
-        logger.add_scalar('metrics/{0}'.format(self.name),
-                          error,
-                          iteration)
 
-    def log_train(self,logger, iteration, error,train=False):
+    def log_train(self,logger, iteration, error,train=False, added_name = None):
         """Add result to log file
 
         Arguments:
@@ -31,13 +36,22 @@ class BaseMetric(Module):
             error {float} -- error value
         """
         if train:
-            logger.record_scalar('train_metrics/{0}'.format(self.name),
-                             error,
-                            iteration)
-        else:
-            logger.record_scalar('test_metrics/{0}'.format(self.name),
+            if added_name is None:
+                logger.record_scalar('train_metrics/{0}'.format(self.name),
                                  error,
-                                 iteration)
-
+                                iteration)
+            else:
+                logger.record_scalar('train_'+added_name,
+                                     error,
+                                     iteration)
+        else:
+            if added_name is None:
+                logger.record_scalar('test_metrics/{0}'.format(self.name),
+                                     error,
+                                     iteration)
+            else:
+                logger.record_scalar('test_' + added_name,
+                                     error,
+                                     iteration)
 
 

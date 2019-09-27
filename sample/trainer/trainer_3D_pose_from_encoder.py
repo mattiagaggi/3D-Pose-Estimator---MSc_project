@@ -114,9 +114,9 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
 
 
     def log_images(self, string, image_in, pose_out, ground_truth,):
-
+        batch_size=image_in.size()[0]
         for i in range(5):
-            idx=np.random.randint(self.batch_size)
+            idx=np.random.randint(batch_size)
             pt=pose_out[idx]
             gt=ground_truth[idx]
             pt_cpu=pt.cpu().data.numpy()
@@ -137,7 +137,8 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
 
 
     def gt_cam_mean_cam(self, dic_in, dic_out):
-        mean = torch.bmm( self.mean_pose.repeat(self.batch_size,1,1), dic_in['R_world_im'].transpose(1,2))
+        batch_size = dic_in['R_world_im'].size()[0]
+        mean = torch.bmm( self.mean_pose.repeat(batch_size,1,1), dic_in['R_world_im'].transpose(1,2))
         gt = torch.bmm( dic_out['joints_im'], dic_in['R_world_im'].transpose(1,2))
         return gt, mean
 

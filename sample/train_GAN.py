@@ -1,8 +1,7 @@
 import torch.nn
 from torch.utils.data import DataLoader
-from dataset_def.h36m_SMPL_data import SMPL_Data
-from dataset_def.h36m_SMPL_data_to_load import SMPL_Data_Load
-from sample.models.SMPL_encoder_decoder import SMPL_enc_dec
+from dataset_def.surreal_SMPL_data_to_load import Surreal_data_load
+from sample.models.GAN import 
 from sample.config.data_conf import PARAMS
 from sample.parsers.parser_enc_dec import SMPL_Parser
 from sample.losses.poses import MPJ, Normalised_MPJ
@@ -19,19 +18,8 @@ parser= SMPL_Parser("SMPL Parser")
 args_SMPL = parser.get_arguments()
 
 
-"""
-data_train = SMPL_Data(args_SMPL,
-                        sampling=sampling_train,
-                         index_file_content =['s','act'],
-                         index_file_list=[[1],[2,3,4,5,6,7,8]],
-                         ) #8,9
 
-"""
-data_test = SMPL_Data(args_SMPL,  #subsampling_fno = 2,
-                        index_file_content =['s'],
-                        index_file_list=[[1],[15,16]],
-                        sampling=sampling_test
-                        ) #8,9
+data_test = None
 
 data_train_load = SMPL_Data_Load(
                         sampling_train,
@@ -69,6 +57,3 @@ trainer_SMPL =Trainer_Enc_Dec_SMPL(
 #trainer_SMPL._resume_checkpoint("data/checkpoints/enc_dec_S15678_rot_finalSMPL")
 
 trainer_SMPL.train()
-
-
-
