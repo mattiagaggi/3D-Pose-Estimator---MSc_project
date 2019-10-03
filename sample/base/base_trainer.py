@@ -15,9 +15,9 @@ import numpy as np
 from logger.model_logger import ModelLogger
 from logger.train_hist_logger import TrainingLogger
 import utils.io as io
-from utils.io import is_model_parallel
 from sample.base.base_logger import FrameworkClass
 from collections import OrderedDict
+from utils.io import is_model_parallel
 
 
 class BaseTrainer(FrameworkClass):

@@ -13,6 +13,7 @@ from collections import OrderedDict
 import matplotlib.pyplot as plt
 from sample.config.data_conf import PARAMS
 from sample.losses.SMPL import Pose_Loss_SMPL
+from sample.models.GAN import GAN_SMPL
 
 
 
@@ -62,6 +63,8 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
 
         #test while training
         self.start_optimising_vertices = 10000000
+        self.GAN_active=False
+        #self.start_use_shape = 500
         self.optimise_vertices = False
         self.test_log_step = None
         self.img_log_step = args.img_log_step
@@ -117,6 +120,30 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         self.model.encoder_decoder.load_state_dict(trained_dict)
         self._logger.info("Encoder Loaded '%s' loaded",
                           resume_path)
+
+
+    def resume_gan(self,resume_path):
+        assert self.model.GAN is not None
+        if not os.path.isfile(resume_path):
+            resume_path = io.get_checkpoint(resume_path)
+        self._logger.info("Loading GAN: %s ...", resume_path)
+        checkpoint = torch.load(resume_path)
+        trained_dict = checkpoint['state_dict']
+        if io.is_model_parallel(checkpoint):
+            if self.single_gpu:
+                trained_dict = OrderedDict((k.replace('module.', ''), val)
+                                                       for k, val in checkpoint['state_dict'].items())
+        else:
+            if not self.single_gpu:
+                trained_dict = OrderedDict(('module.{}'.format(k), val)
+                                                       for k, val in checkpoint['state_dict'].items())
+        self.model.GAN.load_state_dict(trained_dict)
+        self._logger.info("GAN Loaded '%s' loaded",
+                          resume_path)
+        self.model.GAN.fix_gan()
+        self._logger.info("GAN Fixed")
+
+
 
     def log_image_and_pose(self, string, i, idx, dic_in, dic_out):
         image = dic_in["image"][idx]
@@ -188,8 +215,6 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
 
 
 
-
-
     def train_step(self, bid, dic, pbar, epoch):
 
 
@@ -199,6 +224,10 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
             self.optimise_vertices = True
             self.model.optimise_vertices = True
             self.loss.optimise_vertices = True
+        #if self.start_use_shape == self.global_step:
+        #    self._logger.info("Start use shape!!!")
+        #    self.model.use_zero_shape = False
+
         self.optimizer.zero_grad()
         if not no_cuda:
             for k in dic.keys():
@@ -239,7 +268,7 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
 
         if (bid % self.img_log_step == 0) or (self.global_step in self.log_images_start_training):
 
-            self.log_images("train", dic, dic_out)
+            self.log_images("train shape0=="+str(self.model.use_zero_shape), dic, dic_out)
             self.train_logger.save_dics("train", dic, dic_out, self.global_step)
 
         return loss.item(), pbar

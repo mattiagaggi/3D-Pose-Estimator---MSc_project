@@ -7,6 +7,7 @@ from utils.conversion_SMPL_h36m_torch import from_smpl_to_h36m_world_torch, proj
 from utils.rendering.rasterizer_silhuette import Rasterizer
 from matplotlib import pyplot as plt
 import torch
+from sample.models.GAN import GAN_SMPL
 
 class SMPL_enc_dec(BaseModel):
     def __init__(self):
@@ -20,6 +21,9 @@ class SMPL_enc_dec(BaseModel):
         self.SMPL_from_latent = SMPL_from_Latent( d_in_3d=dimension_L_3D, d_in_app = dimension_L_app)
         self.rasterizer = Rasterizer( self.SMPL_from_latent.faces)
         self.optimise_vertices = False
+        self.use_zero_shape = False
+        #self.GAN = None
+        self.GAN= GAN_SMPL()
 
     def fix_encoder_decoder(self):
         for par in self.encoder_decoder.parameters():
@@ -29,7 +33,7 @@ class SMPL_enc_dec(BaseModel):
 
         im= dic['image']
         out_enc = self.encoder_decoder.encoder(im)
-        out_enc['optimise_vertices'] = self.optimise_vertices
+        out_enc['use_zero_shape'] = self.use_zero_shape
         out_smpl = self.SMPL_from_latent(out_enc)
         joints_converted_world = from_smpl_to_h36m_world_torch(out_smpl['joints'], dic['root_pos'],
                                                              from_camera=True, R_world_cam=dic['R'])
@@ -37,8 +41,11 @@ class SMPL_enc_dec(BaseModel):
 
         dic_out = {}
         dic_out["SMPL_params"] = (out_smpl['pose'], out_smpl['shape'])
-        #self._logger.info("pose", out_smpl['pose'][0])
-        #self._logger.info("shape", out_smpl['shape'][0])
+        if self.GAN is not None:
+            discr_input = torch.cat([out_smpl['pose'],out_smpl['shape']], dim=0)
+            discr_output = self.GAN.discriminator(discr_input)
+            dic_out["discr_output"] = discr_output
+
         dic_out["SMPL_output"] = (out_smpl['joints'], out_smpl['verts'])
         dic_out['joints_im'] = joints_converted_world
 

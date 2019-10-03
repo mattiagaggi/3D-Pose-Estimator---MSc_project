@@ -114,11 +114,97 @@ class SMPL_Data_Load(Data_Base_class):
         dic= self.create_dictionary_data()
         rotation_angle = 0
         s, act, subact, ca, fno = self.index_file[item]
+        print(s,act,subact,ca,fno)
         dic = self.update_dic_with_image(dic,s, act, subact, ca, fno, rotation_angle)
         for mask_number in range(1,5):
             if mask_number in self.all_metadata[s][act][subact].keys():
                 dic = self.update_dic_with_mask(dic, s, act, subact, mask_number, fno, rotation_angle)
         return dic
+
+
+a = SMPL_Data_Load(2000)
+b=a[50]
+print(b.keys())
+from utils.utils_H36M.visualise import Drawer
+import matplotlib.pyplot as plt
+
+
+d = Drawer()
+im=a.load_image(1,2,1,3,1)
+im=np.transpose(b['image'], axes=[1,2,0])
+im2 = im.copy()
+im2[:, :, 0] = im[:, :, 2]
+im2[:, :, 2] = im[:, :, 0]
+plt.axis('off')
+plt.imshow(im2)
+plt.show()
+
+fig=plt.figure()
+d.pose_3d(b['joints_im'],plot = True, fig = fig, azim=-90, elev=0)
+plt.show()
+from utils.utils_H36M.transformations import world_to_pixel,transform_2d_joints
+pix =[]
+for n,i in enumerate(b['mask_image']):
+
+    plt.axis('off')
+    plt.imshow(i[0],cmap='gray')
+    plt.show()
+
+
+from utils.smpl_torch.pytorch.smpl_layer import SMPL_Layer
+from utils.smpl_torch.display_utils import Drawer
+from utils.trans_numpy_torch import numpy_to_tensor_float,tensor_to_numpy
+
+if __name__ == '__main__':
+    from utils.conversion_SMPL_h36m_torch import from_smpl_to_h36m_world_torch,project_vertices_onto_mask
+    cuda = False
+    batch_size = 1
+    # Create the SMPL layer
+    smpl_layer = SMPL_Layer(
+        center_idx=0,
+        gender='neutral',
+        model_root='data/models_smpl')
+    d = Drawer(kintree_table=smpl_layer.kintree_table)
+
+    # Generate random pose and shape parameters
+    import numpy as np
+
+    pose_params =  torch.rand(batch_size, 72) *0.02
+    shape_params = torch.rand(batch_size, 10) *0.02
+    # GPU mode
+    if cuda:
+        pose_params = pose_params.cuda()
+        shape_params = shape_params.cuda()
+        smpl_layer.cuda()
+    # Forward from the SMPL layer
+    verts, Jtr = smpl_layer(pose_params, th_betas=shape_params)
+
+    root=np.reshape(b['joints_im'][0,:],(1,1,3))
+    root=numpy_to_tensor_float(root)
+    verts=from_smpl_to_h36m_world_torch(verts,root, from_camera=False, R_world_cam=None)
+    dic={}
+    for key in b.keys():
+        if type(b[key]) == list and "idx" not in key:
+            print(key)
+            if len(b[key][0].shape) == 2:
+                dim1,dim2=b[key][0].shape
+                dic[key]=numpy_to_tensor_float(np.reshape(b[key][0],(1,dim1,dim2)))
+    pix_vertices_ca = project_vertices_onto_mask(verts, dic)
+    px=tensor_to_numpy(pix_vertices_ca)[0]
+    plt.scatter(px[:,0], px[:,1],s=1)
+    plt.show()
+    plt.rcParams['axes.facecolor'] = 'black'
+    plt.scatter(px[:, 0], px[:, 1], s=40,c='w')
+    plt.show()
+
+
+
+
+
+
+    plt.show()
+
+
 
 
 

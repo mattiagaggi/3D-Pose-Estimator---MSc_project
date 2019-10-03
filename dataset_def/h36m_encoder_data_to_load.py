@@ -21,7 +21,8 @@ class Data_3dpose_to_load(Data_Base_class):
                  index_file_list=[[1]],
                  randomise=True,
                  get_intermediate_frames = False,
-                 subsampling_fno = 0):
+                 subsampling_fno = 0,
+                 no_apperance= False):
         """
         :param args:
         :param sampling:
@@ -39,6 +40,7 @@ class Data_3dpose_to_load(Data_Base_class):
         self.index_file_list = index_file_list
         self.randomise= randomise
         self.index_file_cameras =[]
+        self.no_apperance = no_apperance
         if subsampling_fno==0:
             pass
         elif subsampling_fno==1:
@@ -118,7 +120,7 @@ class Data_3dpose_to_load(Data_Base_class):
 
     def extract_all_info(self, metadata, background,s, act, subact, ca, fno,):
 
-        rotation_angle = get_rotation_angle()
+        rotation_angle = None
         im, joints_world, R, T, f, c = self.extract_info(metadata, s, act, subact,ca, fno)
         bbpx = bounding_box_pixel(joints_world,H36M_CONF.joints.root_idx, R, T, f,c)
         im,  trans = self.crop_img(im, bbpx, rotation_angle)
@@ -167,7 +169,7 @@ class Data_3dpose_to_load(Data_Base_class):
         new_ca =  self.return_random_from_list(ca_list)
         new_ca2 = self.return_random_from_list(ca_list, new_ca)
         fno_number = self.all_metadata[s][new_act][new_subact][new_ca]['joint_world'].shape[0]
-        new_fno = np.random.randint(1,fno_number+1)
+        new_fno = np.random.randint(fno_number//self.sampling) * self.sampling + 1
         return new_act, new_subact, new_ca, new_ca2, new_fno
 
     def return_main_data(self,index):
@@ -185,6 +187,7 @@ class Data_3dpose_to_load(Data_Base_class):
         s, act, _, _, _,_ = self.index_file_cameras[index]
         new_act, new_subact, new_ca, new_ca2, new_fno = self.return_apperance_contents(s,act)
         #print(s,new_act, new_subact, new_ca, new_ca2, new_fno)
+
         im1, R1, background1, joints1 = self.extract_all_info_memory_background(s, new_act, new_subact, new_ca, new_fno)
         imT, RT, background1T, jointsT = self.extract_all_info_memory_background(s, new_act, new_subact, new_ca2, new_fno)
         return im1, R1, background1, joints1, imT, RT, background1T, jointsT
@@ -200,10 +203,16 @@ class Data_3dpose_to_load(Data_Base_class):
     def return_batch(self, index):
 
         batch_1=self.return_main_data(index)
-        batch_2=self.return_apperance_data(index)
+        if not self.no_apperance:
+            batch_2=self.return_apperance_data(index)
         s, act, subact, ca, fno, ca2 = self.index_file_cameras[index]
         self.update_stored_info(s, act, subact, ca, fno)
-        return self.process_data(batch_1), self.process_data(batch_2)
+        if not self.no_apperance:
+            return self.process_data(batch_1), self.process_data(batch_2)
+        else:
+            return self.process_data(batch_1), None
+
+
 
     def create_dic_in(self):
 
@@ -257,9 +266,10 @@ class Data_3dpose_to_load(Data_Base_class):
         im, R, RT, backgroundT, imT,joints = batches[0]
         self.update_dic_in(dic_in,im, R, RT, backgroundT)
         self.update_dic_out(dic_out, imT, joints)
-        im, R, RT, backgroundT, imT, joints = batches[1]
-        self.update_dic_in(dic_in_app, im, R, RT, backgroundT)
-        self.update_dic_out(dic_out_app, imT, joints)
-        dic_in = self.joint_dics(dic_in, dic_in_app)
-        dic_out = self.joint_dics(dic_out, dic_out_app)
+        if not self.no_apperance:
+            im, R, RT, backgroundT, imT, joints = batches[1]
+            self.update_dic_in(dic_in_app, im, R, RT, backgroundT)
+            self.update_dic_out(dic_out_app, imT, joints)
+            dic_in = self.joint_dics(dic_in, dic_in_app)
+            dic_out = self.joint_dics(dic_out, dic_out_app)
         return dic_in, dic_out

@@ -175,7 +175,7 @@ class Data_3dpose(Data_Base_class):
         new_ca =  self.return_random_from_list(ca_list)
         new_ca2 = self.return_random_from_list(ca_list, new_ca)
         fno_number = self.all_metadata[s][new_act][new_subact][new_ca]['joint_world'].shape[0]
-        new_fno = np.random.randint(1,fno_number+1)
+        new_fno = np.random.randint(fno_number//self.sampling) * self.sampling + 1
         return new_act, new_subact, new_ca, new_ca2, new_fno
 
     def return_main_data(self,index):

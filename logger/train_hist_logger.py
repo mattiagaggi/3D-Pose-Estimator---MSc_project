@@ -53,22 +53,34 @@ class TrainingLogger:
         current -= 1
         self.scalars_saved = current
 
-
-    def save_dics(self,name, dic_in, dic_out, idx):
-        dic_in_numpy ={}
-        dic_out_numpy = {}
+    def save_dic(self, name, dic_in, idx, extra_str="_"):
+        dic ={}
+        if extra_str == "_":
+            self.record_index(name, idx)
         for key in dic_in.keys():
-            dic_in_numpy[key]=dic_in[key].cpu().data.numpy()
-        for key in dic_out.keys():
-            if type(dic_out[key]) != tuple:
-                dic_out_numpy[key] = dic_out[key].cpu().data.numpy()
-        self.record_index(name, idx)
+            dic[key] = dic_in[key].cpu().data.numpy()
         dir_path = os.path.join(self.path, name)
         ensure_dir(dir_path)
-        path_in = os.path.join(dir_path, 'dic_in_%s.pkl' % idx)
-        path_out = os.path.join(dir_path, 'dic_out_%s.pkl' % idx)
-        pkl.dump(dic_in_numpy, open(path_in, "wb"))
-        pkl.dump(dic_out_numpy, open(path_out, "wb"))
+        string = 'dic_%s' % idx
+        string = extra_str+string
+        path_in = os.path.join(dir_path, string)
+        pkl.dump(dic, open(path_in, "wb"))
+
+    def get_dic(self,name, idx, extra_str="_"):
+        dir_path = os.path.join(self.path, name)
+        string = 'dic_%s' % idx
+        string = extra_str + string+".pkl"
+        path = os.path.join(dir_path, string)
+        dic=pkl.load(open(path,'rb'))
+        return dic
+
+
+
+    def save_dics(self,name, dic_in, dic_out, idx):
+        self.save_dic(name, dic_in, idx,"in" )
+        self.save_dic(name, dic_out, idx, "out")
+        self.record_index(name, idx)
+
 
 
     def save_batch_images(self, name, image, idx, image_pred=None, image_target=None, pose_pred=None, pose_gt=None):

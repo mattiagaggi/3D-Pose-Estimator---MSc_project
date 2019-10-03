@@ -2,6 +2,7 @@ from dataset_def.h36m_preprocess import Data_Base_class
 from utils.io import get_files
 from data.config import cmu_data
 import scipy.io as sio
+import numpy as np
 import os
 
 class Surreal_data_load(Data_Base_class):
@@ -32,7 +33,7 @@ class Surreal_data_load(Data_Base_class):
                 self.index_number.append(N)
                 if len(self.index_number)>1:
                     self.index_number[-1] = self.index_number[-1]+self.index_number[-2]
-                if self.total_length >= 10**5:
+                if self.total_length >= 10**7:
                     break
         self._logger.info("dataset size %s" % self.total_length)
 
@@ -60,19 +61,7 @@ class Surreal_data_load(Data_Base_class):
         N_idx= item
         if idx> 0:
             N_idx  -= self.index_number[idx-1]
-        return data['pose'][:,N_idx], data['shape'][:,N_idx]
+        out=np.concatenate([data['pose'][:,N_idx], data['shape'][:,N_idx]])
+        return out
 
 
-
-
-
-
-    #def __getitem__(self, item):
-
-
-
-
-
-
-a=Surreal_data_load(2,0)
-print(a[4000])

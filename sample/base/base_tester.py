@@ -11,8 +11,14 @@ import torch
 from torch.autograd import Variable
 import numpy as np
 import utils.io as io
-from utils import is_model_parallel
-from base.template import FrameworkClass
+import torch.nn
+from sample.base.base_logger import FrameworkClass
+from logger.model_logger import ModelLogger
+from logger.train_hist_logger import TrainingLogger
+import utils.io as io
+from collections import OrderedDict
+from utils.io import is_model_parallel
+
 
 
 class BaseTester(FrameworkClass):
@@ -20,18 +26,21 @@ class BaseTester(FrameworkClass):
     Base class for all dataset testers
     """
 
-    def __init__(self, model, model_ae, data_loader,
-                 batch_size, output, name, no_cuda, **kwargs):
+    def __init__(self, model,output, name, no_cuda):
 
         super().__init__()
 
         self.model = model
-        self.batch_size = batch_size
+        self.training_name = name
+        self.save_dir = output
         self.output_name = name
         self.save_dir = io.abs_path(output)
         self.with_cuda = not no_cuda
-        self.min_loss = np.inf
         self.single_gpu = True
+        path = os.path.join(self.save_dir, self.training_name, 'log_test')
+        self.model_logger = ModelLogger(path, self.training_name)
+        path = os.path.join(self.save_dir, self.training_name, 'log_results_test')
+        self.train_logger = TrainingLogger(path)
 
         # check that we can run on GPU
         if not torch.cuda.is_available():
@@ -82,5 +91,5 @@ class BaseTester(FrameworkClass):
                 trained_dict = collections.OrderedDict(('module.{}'.format(k), val)
                                                        for k, val in checkpoint['state_dict'].items())
 
-        self.model_ae.load_state_dict(trained_dict)
+        self.model.load_state_dict(trained_dict)
         self._logger.info("Checkpoint '%s' loaded", path)

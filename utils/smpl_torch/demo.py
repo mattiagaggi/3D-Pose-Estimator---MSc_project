@@ -31,8 +31,8 @@ if __name__ == '__main__':
          6.5781e-02, -2.7820e-01, -2.8747e-01, -1.7012e-01, -2.2815e-01,
         -2.5051e-01,  5.8695e-01, -9.4217e-02,  6.6951e-02, -1.7207e-01,
          4.9331e-02,  9.0434e-02])/2) #(torch.rand(batch_size, 72)-1 ) * 0.1
-    pose_params = torch.stack([pose_params] * batch_size, dim=0)
-    shape_params = torch.rand(batch_size, 10) *3
+    pose_params = torch.stack([pose_params] * batch_size, dim=0)*0
+    shape_params = torch.rand(batch_size, 10) *0
     # GPU mode
     if cuda:
         pose_params = pose_params.cuda()
@@ -48,7 +48,7 @@ if __name__ == '__main__':
     fig = d.display_model(
         {'verts': verts.cpu().detach(),
          'joints': Jtr.cpu().detach()},
-        model_faces=smpl_layer.th_faces,
+        model_faces=None,#smpl_layer.th_faces,
         with_joints=True,
         batch_idx=0,
         plot=True,

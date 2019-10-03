@@ -5,7 +5,7 @@ import numpy as np
 from utils.conversion_SMPL_h36m_torch import Convert_joints
 from sample.losses.poses import MPJ
 from sample.losses.images import Cross_Entropy_loss
-from utils.trans_numpy_torch import numpy_to_tensor_float
+from sample.models.GAN import GAN_SMPL
 
 
 
@@ -53,6 +53,9 @@ class Loss_Pose_Zero(BaseMetric):
 
 
 
+
+
+
 class SMPL_Loss(BaseMetric):
 
     #cross entropy loss!!!!
@@ -65,19 +68,22 @@ class SMPL_Loss(BaseMetric):
         self.pose_criterium = Pose_Loss_SMPL()
         self.SMPL_init = Loss_Pose_Zero()
 
-
-        self.w_m = 10*(-4) # roughly 1
-        self._logger.error("for 50 iter loss is 0")
         self.optimise_vertices = False
 
 
     def forward(self, dic_in, dic_out, global_iter):
         loss_pose = self.pose_criterium(dic_out['joints_im'], dic_in['joints_im']) #symmetric
+        if "discr_output" in dic_out.keys():
+            GAN_OUTPUT= dic_out["discr_output"]
+            gan_loss = torch.mean(GAN_OUTPUT)
+            loss_pose_GAN = loss_pose * (gan_loss+1)
+        else:
+            loss_pose_GAN= loss_pose
+        total_loss = loss_pose_GAN
         if self.optimise_vertices:
             loss_mask = self.masks_criterium(dic_out['mask_image'], dic_in['mask_image'])
-            total_loss = self.w_m*loss_mask + loss_pose
+            total_loss = loss_mask
             return total_loss, loss_pose, loss_mask  # , loss_mask
-        total_loss = loss_pose
         return total_loss, loss_pose
 
 

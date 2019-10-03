@@ -9,7 +9,6 @@ from tqdm import tqdm
 import torchvision.utils as vutils
 import numpy.random as random
 from sample.config.data_conf import PARAMS
-from utils.trans_numpy_torch import encoder_dictionary_to_pytorch
 
 
 

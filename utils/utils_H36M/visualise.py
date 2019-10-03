@@ -138,6 +138,7 @@ class Drawer:
         else:
             fig=plt.figure()
         img=self.get_image(img)
+        plt.axis('off')
         # plot joints over image
         for lid, (p0, p1) in enumerate(self._limbs_h36m):
             x0, y0 = pose[p0].astype(np.int)
@@ -180,8 +181,8 @@ class Drawer:
                        marker='o', edgecolor=col, s=self.marker)
         if self.equal_axes:
             self._scale_plot(pose, ax)
-        #if not self.planes:
-        #    self._hide_planes(ax)
+        if not self.planes:
+            self._hide_planes(ax)
 
         fig.canvas.draw()
         if plot:

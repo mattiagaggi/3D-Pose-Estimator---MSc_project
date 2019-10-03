@@ -1,59 +1,58 @@
 import torch.nn
 from torch.utils.data import DataLoader
-from dataset_def.surreal_SMPL_data_to_load import Surreal_data_load
-from sample.models.GAN import 
+from dataset_def.surreal_data_to_load import Surreal_data_load
+from sample.models.GAN import GAN_SMPL
 from sample.config.data_conf import PARAMS
-from sample.parsers.parser_enc_dec import SMPL_Parser
-from sample.losses.poses import MPJ, Normalised_MPJ
-from sample.losses.SMPL import SMPL_Loss
-from sample.trainer.trainer_SMPL_from_encoder import Trainer_Enc_Dec_SMPL
-from utils.collating_functions import collate_smpl
+from sample.parsers.parser_gan_smpl import GAN_Parser
+from torch.nn import BCELoss
+from sample.trainer.trainer_GAN import Trainer_GAN
+
 
 
 
 device=PARAMS['data']['device']
 sampling_train=PARAMS.data.sampling_train
 sampling_test= PARAMS.data.sampling_test
-parser= SMPL_Parser("SMPL Parser")
-args_SMPL = parser.get_arguments()
+parser= GAN_Parser("GAN Parser")
+args_GAN = parser.get_arguments()
 
 
 
 data_test = None
 
-data_train_load = SMPL_Data_Load(
-                        sampling_train,
-                         index_file_content =['s','act'],
-                         index_file_list=[[1],[1,2,3,4,5,6,7,8,9,10,11,12,13,14]],
+data_train_load = Surreal_data_load(
+                        sampling_train, 0 # not used
                          )
 
 train_data_loader = DataLoader(data_train_load,
-                                   batch_size=args_SMPL.batch_size,
+                                   batch_size=args_GAN.batch_size,
                                    shuffle=True,
-                                   num_workers = args_SMPL.num_threads,
-                                collate_fn = collate_smpl, pin_memory=True )
+                                   num_workers = args_GAN.num_threads )
 
 
-model = SMPL_enc_dec()
+model = GAN_SMPL()
 
 
 
-metrics=[MPJ(), Normalised_MPJ()]
+metrics=[]
 
-optimizer_pose = torch.optim.Adam(model.parameters(), lr=args_SMPL.learning_rate)
-loss_smpl = SMPL_Loss(args_SMPL.batch_size)
+optimizer_discriminator = torch.optim.Adam(model.discriminator.parameters(), lr=0.001)
+optimizer_generator = torch.optim.Adam(model.generator.parameters(), lr=0.001)
+loss_generator = BCELoss()
+loss_discriminator = BCELoss()
 
-trainer_SMPL =Trainer_Enc_Dec_SMPL(
+trainer_GAN =Trainer_GAN(
         model,
-        loss_smpl,
-        args=args_SMPL,
-        metrics=metrics,
-        optimizer=optimizer_pose,
+        loss_generator,
+        loss_discriminator,
+        metrics,
+        optimizer_generator,
+        optimizer_discriminator,
+        args=args_GAN,
         data_train=train_data_loader,
         data_test = data_test,
 )
 
-#trainer_SMPL.resume_encoder("data/checkpoints/enc_dec_S15678_no_rot")
-#trainer_SMPL._resume_checkpoint("data/checkpoints/enc_dec_S15678_rot_finalSMPL")
 
-trainer_SMPL.train()
+
+trainer_GAN.train()

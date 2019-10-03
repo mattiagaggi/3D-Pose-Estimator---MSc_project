@@ -16,6 +16,8 @@ sampling_test= PARAMS.data.sampling_test
 parser = EncParser("Encoder parser")
 args_enc = parser.get_arguments()
 
+print(torch.cuda.is_available())
+
 
 
 data_train_load = Data_3dpose_to_load( #subsampling_fno = 1
@@ -30,7 +32,7 @@ data_test = Data_3dpose(args_enc,  #subsampling_fno = 2,
                         sampling=sampling_test
                         ) #8,9
 
-print(len(data_test))
+
 train_data_loader = DataLoader(data_train_load,
                                    batch_size=args_enc.batch_size//2,
                                    shuffle=True,
@@ -58,8 +60,8 @@ trainer = Trainer_Enc_Dec(
 
 
 # Start training!
-#trainer._resume_checkpoint("data/checkpoints/enc_dec_S15678_rot")
-#model.encoder_decoder = trainer.model
+trainer._resume_checkpoint("data/checkpoints/enc_dec_S15678_rot_final")
+model.encoder_decoder = trainer.model
 
 trainer.train()
 

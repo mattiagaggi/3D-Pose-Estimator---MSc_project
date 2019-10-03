@@ -19,14 +19,7 @@ parser= SMPL_Parser("SMPL Parser")
 args_SMPL = parser.get_arguments()
 
 
-"""
-data_train = SMPL_Data(args_SMPL,
-                        sampling=sampling_train,
-                         index_file_content =['s','act'],
-                         index_file_list=[[1],[2,3,4,5,6,7,8]],
-                         ) #8,9
 
-"""
 data_test = SMPL_Data(args_SMPL,  #subsampling_fno = 2,
                         index_file_content =['s'],
                         index_file_list=[[1],[15,16]],
@@ -50,6 +43,8 @@ model = SMPL_enc_dec()
 
 
 
+
+
 metrics=[MPJ(), Normalised_MPJ()]
 
 optimizer_pose = torch.optim.Adam(model.parameters(), lr=args_SMPL.learning_rate)
@@ -65,7 +60,10 @@ trainer_SMPL =Trainer_Enc_Dec_SMPL(
         data_test = data_test,
 )
 
-#trainer_SMPL.resume_encoder("data/checkpoints/enc_dec_S15678_no_rot")
+if model.GAN is not None:
+    trainer_SMPL.resume_gan("data/checkpoints/gan")
+
+trainer_SMPL.resume_encoder("data/checkpoints/enc_dec_S15678_no_rot")
 #trainer_SMPL._resume_checkpoint("data/checkpoints/enc_dec_S15678_rot_finalSMPL")
 
 trainer_SMPL.train()

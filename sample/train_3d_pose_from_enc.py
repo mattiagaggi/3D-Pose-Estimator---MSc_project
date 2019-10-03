@@ -20,19 +20,17 @@ args_pose = parser.get_arguments()
 
 
 
-data_train = Data_3dpose(args_pose,
-                         index_file_content =['s'],
-                         index_file_list=[[1]],
-                         sampling=sampling_train) #8,9
 
 data_train_load = Data_3dpose_to_load( #subsampling_fno = 1
                          index_file_content =['s'],
                          #index_file_list=[[1, 5, 6, 7],[1,2]])
                          index_file_list=[[1]], #15678
-                         sampling=sampling_train) #8,9
+                         sampling=sampling_train,
+                            no_apperance= True
+                            ) #8,9
 
 train_data_loader = DataLoader(data_train_load,
-                                   batch_size=args_pose.batch_size//2,
+                                   batch_size=args_pose.batch_size,
                                    shuffle=True,
                                    num_workers = args_pose.num_threads,
                                 collate_fn = collate_h36m, pin_memory=True )
@@ -40,7 +38,7 @@ train_data_loader = DataLoader(data_train_load,
 
 data_test = Data_3dpose(args_pose,  #subsampling_fno = 2,
                         index_file_content =['s'],
-                        index_file_list=[[1]],
+                        index_file_list=[[9,11]],
                         sampling=sampling_test
                         ) #8,9
 
