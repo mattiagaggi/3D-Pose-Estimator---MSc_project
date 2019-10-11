@@ -64,7 +64,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         self.length_test_set = len(self.data_test)
         self.len_trainset = len(self.data_train)
         self.drawer = Drawer()
-        mean= self.data_train.dataset.get_mean_pose()
+        mean= self.data_train.get_mean_pose()
         self.mean_pose = numpy_to_tensor_float(mean.reshape(1, 17, 3))
         #std = self.data_train.get_std_pose(mean).reshape(1, 17, 3)
         #self.std_pose = numpy_to_tensor_float(std)
@@ -82,15 +82,15 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
         info['size_batches'] = len(self.data_train)
         info['batch_size'] = self.batch_size
         string=""
-        for number,contents in enumerate(self.data_train.dataset.index_file_list):
-            string += "\n content :" + self.data_train.dataset.index_file_content[number]
+        for number,contents in enumerate(self.data_train.index_file_list):
+            string += "\n content :" + self.data_train.index_file_content[number]
             for elements in contents:
                 string += " "
                 string += " %s," % elements
         info['details'] = string
         info['optimiser']=str(self.optimizer)
         info['loss']=str(self.loss.__class__.__name__)
-        info['sampling'] = str(self.data_train.dataset.sampling)
+        info['sampling'] = str(self.data_train.sampling)
         return info
 
     def resume_encoder(self,resume_path):
@@ -146,12 +146,12 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
     def train_step(self, bid, dic_in, dic_out, pbar, epoch):
 
         self.optimizer.zero_grad()
-        out_pose_norm = self.model(dic_in)
+        out_pose = self.model(dic_in)
         gt, mean = self.gt_cam_mean_cam(dic_in, dic_out)
         #normalise gt
-        gt_norm = gt-mean
+        #gt_norm = gt-mean
 
-        loss = self.loss( out_pose_norm, gt_norm)
+        loss = self.loss( out_pose, gt)
         loss.backward()
         self.optimizer.step()
         if (bid % self.verbosity_iter == 0) and (self.verbosity == 2):
@@ -166,7 +166,7 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
                                                self.global_step)
         if (bid % self.img_log_step == 0) or (self.global_step in self.log_images_start_training):
 
-            out_pose = out_pose_norm + mean
+            #out_pose = out_pose_norm + mean
 
             self.log_images('train',dic_in['im_in'], out_pose, gt)
             self.train_logger.save_batch_images('train', dic_in['im_in'], self.global_step,
@@ -185,18 +185,19 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
             for k in out_test_dic.keys():
                 out_test_dic[k] = out_test_dic[k].cuda()
         gt, mean = self.gt_cam_mean_cam(in_test_dic, out_test_dic)
-        out_pose_norm = self.model(in_test_dic)
+        #gt_norm = gt - mean
+        out_pose = self.model(in_test_dic)
         self.model.train()
         #normalise gt
-        gt_norm = gt - mean
 
-        loss_test = self.loss(out_pose_norm, gt_norm)
+        loss_test = self.loss(out_pose, gt)
         self.model_logger.val.add_scalar('loss/iterations', loss_test.item(),
                                          self.global_step)
         self.train_logger.record_scalar("test_loss", loss_test.item(),self.global_step)
-        out_pose = out_pose_norm + mean
+
 
         if bid % self.img_log_step == 0:
+            #out_pose = out_pose_norm + mean
             self.log_images('test',in_test_dic['im_in'], out_pose, gt)
             self.train_logger.save_batch_images('test', in_test_dic['im_in'],self.global_step,
                                                 pose_pred=out_pose, pose_gt=gt)
@@ -254,8 +255,8 @@ class Trainer_Enc_Dec_Pose(BaseTrainer):
             for k in out_test_dic.keys():
                 out_test_dic[k] = out_test_dic[k].cuda()
         gt, mean = self.gt_cam_mean_cam(in_test_dic, out_test_dic)
-        out_pose_norm = self.model(in_test_dic)
-        out_pose = out_pose_norm + mean
+        out_pose= self.model(in_test_dic)
+        #out_pose = out_pose_norm + mean
         for m in self.metrics:
             value = m(out_pose, gt)
             m.log_model(self.model_logger.val, self.global_step, value.item())

@@ -50,7 +50,9 @@ class Data_3dpose_to_load(Data_Base_class):
         else:
             self._logger.error("Subsampling not understood")
         #self._logger.info("Only from 1 to 2")
+        self._logger.info("index file")
         for i in self.index_file:
+            self._logger.info("data")
             s,act,subact,ca,fno = i
             for ca2 in range(1,5):
                 if (ca2 != ca) and (ca2 in list(self.all_metadata[s][act][subact].keys())):###############
@@ -67,6 +69,7 @@ class Data_3dpose_to_load(Data_Base_class):
                     for ca in self.all_metadata[s][act][subact]:
                         metadata=self.all_metadata[s][act][subact][ca]['joint_world']
                         N += metadata.shape[0]
+                        metadata = metadata - np.reshape(metadata[:,H36M_CONF.joints.root_idx,:],(metadata.shape[0],1,metadata.shape[2]))
                         summed += np.sum(metadata, axis=0)
 
         return summed/N
@@ -208,9 +211,9 @@ class Data_3dpose_to_load(Data_Base_class):
         s, act, subact, ca, fno, ca2 = self.index_file_cameras[index]
         self.update_stored_info(s, act, subact, ca, fno)
         if not self.no_apperance:
-            return self.process_data(batch_1), self.process_data(batch_2)
+            return self.process_data(batch_1), self.process_data(batch_2), np.array([s, act, subact, ca, fno, ca2])
         else:
-            return self.process_data(batch_1), None
+            return self.process_data(batch_1), None, np.array([s, act, subact, ca, fno, ca2])
 
 
 
@@ -245,6 +248,7 @@ class Data_3dpose_to_load(Data_Base_class):
         return dic
 
     def update_dic_out(self, dic, imT, joints):
+        joints -= np.reshape(joints[ H36M_CONF.joints.root_idx, :], (1, 3))
         dic['joints_im'].append(joints)
         dic['im_target'].append(np.transpose(imT, axes=[2,0,1]))
         return dic
@@ -264,6 +268,7 @@ class Data_3dpose_to_load(Data_Base_class):
         dic_in, dic_out, dic_in_app, dic_out_app = self.create_all_dic()
         batches = self.return_batch(item)
         im, R, RT, backgroundT, imT,joints = batches[0]
+        details=batches[2]
         self.update_dic_in(dic_in,im, R, RT, backgroundT)
         self.update_dic_out(dic_out, imT, joints)
         if not self.no_apperance:
@@ -272,4 +277,5 @@ class Data_3dpose_to_load(Data_Base_class):
             self.update_dic_out(dic_out_app, imT, joints)
             dic_in = self.joint_dics(dic_in, dic_in_app)
             dic_out = self.joint_dics(dic_out, dic_out_app)
+        dic_in['details']=[details]
         return dic_in, dic_out

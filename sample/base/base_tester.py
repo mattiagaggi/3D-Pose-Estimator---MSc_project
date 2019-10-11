@@ -41,18 +41,25 @@ class BaseTester(FrameworkClass):
         self.model_logger = ModelLogger(path, self.training_name)
         path = os.path.join(self.save_dir, self.training_name, 'log_results_test')
         self.train_logger = TrainingLogger(path)
-
-        # check that we can run on GPU
         if not torch.cuda.is_available():
             self.with_cuda = False
+            self._logger.info("GPU not available set no cuda = True")
+        if self.with_cuda:
+            self._logger.info("GPU is used!")
+            self.model = self.model.cuda()
+            if torch.cuda.device_count() > 1:
+                if self.verbosity:
+                    self._logger.info("Let's use %d GPUs!",
+                                      torch.cuda.device_count())
 
-        if self.with_cuda and (torch.cuda.device_count() > 1):
-            self.model = torch.nn.DataParallel(self.model)
-
-            self.single_gpu = False
+                #parallelise
+                self.single_gpu = False
+                self.model.parallelise() #this might be slower
+                self.model = torch.nn.DataParallel(self.model)
 
         io.ensure_dir(os.path.join(self.save_dir,
-                                   self.output_name))
+                                   self.training_name))
+
 
 
 

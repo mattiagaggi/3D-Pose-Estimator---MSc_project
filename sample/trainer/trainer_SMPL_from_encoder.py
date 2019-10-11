@@ -5,6 +5,7 @@ from utils.smpl_torch.display_utils import Drawer as DrawerSMPL
 from utils import io
 
 from sample.base.base_trainer import BaseTrainer
+import time
 from tqdm import tqdm
 import torch
 import os
@@ -148,15 +149,17 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
     def log_image_and_pose(self, string, i, idx, dic_in, dic_out):
         image = dic_in["image"][idx]
         self.model_logger.train.add_image(str(string) + str(i) + "Image", image, self.global_step)
+        cam_joints_in = torch.bmm(dic_in["joints_im"],dic_in['R'].transpose(1,2))
+        cam_joints_out = torch.bmm(dic_out["joints_im"],dic_in['R'].transpose(1,2))
 
-        gt_cpu = dic_in["joints_im"][idx].cpu().data.numpy()
-        pp_cpu = dic_out["joints_im"][idx].cpu().data.numpy()
+        gt_cpu = cam_joints_in.cpu().data.numpy()
+        pp_cpu = cam_joints_out.cpu().data.numpy()
         fig = plt.figure()
-        fig = self.drawer.poses_3d(pp_cpu, gt_cpu, plot=True, fig=fig, azim=-90, elev=0)
+        fig = self.drawer.poses_3d(pp_cpu, gt_cpu, plot=True, fig=fig, azim=-90, elev=-80)
         self.model_logger.train.add_figure(str(string) + str(i) + "GT", fig, self.global_step)
 
         fig = plt.figure()
-        fig = self.drawer.poses_3d(pp_cpu, gt_cpu, plot=True, fig=fig, azim=-90, elev=-90)
+        fig = self.drawer.poses_3d(pp_cpu, gt_cpu, plot=True, fig=fig, azim=-90, elev=0)
         self.model_logger.train.add_figure(str(string) + str(i) + "GT_depth", fig, self.global_step)
 
     def log_masks_vertices(self,string, i, idx, dic_in, dic_out):
@@ -182,9 +185,12 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         fig = self.drawer.plot_image_on_axis( idx, out_masks_list, None, index_list)
         self.model_logger.train.add_figure(str(string) + str(i) + "rasterized", fig, self.global_step)
 
-    def log_smpl(self, string, i, idx, dic_out):
+    def log_smpl(self, string, i, idx, dic_in,dic_out):
 
         joints, verts = dic_out["SMPL_output"]
+        # in world coordinate -90,0 instead
+        joints=torch.bmm(joints,dic_in['R'].transpose(1,2))
+        verts = torch.bmm(verts, dic_in['R'].transpose(1, 2))
         fig = plt.figure()
         fig = self.drawerSMPL.display_model(
             {'verts': verts.cpu().detach(),
@@ -205,7 +211,7 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
             self.log_image_and_pose(string, i, idx, dic_in, dic_out)
             if self.optimise_vertices:
                 self.log_masks_vertices(string, i, idx, dic_in, dic_out)
-            self.log_smpl(string, i, idx, dic_out)
+            self.log_smpl(string, i, idx, dic_in,dic_out)
 
     def log_gradients(self):
 
@@ -268,7 +274,7 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
 
         if (bid % self.img_log_step == 0) or (self.global_step in self.log_images_start_training):
 
-            self.log_images("train shape0=="+str(self.model.use_zero_shape), dic, dic_out)
+            self.log_images("train shape", dic, dic_out)
             self.train_logger.save_dics("train", dic, dic_out, self.global_step)
 
         return loss.item(), pbar
@@ -324,8 +330,10 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         total_loss = 0
         pbar = tqdm(self.data_train)
         for bid, dic in enumerate(pbar):
+            a=time.time()
             loss, pbar = self.train_step(bid, dic, pbar, epoch)
-
+            b=time.time()
+            self._logger.info("time elapsed %s" %(b-a))
             if self.test_log_step is not None and (bid % self.test_log_step == 0):
 
                 self.test_step_on_random(bid)

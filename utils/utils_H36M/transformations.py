@@ -18,8 +18,8 @@ def cam2pixel(cam_coord, f, c):
     assert f.shape == (1,2)
     assert c.shape == (1,2)
 
-    x = cam_coord[..., 0] / cam_coord[..., 2] * f[0,0] + c[0,0]
-    y = cam_coord[..., 1] / cam_coord[..., 2] * f[0,1] + c[0,1]
+    x = cam_coord[..., 0] / (cam_coord[..., 2]+10**-13) * f[0,0] + c[0,0]
+    y = cam_coord[..., 1] /(cam_coord[..., 2]+10**-13) * f[0,1] + c[0,1]
 
 
     points = np.concatenate([x[..., np.newaxis],
@@ -95,12 +95,15 @@ def bounding_box_pixel(joints, root_idx,rot, t, f, c):
     assert f.shape == (1,2)
     assert c.shape == (1,2)
     assert rot.shape == (3, 3)
+    t=t.astype(np.float32)
+    f=f.astype(np.float32)
+    c = c.astype(np.float32)
 
     bbox_3d=H36M_CONF.bbox_3d
     # build 3D bounding box centered on center_cam
-    bbox_3d_center = np.array([bbox_3d[2] / 2,
-                               bbox_3d[1] / 2,
-                               0])
+    bbox_3d_center = np.array([bbox_3d[2] / 2.,
+                               bbox_3d[1] / 2.,
+                               0],dtype=np.float32)
     #center cam in camera coord
 
     center_cam = np.dot(rot, joints[root_idx] - t.flatten())

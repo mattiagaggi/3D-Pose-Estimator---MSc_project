@@ -11,7 +11,7 @@ class GAN_Parser(BaseParser):
         self._add_learning_rate(0.001)
         self._add_batch_size(64)
         self._add_epochs(100)
-        self._add_name("gan")
+        self._add_name("gan_gpu")
         self._add_output_dir("data/checkpoints")
         self._add_model_checkpoints(5000)
         self._add_data_threads(0)

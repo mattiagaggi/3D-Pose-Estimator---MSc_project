@@ -95,7 +95,7 @@ class BaseTrainer(FrameworkClass):
                 self._logger.info('Evaluating epoch %d of %d',
                                   epoch, self.epochs)
                 self._valid_epoch()
-            self._save_checkpoint(self.epochs, epoch_loss)
+            self._save_checkpoint(epoch, epoch_loss)
         self._logger.info('Finished training')
 
 
@@ -202,7 +202,8 @@ class BaseTrainer(FrameworkClass):
         self.model.load_state_dict(trained_dict)
 
         #############
-        self.model.cuda()
+        if self.with_cuda:
+            self.model.cuda()
         ###########
 
         if not self.reset:

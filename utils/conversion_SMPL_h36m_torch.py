@@ -1,5 +1,5 @@
 from utils.trans_numpy_torch import numpy_to_long
-from utils.utils_H36M.transformations_torch import rotate_x_batch
+from utils.utils_H36M.transformations_torch import rotate_x_torch
 from utils.utils_H36M.transformations_torch import world_to_camera_batch, camera_to_pixels_batch, transform_2d_joints_batch
 import torch
 import numpy as np
@@ -18,7 +18,7 @@ def from_smpl_to_h36m_world_torch(points_smpl, root_position, from_camera=False,
     else:
         assert R_world_cam is not None
         angle = np.pi
-    R = rotate_x_batch(angle, batch_size)
+    R = rotate_x_torch(angle, batch_size)
     points_smpl = torch.bmm(points_smpl, R.transpose(1, 2))
     #rescale
     points_smpl = points_smpl * 1000
@@ -33,7 +33,7 @@ def from_h36m_world_to_smpl_torch(points_h36m, root_position):
     points_h36m = points_h36m - root_position
     points_h36m = points_h36m / 1000
     angle = -90. / 180 * np.pi
-    R = rotate_x_batch(angle, batch_size)
+    R = rotate_x_torch(angle, batch_size)
     points_h36m = torch.bmm(points_h36m, R.transpose(1, 2))
     return points_h36m
 

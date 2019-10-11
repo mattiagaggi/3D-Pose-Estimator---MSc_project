@@ -42,7 +42,7 @@ class SMPL_enc_dec(BaseModel):
         dic_out = {}
         dic_out["SMPL_params"] = (out_smpl['pose'], out_smpl['shape'])
         if self.GAN is not None:
-            discr_input = torch.cat([out_smpl['pose'],out_smpl['shape']], dim=0)
+            discr_input = torch.cat([out_smpl['pose'],out_smpl['shape']], dim=1)
             discr_output = self.GAN.discriminator(discr_input)
             dic_out["discr_output"] = discr_output
 

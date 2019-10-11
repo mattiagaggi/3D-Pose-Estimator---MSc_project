@@ -1,5 +1,5 @@
 
-
+from matplotlib import style
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,6 +9,7 @@ import matplotlib
 #matplotlib.use('TkAgg') #make np.string work mac
 from utils.utils_H36M.common import H36M_CONF
 from sample.config.data_conf import PARAMS
+#from utils.utils_H36M.transfomations import
 
 
 class Drawer:
@@ -66,10 +67,15 @@ class Drawer:
         box=H36M_CONF.bbox_3d
         box_mean=np.array(box)/2
         smallest=pose[root, :] - box_mean
+        largest2=pose[root, :] + box_mean/2.5
+        smallest2=pose[root, :] - box_mean/2.5
+        largest3=pose[root, :] + box_mean/3
+        smallest3=pose[root, :] - box_mean/3
         largest=pose[root, :] + box_mean
-        ax.set_xlim3d(smallest[0], largest[0])
+        ax.set_xlim3d(smallest3[0], largest3[0])
         ax.set_ylim3d(smallest[1], largest[1])
-        ax.set_zlim3d(smallest[2], largest[2])
+        ax.set_zlim3d(smallest2[2], largest2[2])
+        ax.set_zticks([-400,-200, 0, 200,400])
 
 
     def _hide_planes(self, ax):
@@ -80,13 +86,13 @@ class Drawer:
         """
 
         # Get rid of the ticks and tick labels
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.set_zticks([])
+        #ax.set_xticks([])
+        #ax.set_yticks([])
+        #ax.set_zticks([])
 
-        ax.get_xaxis().set_ticklabels([])
-        ax.get_yaxis().set_ticklabels([])
-        ax.set_zticklabels([])
+        #ax.get_xaxis().set_ticklabels([])
+        #ax.get_yaxis().set_ticklabels([])
+        #ax.set_zticklabels([])
 
 
     def _clip_to_max(self, image, max_value):
@@ -160,15 +166,19 @@ class Drawer:
         return img
 
 
-    def pose_3d(self, pose, plot = False, fig = None, azim=-90, elev=-90):
+    def pose_3d(self, pose, plot = False, fig = None, azim=-90, elev=-80):
         #in world coordinate -90,0 instead
         if plot:
             assert fig is not None
         else:
             fig=plt.figure()
+       # style.use('fivethirtyeight')
         assert pose.shape == (H36M_CONF.joints.number,3)
         ax = fig.add_subplot(111, projection='3d')
         ax.view_init(azim=azim,elev=elev)
+        ax.xaxis._axinfo['juggled'] = (0, 1, 1)
+        ax.yaxis._axinfo['juggled'] = (1, 1, 0)
+        ax.zaxis._axinfo['juggled'] = (2, 1, 0)
         for lid, (p0, p1) in enumerate(self._limbs_h36m):
             col = self.rgb_to_string(self._get_color(lid))
             ax.plot([pose[p0, 0], pose[p1, 0]],
@@ -200,6 +210,9 @@ class Drawer:
             fig=plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         ax.view_init(azim=azim,elev=elev)
+        ax.xaxis._axinfo['juggled'] = (0, 1, 1)
+        ax.yaxis._axinfo['juggled'] = (1, 1, 0)
+        ax.zaxis._axinfo['juggled'] = (2, 1, 0)
 
         if predicted.shape[0]==H36M_CONF.joints.number:
             table = self._limbs_h36m

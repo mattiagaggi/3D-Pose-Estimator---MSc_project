@@ -98,7 +98,7 @@ def transform_2d_joints_batch(joints_px, transformation):
     raise NameError("wrong dim")
 
 
-def rotate_x_batch(angle_rad, batch_size):
+def rotate_x_torch(angle_rad, batch_size):
 
     R = numpy_to_tensor_float(rotate_x(angle_rad))
     stacked = torch.stack([R]*batch_size, dim=0)

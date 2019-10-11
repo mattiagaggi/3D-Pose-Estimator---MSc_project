@@ -53,12 +53,16 @@ class TrainingLogger:
         current -= 1
         self.scalars_saved = current
 
-    def save_dic(self, name, dic_in, idx, extra_str="_"):
+    def save_dic(self, name, dic_in, idx, extra_str="_",gpu=True):
         dic ={}
         if extra_str == "_":
             self.record_index(name, idx)
-        for key in dic_in.keys():
-            dic[key] = dic_in[key].cpu().data.numpy()
+        if gpu:
+            for key in dic_in.keys():
+                if type(dic_in[key]) == tuple:
+                    dic[key]= (dic_in[key][0].cpu().data.numpy(),dic_in[key][1].cpu().data.numpy())
+                else:
+                    dic[key] = dic_in[key].cpu().data.numpy()
         dir_path = os.path.join(self.path, name)
         ensure_dir(dir_path)
         string = 'dic_%s' % idx
@@ -72,6 +76,12 @@ class TrainingLogger:
         string = extra_str + string+".pkl"
         path = os.path.join(dir_path, string)
         dic=pkl.load(open(path,'rb'))
+        return dic
+
+    def get_dic_arbitrary(self,name,string):
+        dir_path = os.path.join(self.path, name)
+        path = os.path.join(dir_path, string)
+        dic = pkl.load(open(path, 'rb'))
         return dic
 
 

@@ -1,5 +1,5 @@
 import torch.utils.model_zoo as model_zoo
-from sample.models.resnet import ResNet
+from sample.models.resnet_for_loss import ResNet
 from sample.base.base_modules import BasicBlock
 from utils.training_utils import transfer_partial_weights
 

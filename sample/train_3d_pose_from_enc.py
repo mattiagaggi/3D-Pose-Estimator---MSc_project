@@ -7,6 +7,8 @@ from utils.collating_functions import collate_h36m
 from torch.utils.data import DataLoader
 from sample.config.data_conf import PARAMS
 from sample.parsers.parser_enc_dec import Pose_Parser
+parser= Pose_Parser("Pose Parser")
+args_pose = parser.get_arguments()
 from sample.losses.poses import MPJ, Aligned_MPJ, Normalised_MPJ
 from sample.trainer.trainer_3D_pose_from_encoder import Trainer_Enc_Dec_Pose
 
@@ -15,12 +17,11 @@ from sample.trainer.trainer_3D_pose_from_encoder import Trainer_Enc_Dec_Pose
 device=PARAMS['data']['device']
 sampling_train=PARAMS.data.sampling_train
 sampling_test= PARAMS.data.sampling_test
-parser= Pose_Parser("Pose Parser")
-args_pose = parser.get_arguments()
 
 
 
 
+"""
 data_train_load = Data_3dpose_to_load( #subsampling_fno = 1
                          index_file_content =['s'],
                          #index_file_list=[[1, 5, 6, 7],[1,2]])
@@ -34,16 +35,33 @@ train_data_loader = DataLoader(data_train_load,
                                    shuffle=True,
                                    num_workers = args_pose.num_threads,
                                 collate_fn = collate_h36m, pin_memory=True )
-
-
+"""
+data_train = Data_3dpose(args_pose,  #subsampling_fno = 2,
+                        index_file_content =['s'],
+                        index_file_list=[[1]],
+                        sampling=sampling_train
+                        ) #8,9
 data_test = Data_3dpose(args_pose,  #subsampling_fno = 2,
                         index_file_content =['s'],
                         index_file_list=[[9,11]],
                         sampling=sampling_test
                         ) #8,9
+"""
+data_test_load = Data_3dpose_to_load( #subsampling_fno = 1
+                         index_file_content =['s'],
+                         #index_file_list=[[1, 5, 6, 7],[1,2]])
+                         index_file_list=[[9,11]], #15678
+                         sampling=sampling_test,
+                            no_apperance= True
+                            ) #8,9
 
+test_data_loader = DataLoader(data_test_load,
+                                   batch_size=args_pose.batch_size,
+                                   shuffle=True,
+                                   num_workers = args_pose.num_threads,
+                                collate_fn = collate_h36m, pin_memory=True )
 
-
+"""
 model = Pose_3D()
 
 
@@ -57,10 +75,10 @@ trainer_pose =Trainer_Enc_Dec_Pose(
         args=args_pose,
         metrics=metrics,
         optimizer=optimizer_pose,
-        data_train=train_data_loader,
+        data_train=data_train,
         data_test = data_test,
 )
 
-trainer_pose.resume_encoder("data/checkpoints/enc_dec_S15678_no_rot")
-
+#trainer_pose.resume_encoder("data/checkpoints/enc_dec_S15678_no_rot")
+#trainer_pose._resume_checkpoint("data/checkpoints/enc_dec_S15678_no_rotfinal23D")
 trainer_pose.train()

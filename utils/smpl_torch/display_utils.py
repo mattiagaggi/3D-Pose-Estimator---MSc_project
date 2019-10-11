@@ -61,8 +61,10 @@ class Drawer:
         #ax.get_yaxis().set_ticklabels([])
         #ax.set_zticklabels([])
 
-        ax.view_init(azim=-90, elev=100)
-        #ax.view_init(azim=0, elev=190)
+        #ax.view_init(azim=-90, elev=100)
+        # in world coordinate -90,0 instead
+        #for camera
+        ax.view_init(azim=-90, elev=10)
 
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         if savepath:

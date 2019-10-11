@@ -24,7 +24,8 @@ class Data_3dpose(Data_Base_class):
                  index_file_list=[[1]],
                  randomise=True,
                  get_intermediate_frames = False,
-                 subsampling_fno = 0):
+                 subsampling_fno = 0,
+                 no_apperance=False):
         """
         :param args:
         :param sampling:
@@ -43,6 +44,7 @@ class Data_3dpose(Data_Base_class):
         self.index_file_list = index_file_list
         self.randomise= randomise
         self.index_file_cameras =[]
+        self.no_apperance = no_apperance
         if subsampling_fno==0:
             pass
         elif subsampling_fno==1:
@@ -74,6 +76,8 @@ class Data_3dpose(Data_Base_class):
                     for ca in self.all_metadata[s][act][subact]:
                         metadata=self.all_metadata[s][act][subact][ca]['joint_world']
                         N += metadata.shape[0]
+                        metadata = metadata - np.reshape(metadata[:, H36M_CONF.joints.root_idx, :],
+                                                         (metadata.shape[0], 1, metadata.shape[2]))
                         summed += np.sum(metadata, axis=0)
 
         return summed/N
@@ -127,7 +131,7 @@ class Data_3dpose(Data_Base_class):
 
     def extract_all_info(self, metadata, background,s, act, subact, ca, fno,):
 
-        rotation_angle = get_rotation_angle()
+        rotation_angle = None
         im, joints_world, R, T, f, c = self.extract_info(metadata, s, act, subact,ca, fno)
         bbpx = bounding_box_pixel(joints_world,H36M_CONF.joints.root_idx, R, T, f,c)
         im,  trans = self.crop_img(im, bbpx, rotation_angle)
@@ -215,10 +219,14 @@ class Data_3dpose(Data_Base_class):
     def return_batch(self, index):
 
         batch_1=self.return_main_data(index)
-        batch_2=self.return_apperance_data(index)
+        if not self.no_apperance:
+            batch_2 = self.return_apperance_data(index)
         s, act, subact, ca, fno, ca2 = self.index_file_cameras[index]
         self.update_stored_info(s, act, subact, ca, fno)
-        return self.process_data(batch_1), self.process_data(batch_2)
+        if not self.no_apperance:
+            return self.process_data(batch_1), self.process_data(batch_2), np.array([s, act, subact, ca, fno, ca2])
+        else:
+            return self.process_data(batch_1), None, np.array([s, act, subact, ca, fno, ca2])
 
     def create_dic_in(self):
 
@@ -259,10 +267,14 @@ class Data_3dpose(Data_Base_class):
 
     def joint_dic_in(self, dic1, dic2):
         assert self.batch_size//2 == len(dic1['im_in'])
-        assert self.batch_size//2 == len(dic2['im_in'])
+        #assert self.batch_size//2 == len(dic2['im_in'])
         new_dic = {}
-        for key in dic1.keys():
-            new_dic[key] = np.stack(dic1[key] + dic2[key], axis=0)
+        if dic2 is not None:
+            for key in dic1.keys():
+                new_dic[key] = np.stack(dic1[key] + dic2[key], axis=0)
+        else:
+            for key in dic1.keys():
+                new_dic[key] = np.stack(dic1[key], axis=0)
         new_dic['im_in'] = np.transpose(new_dic['im_in'], axes=[0,3,1,2])
         new_dic['background_target'] = np.transpose(new_dic['background_target'], axes=[0,3,1,2])
         new_dic['invert_segments'] = self.invert_segments
@@ -270,8 +282,12 @@ class Data_3dpose(Data_Base_class):
 
     def join_dic_out(self, dic1, dic2):
         new_dic = {}
-        for key in dic1.keys():
-            new_dic[key] = np.stack(dic1[key] + dic2[key], axis=0)
+        if dic2 is not None:
+            for key in dic1.keys():
+                new_dic[key] = np.stack(dic1[key] + dic2[key], axis=0)
+        else:
+            for key in dic1.keys():
+                new_dic[key] = np.stack(dic1[key], axis=0)
         new_dic['im_target'] = np.transpose(new_dic['im_target'], axes=[0, 3, 1, 2])
         N, J, T = new_dic['joints_im'].shape
         new_dic['joints_im'] -= np.reshape(new_dic['joints_im'][:, H36M_CONF.joints.root_idx, :], (N, 1, T))
@@ -305,11 +321,16 @@ class Data_3dpose(Data_Base_class):
             im, R, RT, backgroundT, imT,joints = batches[0]
             self.update_dic_in(dic_in,im, R, RT, backgroundT)
             self.update_dic_out(dic_out, imT, joints)
-            im, R, RT, backgroundT, imT, joints = batches[1]
-            self.update_dic_in(dic_in_app, im, R, RT, backgroundT)
-            self.update_dic_out(dic_out_app, imT, joints)
-        dic_in = self.joint_dic_in(dic_in, dic_in_app)
-        dic_out = self.join_dic_out(dic_out, dic_out_app)
+            if not self.no_apperance:
+                im, R, RT, backgroundT, imT, joints = batches[1]
+                self.update_dic_in(dic_in_app, im, R, RT, backgroundT)
+                self.update_dic_out(dic_out_app, imT, joints)
+        if not self.no_apperance:
+            dic_in = self.joint_dic_in(dic_in, dic_in_app)
+            dic_out = self.join_dic_out(dic_out, dic_out_app)
+        else:
+            dic_in = self.joint_dic_in(dic_in, None)
+            dic_out = self.join_dic_out(dic_out, None)
         self.track_epochs()
         return encoder_dictionary_to_pytorch(dic_in), encoder_dictionary_to_pytorch(dic_out)
 

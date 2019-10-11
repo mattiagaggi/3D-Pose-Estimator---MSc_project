@@ -312,7 +312,7 @@ class Data_Base_class(BaseDataset):
                         continue
                 else:
                     # CHANGED FOR LACK OF DATA
-                    if (fno + self.sampling//2) % self.sampling != 1: # starts from 1
+                    if fno  % self.sampling != 1: # starts from 1
                         continue
                 if self.index_as_dict:
                     self.index_file=\

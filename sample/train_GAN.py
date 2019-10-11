@@ -6,6 +6,7 @@ from sample.config.data_conf import PARAMS
 from sample.parsers.parser_gan_smpl import GAN_Parser
 from torch.nn import BCELoss
 from sample.trainer.trainer_GAN import Trainer_GAN
+import os
 
 
 

@@ -6,7 +6,7 @@ from sample.config.data_conf import PARAMS
 from dataset_def.h36m_preprocess import Data_Base_class
 from utils.utils_H36M.transformations import get_patch_image, bounding_box_pixel, cam_pointing_root, rotate_z
 from utils.trans_numpy_torch import numpy_to_tensor_float, image_numpy_to_pytorch, numpy_to_long, tensor_to_numpy, numpy_to_tensor
-
+import os
 class SMPL_Data_Load(Data_Base_class):
 
     def __init__(self,
@@ -25,7 +25,9 @@ class SMPL_Data_Load(Data_Base_class):
         :param subsampling_fno:
         """
 
+
         super().__init__(sampling, get_intermediate_frames=get_intermediate_frames)
+        #self._logger.error(os.getcwd() )
         self.create_index_file(index_file_content, index_file_list)
         self.index_file_content = index_file_content
         self.index_file_list = index_file_list
@@ -114,7 +116,6 @@ class SMPL_Data_Load(Data_Base_class):
         dic= self.create_dictionary_data()
         rotation_angle = 0
         s, act, subact, ca, fno = self.index_file[item]
-        print(s,act,subact,ca,fno)
         dic = self.update_dic_with_image(dic,s, act, subact, ca, fno, rotation_angle)
         for mask_number in range(1,5):
             if mask_number in self.all_metadata[s][act][subact].keys():
@@ -122,40 +123,46 @@ class SMPL_Data_Load(Data_Base_class):
         return dic
 
 
-a = SMPL_Data_Load(2000)
-b=a[50]
-print(b.keys())
-from utils.utils_H36M.visualise import Drawer
-import matplotlib.pyplot as plt
-
-
-d = Drawer()
-im=a.load_image(1,2,1,3,1)
-im=np.transpose(b['image'], axes=[1,2,0])
-im2 = im.copy()
-im2[:, :, 0] = im[:, :, 2]
-im2[:, :, 2] = im[:, :, 0]
-plt.axis('off')
-plt.imshow(im2)
-plt.show()
-
-fig=plt.figure()
-d.pose_3d(b['joints_im'],plot = True, fig = fig, azim=-90, elev=0)
-plt.show()
-from utils.utils_H36M.transformations import world_to_pixel,transform_2d_joints
-pix =[]
-for n,i in enumerate(b['mask_image']):
-
-    plt.axis('off')
-    plt.imshow(i[0],cmap='gray')
-    plt.show()
-
-
-from utils.smpl_torch.pytorch.smpl_layer import SMPL_Layer
-from utils.smpl_torch.display_utils import Drawer
-from utils.trans_numpy_torch import numpy_to_tensor_float,tensor_to_numpy
 
 if __name__ == '__main__':
+    a = SMPL_Data_Load(2000,index_file_content=['s'],
+                 index_file_list=[[6]],)
+
+    from utils.utils_H36M.visualise import Drawer
+    import matplotlib.pyplot as plt
+
+    d = Drawer()
+    im = a.load_image(6, 2, 2, 2, 371)
+    #im = np.transpose(im, axes=[1, 2, 0])
+    metadata = a.all_metadata[6][2][2][2]
+    im, joints_world, R, T, f, c = a.extract_info(metadata, 6, 2, 2, 2, 371)
+    bbpx = bounding_box_pixel(joints_world, H36M_CONF.joints.root_idx, R, T, f, c)
+    im, trans = a.crop_img(im, bbpx, None)
+    im2 = im.copy()
+    im2[:, :, 0] = im[:, :, 2]
+    im2[:, :, 2] = im[:, :, 0]
+    plt.axis('off')
+    plt.imshow(im2)
+    plt.title("ssksk")
+    plt.show()
+    #[6.   2.   1.   1. 101.   3.]
+    #[6. 2. 2. 1. 1. 4.]
+    #[6.   2.   2.   2. 371.   4.]
+    fig = plt.figure()
+    d.pose_3d(b['joints_im'], plot=True, fig=fig, azim=-90, elev=0)
+    plt.show()
+    from utils.utils_H36M.transformations import world_to_pixel, transform_2d_joints
+
+    pix = []
+    for n, i in enumerate(b['mask_image']):
+        plt.axis('off')
+        plt.imshow(i[0], cmap='gray')
+        plt.show()
+
+    from utils.smpl_torch.pytorch.smpl_layer import SMPL_Layer
+    from utils.smpl_torch.display_utils import Drawer
+    from utils.trans_numpy_torch import numpy_to_tensor_float, tensor_to_numpy
+
     from utils.conversion_SMPL_h36m_torch import from_smpl_to_h36m_world_torch,project_vertices_onto_mask
     cuda = False
     batch_size = 1
