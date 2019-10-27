@@ -47,7 +47,22 @@ def reformat_large_tick_values(tick_val, pos):
 
     return new_tick_format
 
-log=TrainingLogger("data/checkpoints/enc_dec_S15678_no_rot/log_results_test")
+log=TrainingLogger("data/checkpoints/enc_dec_S15678_no_rot_baseSMPL/log_results")
+
+def moving_avr(arr,move=10):
+    new=[]
+    for i, value in enumerate(arr):
+        if i>move:
+            if i < len(arr)-move:
+                new.append(np.mean(arr[i-move:i+move]))
+            else:
+                new.append(np.mean(arr[i-move:i]))
+        else:
+            new.append(value)
+    return new
+
+
+
 
 def list_scalars_to_dic(lst):
 
@@ -64,42 +79,44 @@ def get_scalar_data(log):
     path=log.path
     count=1
     scalar_lst=[]
-    while os.path.exists(os.path.join(path,'scalars.pkl') ): # % count)): #%s
-        scal=pkl.load(open(os.path.join(path,'scalars.pkl'), "rb"))  #% count), "rb"))
-        scalar_lst.append(scal) #[1
+    print(path)
+    while os.path.exists(os.path.join(path,'scalars%s.pkl'  % count)): #%s
+        scal=pkl.load(open(os.path.join(path,'scalars%s.pkl' % count), "rb"))  #% count), "rb"))
+        scalar_lst.append(scal[1]) #[1
         count += 1
-        if count==2:
-            break
     return list_scalars_to_dic(scalar_lst)
 
 scalar = get_scalar_data(log)
 print(scalar.keys())
+print(len(scalar['train_loss_idx']),len(scalar['train_loss']))
+print(len(scalar['test_loss_idx']),len(scalar['test_loss']))
+
 
 
 def plot_loss(idx_train,idx_test,train,test):
     fig = plt.figure()
     ax = plt.subplot(111)
-    ax.set_xlim([0, 12000])
-    #ax.set_ylim([0, 270])
-    ax.plot(idx_train, train, label='training loss')
-    ax.plot(idx_test, test, label='test loss')
+    ax.set_xlim([2000, 6000])
+    #ax.set_ylim([0, 60])
+    ax.plot(idx_train, train, label='verts train loss ')
+    ax.plot(idx_test, test, label='verts test loss')
     ax.xaxis.set_major_formatter(tick.FuncFormatter(reformat_large_tick_values))
     ax.legend(fontsize=16)
     ax.tick_params(labelsize=14)
     return fig
 #print(scalar['train_loss_idx'])
-#fig=plot_loss(scalar['train_loss_idx'], scalar['test_loss_idx'],scalar['train_loss'], scalar['test_loss'])
+fig=plot_loss(scalar['train_loss_vert_idx'], scalar['test_loss_vert_idx'], scalar['train_loss_vert'], scalar['test_loss_vert'])
 #fig=plot_loss(scalar['test_metrics/MPJ_idx'], scalar['test_loss_idx'],scalar['test_metrics/MPJ'], scalar['test_loss'])
-#plt.show()
+plt.show()
 
+"""
 set="train"
 
-inp=log.get_dic_arbitrary(set,"indic_act_8n0")
-out = log.get_dic_arbitrary(set,"outdic_act_8n0")
+inp=log.get_dic_arbitrary(set,"indic_act_5n0")
+out = log.get_dic_arbitrary(set,"outdic_act_5n0")
 # data/checkpoints/enc_dec_S15678_no_rotfinal3D/log_results_test/training_logger/test/indic_act_15n0
 print(inp.keys())
 print(out.keys())
-
 
 
 
@@ -180,7 +197,7 @@ for i in range(inp["im_in"].shape[0]//2):
 
 
 
-"""
+
 d=Drawer()
 for i in range(inp["im_in"].shape[0]):
     #print(inp["details"][i])
@@ -218,7 +235,7 @@ for i in range(inp["im_in"].shape[0]):
     #plt.title("real")
 
     plt.show()
-"""
+
 #scal = get_scalar_data(log)
 
 
@@ -232,3 +249,4 @@ for i in range(inp["im_in"].shape[0]):
 
 #dic=log.load_batch_images("train_img_images",0)
 
+"""

@@ -44,7 +44,7 @@ class SMPL_enc_dec(BaseModel):
         if self.GAN is not None:
             discr_input = torch.cat([out_smpl['pose'],out_smpl['shape']], dim=1)
             discr_output = self.GAN.discriminator(discr_input)
-            dic_out["discr_output"] = discr_output
+            dic_out["discr_output"] = discr_output #"discr_output"
 
         dic_out["SMPL_output"] = (out_smpl['joints'], out_smpl['verts'])
         dic_out['joints_im'] = joints_converted_world

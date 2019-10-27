@@ -46,7 +46,7 @@ class Pose_Tester(BaseTester):
 
     def test_on(self,s_list,sampling,name):
         self.model.eval()
-        for act in range(12,17):
+        for act in range(2,17):
             self._logger.info("act %s",act)
             for n in self.dic_results.keys():
                 self.dic_results[n]=np.append(self.dic_results[n], 0)
@@ -58,10 +58,13 @@ class Pose_Tester(BaseTester):
                                     no_apperance=True,
                                     randomise=True
                                     )  # 8,9
+            self._logger.info("acr %s, n %s" %(act,len(data_test)))
+            
             pbar =tqdm(data_test)
 
 
             for bid, (in_test_dic, out_test_dic) in enumerate(pbar):
+                break
                 if not no_cuda:
                     for k in in_test_dic.keys():
                         in_test_dic[k] = in_test_dic[k].cuda()

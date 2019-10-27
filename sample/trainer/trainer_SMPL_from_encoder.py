@@ -14,7 +14,7 @@ from collections import OrderedDict
 import matplotlib.pyplot as plt
 from sample.config.data_conf import PARAMS
 from sample.losses.SMPL import Pose_Loss_SMPL
-from sample.models.GAN import GAN_SMPL
+
 
 
 
@@ -63,7 +63,7 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         self.data_test = data_test
 
         #test while training
-        self.start_optimising_vertices = 10000000
+        self.start_optimising_vertices = 1000
         self.GAN_active=False
         #self.start_use_shape = 500
         self.optimise_vertices = False
@@ -155,11 +155,11 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
         gt_cpu = cam_joints_in.cpu().data.numpy()
         pp_cpu = cam_joints_out.cpu().data.numpy()
         fig = plt.figure()
-        fig = self.drawer.poses_3d(pp_cpu, gt_cpu, plot=True, fig=fig, azim=-90, elev=-80)
+        fig = self.drawer.poses_3d(pp_cpu[idx], gt_cpu[idx], plot=True, fig=fig, azim=-90, elev=-80)
         self.model_logger.train.add_figure(str(string) + str(i) + "GT", fig, self.global_step)
 
         fig = plt.figure()
-        fig = self.drawer.poses_3d(pp_cpu, gt_cpu, plot=True, fig=fig, azim=-90, elev=0)
+        fig = self.drawer.poses_3d(pp_cpu[idx], gt_cpu[idx], plot=True, fig=fig, azim=-90, elev=0)
         self.model_logger.train.add_figure(str(string) + str(i) + "GT_depth", fig, self.global_step)
 
     def log_masks_vertices(self,string, i, idx, dic_in, dic_out):
@@ -188,9 +188,9 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
     def log_smpl(self, string, i, idx, dic_in,dic_out):
 
         joints, verts = dic_out["SMPL_output"]
-        # in world coordinate -90,0 instead
-        joints=torch.bmm(joints,dic_in['R'].transpose(1,2))
-        verts = torch.bmm(verts, dic_in['R'].transpose(1, 2))
+        # in camera -90,0 instead
+        #joints=torch.bmm(joints,dic_in['R'].transpose(1,2))
+        #verts = torch.bmm(verts, dic_in['R'].transpose(1, 2))
         fig = plt.figure()
         fig = self.drawerSMPL.display_model(
             {'verts': verts.cpu().detach(),
@@ -225,7 +225,7 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
 
 
 
-        if self.start_optimising_vertices == self.global_step:
+        if self.global_step>self.start_optimising_vertices:
             self._logger.info("Start optimising vertices")
             self.optimise_vertices = True
             self.model.optimise_vertices = True
@@ -312,6 +312,7 @@ class Trainer_Enc_Dec_SMPL(BaseTrainer):
 
             self.log_images("test", dic, dic_out)
             self.train_logger.save_dics("test", dic, dic_out, self.global_step)
+
 
 
     def _train_epoch(self, epoch):

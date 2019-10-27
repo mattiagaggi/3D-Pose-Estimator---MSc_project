@@ -19,7 +19,6 @@ class Data_3dpose_to_load(Data_Base_class):
                  sampling,
                  index_file_content=['s'],
                  index_file_list=[[1]],
-                 randomise=True,
                  get_intermediate_frames = False,
                  subsampling_fno = 0,
                  no_apperance= False):
@@ -38,7 +37,6 @@ class Data_3dpose_to_load(Data_Base_class):
         self.create_index_file(index_file_content, index_file_list)
         self.index_file_content = index_file_content
         self.index_file_list = index_file_list
-        self.randomise= randomise
         self.index_file_cameras =[]
         self.no_apperance = no_apperance
         if subsampling_fno==0:

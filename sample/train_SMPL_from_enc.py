@@ -1,3 +1,5 @@
+
+
 import torch.nn
 from torch.utils.data import DataLoader
 from dataset_def.h36m_SMPL_data import SMPL_Data
@@ -9,6 +11,8 @@ from sample.losses.poses import MPJ, Normalised_MPJ
 from sample.losses.SMPL import SMPL_Loss
 from sample.trainer.trainer_SMPL_from_encoder import Trainer_Enc_Dec_SMPL
 from utils.collating_functions import collate_smpl
+import os
+from data.config import data_folder
 
 
 
@@ -61,10 +65,10 @@ trainer_SMPL =Trainer_Enc_Dec_SMPL(
 )
 
 if model.GAN is not None:
-    trainer_SMPL.resume_gan("data/checkpoints/gan")
+    trainer_SMPL.resume_gan(os.path.join(data_folder,"checkpoints/gan_final"))
 
-trainer_SMPL.resume_encoder("data/checkpoints/enc_dec_S15678_no_rot")
-#trainer_SMPL._resume_checkpoint("data/checkpoints/enc_dec_S15678_rot_finalSMPL")
+trainer_SMPL.resume_encoder(os.path.join(data_folder,"checkpoints/enc_dec_S15678_no_rot"))
+trainer_SMPL._resume_checkpoint(os.path.join(data_folder,"checkpoints/enc_dec_S15678_no_rot_not3SMPL"))
 
 trainer_SMPL.train()
 

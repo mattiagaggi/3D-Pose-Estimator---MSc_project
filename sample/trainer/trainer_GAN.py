@@ -36,8 +36,8 @@ class Trainer_GAN(BaseTrainer):
                  optimizer_generator,
                  optimizer_discriminator,
                  data_train,
+                 data_test,
                  args,
-                 data_test=None,
                  no_cuda = no_cuda,
                  eval_epoch = False
                  ):
@@ -60,7 +60,6 @@ class Trainer_GAN(BaseTrainer):
         self.data_test = data_test
 
         #test while training
-        self.test_log_step = None
         self.img_log_step = args.img_log_step
         if data_test is not None:
             self.test_log_step = args.test_log_step
@@ -68,6 +67,7 @@ class Trainer_GAN(BaseTrainer):
         self.log_images_start_training = [10, 100, 500,1000]
         self.parameters_show = self.train_log_step * 300
         self.len_trainset = len(self.data_train)
+        self.len_testset=len(self.data_test)
         self.smpl_layer = SMPL_Layer(
             center_idx=0,
             gender='neutral',
@@ -120,9 +120,6 @@ class Trainer_GAN(BaseTrainer):
 
 
 
-
-
-
     def train_step(self, bid, smpl_real, pbar, epoch, optimise_discriminator):
 
         self.optimizer.zero_grad()
@@ -166,6 +163,10 @@ class Trainer_GAN(BaseTrainer):
                                                self.global_step)
             self.train_logger.record_scalar('train_loss_generator', val_gen,
                                                self.global_step)
+
+        if bid % self.test_log_step:
+            self.test_step_on_random(bid)
+
         if (bid % self.img_log_step == 0) or (self.global_step in self.log_images_start_training):
             self.train_logger.save_dic("train", {"smpl":preds,
                                                  "labels": labels}, self.global_step)
@@ -179,7 +180,20 @@ class Trainer_GAN(BaseTrainer):
 
 
     def test_step_on_random(self,bid):
-        pass
+
+        self.model.eval()
+        smpl_real = next(iter(self.data_test))
+        ones_label = numpy_to_tensor_float(np.ones((smpl_real.size()[0],1)))
+        if not no_cuda:
+            smpl_real=smpl_real.cuda()
+            ones_label=ones_label.cuda()
+        preds = self.model.discriminator(smpl_real)
+        loss_discriminator = self.loss_discriminator(preds, ones_label)
+        self.model.train()
+        self.model_logger.train.add_scalar('loss_validation', loss_discriminator.item(),
+                                           self.global_step)
+        self.train_logger.record_scalar('loss_validation', loss_discriminator.item(), self.global_step)
+
 
 
     def _train_epoch(self, epoch):

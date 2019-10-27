@@ -23,6 +23,8 @@ class Surreal_data_load(Data_Base_class):
         self.index_number =[]
         self.total_length =0
         self._logger.info("start")
+        data_used = 10 ** 7
+        self._logger.info("Remember amount of data is: %s" % data_used)
         for i in file_paths:
             if "info" in i:
                 data = sio.loadmat(i)
@@ -33,7 +35,7 @@ class Surreal_data_load(Data_Base_class):
                 self.index_number.append(N)
                 if len(self.index_number)>1:
                     self.index_number[-1] = self.index_number[-1]+self.index_number[-2]
-                if self.total_length >= 10**7:
+                if self.total_length >= data_used:
                     break
         self._logger.info("dataset size %s" % self.total_length)
 

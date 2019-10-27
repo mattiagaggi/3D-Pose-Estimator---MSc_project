@@ -6,7 +6,7 @@ from sample.config.data_conf import PARAMS
 from sample.parsers.parser_gan_smpl import GAN_Parser
 from torch.nn import BCELoss
 from sample.trainer.trainer_GAN import Trainer_GAN
-import os
+
 
 
 
@@ -19,13 +19,21 @@ args_GAN = parser.get_arguments()
 
 
 
-data_test = None
 
 data_train_load = Surreal_data_load(
                         sampling_train, 0 # not used
                          )
 
+data_test_load = Surreal_data_load(
+                        sampling_test, 1 # not used
+                         )
+
 train_data_loader = DataLoader(data_train_load,
+                                   batch_size=args_GAN.batch_size,
+                                   shuffle=True,
+                                   num_workers = args_GAN.num_threads )
+
+test_data_loader = DataLoader(data_test_load,
                                    batch_size=args_GAN.batch_size,
                                    shuffle=True,
                                    num_workers = args_GAN.num_threads )
@@ -51,7 +59,7 @@ trainer_GAN =Trainer_GAN(
         optimizer_discriminator,
         args=args_GAN,
         data_train=train_data_loader,
-        data_test = data_test,
+        data_test = test_data_loader
 )
 
 

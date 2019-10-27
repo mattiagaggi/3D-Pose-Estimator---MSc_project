@@ -1,7 +1,10 @@
 from sample.base.base_parser import BaseParser
+from data.config import data_folder
+import os
+out = os.path.join(data_folder,"checkpoints")
 
 
-name='enc_dec_S15678_no_rot_not'
+name='enc_dec_S15678_no_rot_not3'
 name1=name+"3D"
 name2=name+"SMPL"
 
@@ -53,11 +56,11 @@ class SMPL_Parser(BaseParser):
         self._add_batch_size(64)
         self._add_epochs(100)
         self._add_name(name2)
-        self._add_output_dir("data/checkpoints")
-        self._add_model_checkpoints(5000)
+        self._add_output_dir(out)
+        self._add_model_checkpoints(200)
         self._add_data_threads(0)
-        #self._add_verbose(50, 30, 500, 100) #verb iter, train_log_step,img log_step
-        self._add_verbose(50, 5, 10, 100)
+        self._add_verbose(50, 30, 100, 100) #verb iter, train_log_step,img log_step
+        #self._add_verbose(50, 5, 10, 100)
 
 
 

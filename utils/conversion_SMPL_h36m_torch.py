@@ -14,10 +14,10 @@ def from_smpl_to_h36m_world_torch(points_smpl, root_position, from_camera=False,
     batch_size = points_smpl.size()[0]
     #rotate so it matches h36m convertion
     if not from_camera:
-        angle = 90. / 180 * np.pi
+        angle = -90. / 180 * np.pi
     else:
         assert R_world_cam is not None
-        angle = np.pi
+        angle = - np.pi
     R = rotate_x_torch(angle, batch_size)
     points_smpl = torch.bmm(points_smpl, R.transpose(1, 2))
     #rescale

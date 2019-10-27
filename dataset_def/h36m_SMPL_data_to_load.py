@@ -14,7 +14,8 @@ class SMPL_Data_Load(Data_Base_class):
                  index_file_content=['s'],
                  index_file_list=[[1]],
                  get_intermediate_frames = False,
-                 subsampling_fno = 0):
+                 subsampling_fno = 0,
+                 randomise=True):
         """
         :param args:
         :param sampling:

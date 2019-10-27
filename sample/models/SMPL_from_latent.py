@@ -4,6 +4,9 @@ import numpy as np
 from sample.base.base_model import BaseModel
 from utils.smpl_torch.pytorch.smpl_layer import SMPL_Layer
 from utils.trans_numpy_torch import numpy_to_tensor_float
+from data.config import model_smpl
+
+#sys.path.append('home/ucabgag/home/Documents/MSc_project')
 
 
 class SMPL_from_Latent(BaseModel):
@@ -17,10 +20,10 @@ class SMPL_from_Latent(BaseModel):
         self.d_in_3d = d_in_3d
         self.SMPL_pose_params = 72
         self.SMPL_shape_params = 10
-        self.n_regressions = 4
+        self.n_regressions = 5
 
 
-        self.SMPL_layer_neutral = SMPL_Layer(center_idx=0, gender='neutral', model_root='data/models_smpl')
+        self.SMPL_layer_neutral = SMPL_Layer(center_idx=0, gender='neutral', model_root=model_smpl)
         self.faces = self.SMPL_layer_neutral.th_faces
 
         self.kintree_table = self.SMPL_layer_neutral.kintree_table
@@ -40,27 +43,13 @@ class SMPL_from_Latent(BaseModel):
                 ])
         
         self.fully_connected = torch.nn.Sequential(*module_list)
-        
-        """
-        regression_lst = [
-            torch.nn.Linear(d_in_3d + d_in_app + self.SMPL_pose_params + self.SMPL_shape_params, d_hidden),
-            torch.nn.ReLU(),
-            torch.nn.BatchNorm1d( d_hidden, affine=True),
-            torch.nn.Linear(d_hidden, d_hidden),
-            torch.nn.Linear(d_hidden, self.SMPL_pose_params +self.SMPL_shape_params)
-
-        ]
-        #hyperbolic tangent
-        """
-        #self.regression_module = torch.nn.Sequential(*regression_lst)
-        #self.initial_pose = numpy_to_param(np.zeros((batch_size, self.SMPL_pose_params)))
-        #self.initial_shape = numpy_to_tensor_float(np.zeros((batch_size, self.SMPL_shape_params)))
 
         shape_list = [
             torch.nn.Linear(d_hidden, d_hidden),
             torch.nn.ReLU(),
             torch.nn.BatchNorm1d( d_hidden, affine=True),
-            torch.nn.Linear(d_hidden, self.SMPL_shape_params)
+            torch.nn.Linear(d_hidden, self.SMPL_shape_params),
+            torch.nn.Tanh()
 
         ]
         self.to_shape = torch.nn.Sequential(*shape_list)
@@ -70,8 +59,8 @@ class SMPL_from_Latent(BaseModel):
             torch.nn.Linear(d_hidden, d_hidden),
             torch.nn.ReLU(),
             torch.nn.BatchNorm1d( d_hidden, affine=True),
-            torch.nn.Linear(d_hidden, self.SMPL_pose_params)
-
+            torch.nn.Linear(d_hidden, self.SMPL_pose_params),
+            torch.nn.Tanh()
         ]
 
         self.to_pose = torch.nn.Sequential(*pose_list)

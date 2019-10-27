@@ -5,7 +5,8 @@ import numpy as np
 from utils.conversion_SMPL_h36m_torch import Convert_joints
 from sample.losses.poses import MPJ
 from sample.losses.images import Cross_Entropy_loss
-from sample.models.GAN import GAN_SMPL
+from utils.trans_numpy_torch import numpy_to_tensor_float
+from torch.nn import BCELoss
 
 
 
@@ -22,6 +23,8 @@ class Masks_Loss(BaseMetric):
 
         total_loss = self.cross_entropy(pred, gt)
         return torch.mean(total_loss)
+
+
 
 
 class Pose_Loss_SMPL(BaseMetric):
@@ -64,10 +67,12 @@ class SMPL_Loss(BaseMetric):
 
         self.init__ = super().__init__()
         self.batch_size = batch_size
-        self.masks_criterium = Masks_Loss(batch_size)
+        #self.masks_criterium = Masks_Loss(batch_size)
+        self.masks_criterium = BCELoss()
         self.pose_criterium = Pose_Loss_SMPL()
         self.SMPL_init = Loss_Pose_Zero()
-
+        self.beta=1
+        self.alpha=10
         self.optimise_vertices = False
 
 
@@ -75,14 +80,15 @@ class SMPL_Loss(BaseMetric):
         loss_pose = self.pose_criterium(dic_out['joints_im'], dic_in['joints_im']) #symmetric
         if "discr_output" in dic_out.keys():
             GAN_OUTPUT= dic_out["discr_output"]
-            gan_loss = torch.mean(GAN_OUTPUT)
-            loss_pose_GAN = loss_pose * (gan_loss+1)
+            ones_label = numpy_to_tensor_float(np.ones((GAN_OUTPUT.size()[0], 1)))
+            gan_loss = self.masks_criterium(GAN_OUTPUT, ones_label)
+            loss_pose_GAN = loss_pose + self.alpha * gan_loss
         else:
             loss_pose_GAN= loss_pose
         total_loss = loss_pose_GAN
         if self.optimise_vertices:
-            loss_mask = self.masks_criterium(dic_out['mask_image'], dic_in['mask_image'])
-            total_loss = loss_mask
+            loss_mask = self.masks_criterium(dic_out['mask_image'].view(-1,1), dic_in['mask_image'].view(-1,1))
+            total_loss = loss_pose_GAN + self.beta* loss_mask
             return total_loss, loss_pose, loss_mask  # , loss_mask
         return total_loss, loss_pose
 

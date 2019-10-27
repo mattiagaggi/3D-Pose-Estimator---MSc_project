@@ -7,7 +7,7 @@ from torch.nn import Module
 from utils.smpl_torch.native.webuser.serialization import ready_arguments
 from utils.smpl_torch.pytorch import rodrigues_layer
 from utils.smpl_torch.pytorch.tensutils import th_posemap_axisang, th_with_zeros, th_pack, make_list, subtract_flat_id
-
+from data.config import model_smpl
 
 class SMPL_Layer(Module):
     __constants__ = ['kintree_parents', 'gender', 'center_idx', 'num_joints']
@@ -15,7 +15,7 @@ class SMPL_Layer(Module):
     def __init__(self,
                  center_idx=None,
                  gender='neutral',
-                 model_root='data/models_smpl'):
+                 model_root=model_smpl):
         """
         Args:
             center_idx: index of center joint in our computations,

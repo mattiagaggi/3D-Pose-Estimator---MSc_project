@@ -1,22 +1,24 @@
+
 import torch.nn
+
+print("is cuda available",torch.cuda.is_available())
+
 from dataset_def.h36m_encoder_data import Data_3dpose
 from dataset_def.h36m_encoder_data_to_load import Data_3dpose_to_load
 from utils.collating_functions import collate_h36m
 from torch.utils.data import DataLoader
+
 from sample.models.pose_encoder_decoder import Pose_3D
 from sample.parsers.parser_enc_dec import EncParser
 from sample.config.data_conf import PARAMS
 from sample.losses.images import L2_Resnet_Loss
 from sample.trainer.trainer_encoder_decoder import Trainer_Enc_Dec
 
-
 device=PARAMS['data']['device']
 sampling_train= PARAMS.data.sampling_train
 sampling_test= PARAMS.data.sampling_test
 parser = EncParser("Encoder parser")
 args_enc = parser.get_arguments()
-print(torch.cuda.is_available())
-
 
 
 
@@ -66,8 +68,4 @@ trainer._resume_checkpoint("data/checkpoints/enc_dec_S15678_no_rot")
 model.encoder_decoder = trainer.model
 
 trainer.train()
-
-
-
-
 
