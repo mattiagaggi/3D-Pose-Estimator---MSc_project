@@ -1,17 +1,14 @@
 
 import numpy as np
 from numpy.random import randint
-from numpy.random import normal
 from random import shuffle
 
-from utils.utils_H36M.common import H36M_CONF
 from sample.config.data_conf import PARAMS
 from dataset_def.h36m_preprocess import Data_Base_class
 from utils.trans_numpy_torch import encoder_dictionary_to_pytorch
 from utils.utils_H36M.transformations import bounding_box_pixel, get_patch_image, cam_pointing_root, rotate_z, transform_2d_joints, world_to_pixel
 from utils.utils_H36M.common import H36M_CONF
 from utils.utils_H36M.visualise import Drawer
-from utils.utils_H36M.transformations import get_rotation_angle
 from matplotlib import pyplot as plt
 
 

@@ -34,7 +34,7 @@ class Encoder_Tester(BaseTester):
 
     def test_on(self,s_list,sampling,name):
         self.model.eval()
-        for act in range(3,17):
+        for act in range(2,17):
             self._logger.info("act %s",act)
             data_test = Data_3dpose(args_pose,  # subsampling_fno = 2,
                                     index_file_content=['s','act'],
@@ -52,7 +52,6 @@ class Encoder_Tester(BaseTester):
                         in_test_dic[k] = in_test_dic[k].cuda()
                     for k in out_test_dic.keys():
                         out_test_dic[k] = out_test_dic[k].cuda()
-                b = in_test_dic['R_world_im_target']
                 for r in [0,30,45,60,90,180]:
                     in_test_dic['background_target']= in_test_dic['background_target']
                     if r !=0:
@@ -60,10 +59,6 @@ class Encoder_Tester(BaseTester):
                     out_im = self.model(in_test_dic)
                     out_test_dic["image_final"+str(r)]=out_im
 
-                if bid in [0]:
-                    self.train_logger.save_dics(name,in_test_dic,out_test_dic,"act_"+str(act)+"n"+str(bid))
-                else:
-                    break
 
 
 

@@ -1,6 +1,4 @@
 from sample.tester.test_enc_dec import Encoder_Tester
-
-
 from sample.models.encoder_decoder import Encoder_Decoder
 
 

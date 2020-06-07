@@ -1,29 +1,29 @@
 
-# MSc project - 3D Human Pose Estimation
-
-
+# MSc project - 3D Human Pose and SMPL model parameters  Estimation
 
 ## Overview
 
-This is the Github repository of my MSc Thesis.
-The training files are the files in sample labeled as train ... .py .
-Those files train the different models.
+This is the Github repository of my MSc Thesis in Computational Statistics and MAchine Learning at University College London.
+The thesis aims at expanding on the work by Rhodin *et al* in the paper Unsupervised Geometry-Aware Representation for 3D Human Pose Estimation (https://arxiv.org/pdf/1804.01110.pdf).
 
-The file *train_enc_dec* trains an encoder decoder network from the paper "Unsupervised Geometry-Aware Representation for 3D Human Pose Estimation" by Rodhin H.
+This works is divided in two parts:
 
-The file *train_3d_pose_from_enc.py* trains a network to predict the 3d pose from the embeddings of the encoder (from the same paper) whic has been appropriately saved in a pickle file format.
+1) Reproducing the work from Rhodin that leverages multiple views at training time to estimate the 3D pose from monocular images.
+This is done by training an encoder decoder architecture to reproduce images from different angles given an in input image.
 
-The file *train_SMPL_from_enc.py* trains the SMPL model from the embeddings of the encoder.
-These files can be used to get started on the code.
-
-THINGS LEFT TO DO:
-
-explain the structure of the files more in depth
-
-add comments to functions and classes
+<img src="images/encoder_decoder.png" width=500>
 
 
 
+
+
+
+## Structure
+
+
+
+
+# Usage
 
 ## Setup - Python 3.6
 
@@ -87,19 +87,26 @@ These should be arranged the exact same way as the images except that they have 
 5. Now everything is set-up go to the next section.
 
 
+## Training the models
 
+The training files are the files in sample labeled as train ... .py .
+Those files train the different models.
 
-## Usage 
+The file *train_enc_dec* trains an encoder decoder network from the paper "Unsupervised Geometry-Aware Representation for 3D Human Pose Estimation" by Rodhin H.
 
+The file *train_3d_pose_from_enc.py* trains a network to predict the 3d pose from the embeddings of the encoder (from the same paper) whic has been appropriately saved in a pickle file format.
 
-
+The file *train_SMPL_from_enc.py* trains the SMPL model from the embeddings of the encoder.
+These files can be used to get started on the code.
 
 ## References
 
-For the SMPL model we used the Gulvarol implementation INSERT WEBSITE.
-Some of the code in the utils folder is from Denis Tome (https://github.com/DenisTome).
-    INSERT REFERENCE OF THE GUY YOU'LL TAKE THE HOURGLASS NET FROM
+All of the code found here has been implemented by me except for the following:
 
+- For the SMPL model we used the Gulvarol implementation (https://github.com/gulvarol/smplpytorch).
+
+- Some of the code in the utils folder is from Denis Tome (https://github.com/DenisTome).
+    
 
 
 

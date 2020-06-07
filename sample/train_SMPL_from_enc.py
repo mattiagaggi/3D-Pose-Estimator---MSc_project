@@ -1,5 +1,4 @@
 
-
 import torch.nn
 from torch.utils.data import DataLoader
 from dataset_def.h36m_SMPL_data import SMPL_Data

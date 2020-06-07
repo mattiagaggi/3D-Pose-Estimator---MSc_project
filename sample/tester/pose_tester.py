@@ -39,8 +39,6 @@ class Pose_Tester(BaseTester):
 
 
     def gt_cam_mean_cam(self, dic_in, dic_out):
-        #batch_size = dic_in['R_world_im'].size()[0]
-        #mean = torch.bmm( self.mean_pose.repeat(batch_size,1,1), dic_in['R_world_im'].transpose(1,2))
         gt = torch.bmm( dic_out['joints_im'], dic_in['R_world_im'].transpose(1,2))
         return gt, None
 
@@ -59,12 +57,8 @@ class Pose_Tester(BaseTester):
                                     randomise=True
                                     )  # 8,9
             self._logger.info("acr %s, n %s" %(act,len(data_test)))
-            
             pbar =tqdm(data_test)
-
-
             for bid, (in_test_dic, out_test_dic) in enumerate(pbar):
-                break
                 if not no_cuda:
                     for k in in_test_dic.keys():
                         in_test_dic[k] = in_test_dic[k].cuda()
@@ -72,26 +66,17 @@ class Pose_Tester(BaseTester):
                         out_test_dic[k] = out_test_dic[k].cuda()
                 gt, _ = self.gt_cam_mean_cam(in_test_dic, out_test_dic)
                 out_pose = self.model(in_test_dic)
-                #out_pose = out_pose_norm + mean
                 out_test_dic["pose_final"] = out_pose
-                if bid in [0,1,2,3,4,5]:
-                    self.train_logger.save_dics(name,in_test_dic,out_test_dic,"act_"+str(act)+"n"+str(bid))
-                else:
-                    break
+
                 lst=[]
                 for idx,m in enumerate(self.metrics):
                     value = m(out_pose, gt)
                     lst.append(value.item())
                 arr=np.array(lst)
-                if len(arr[arr>500])!=0:
-                    self._logger.info("abnormal found %s " % arr[arr>500][-1])
-                    self.train_logger.save_dics(name, in_test_dic, out_test_dic,
-                                                "abnormal " + str(act) + "n" + str(arr[arr>100][-1]))
-                else:
-                    for idx, m in enumerate(self.metrics):
-                        self.dic_results[idx][-1] += lst[idx]
-                    #save stuff
-                    self.batch_numbers[-1] +=1
+
+                for idx, m in enumerate(self.metrics):
+                    self.dic_results[idx][-1] += lst[idx]
+                self.batch_numbers[-1] +=1
                 self._logger.info("%s  ,%s" %(self.dic_results[0][-1]/self.batch_numbers[-1],self.dic_results[2][-1]/self.batch_numbers[-1]))
             self._logger.info("act %s %s %s" % (self.dic_results[0][-1]/self.batch_numbers[-1],
                               self.dic_results[1][-1] / self.batch_numbers[-1],

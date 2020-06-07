@@ -9,8 +9,6 @@ from sample.trainer.trainer_GAN import Trainer_GAN
 
 
 
-
-
 device=PARAMS['data']['device']
 sampling_train=PARAMS.data.sampling_train
 sampling_test= PARAMS.data.sampling_test
@@ -38,10 +36,7 @@ test_data_loader = DataLoader(data_test_load,
                                    shuffle=True,
                                    num_workers = args_GAN.num_threads )
 
-
 model = GAN_SMPL()
-
-
 
 metrics=[]
 

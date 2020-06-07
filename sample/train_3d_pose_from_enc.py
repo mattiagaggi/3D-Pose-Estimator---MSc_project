@@ -18,10 +18,6 @@ device=PARAMS['data']['device']
 sampling_train=PARAMS.data.sampling_train
 sampling_test= PARAMS.data.sampling_test
 
-
-
-
-"""
 data_train_load = Data_3dpose_to_load( #subsampling_fno = 1
                          index_file_content =['s'],
                          #index_file_list=[[1, 5, 6, 7],[1,2]])
@@ -35,18 +31,7 @@ train_data_loader = DataLoader(data_train_load,
                                    shuffle=True,
                                    num_workers = args_pose.num_threads,
                                 collate_fn = collate_h36m, pin_memory=True )
-"""
-data_train = Data_3dpose(args_pose,  #subsampling_fno = 2,
-                        index_file_content =['s'],
-                        index_file_list=[[1]],
-                        sampling=sampling_train
-                        ) #8,9
-data_test = Data_3dpose(args_pose,  #subsampling_fno = 2,
-                        index_file_content =['s'],
-                        index_file_list=[[9,11]],
-                        sampling=sampling_test
-                        ) #8,9
-"""
+
 data_test_load = Data_3dpose_to_load( #subsampling_fno = 1
                          index_file_content =['s'],
                          #index_file_list=[[1, 5, 6, 7],[1,2]])
@@ -61,7 +46,6 @@ test_data_loader = DataLoader(data_test_load,
                                    num_workers = args_pose.num_threads,
                                 collate_fn = collate_h36m, pin_memory=True )
 
-"""
 model = Pose_3D()
 
 
@@ -75,8 +59,8 @@ trainer_pose =Trainer_Enc_Dec_Pose(
         args=args_pose,
         metrics=metrics,
         optimizer=optimizer_pose,
-        data_train=data_train,
-        data_test = data_test,
+        data_train=data_train_load,
+        data_test = test_data_loader,
 )
 
 #trainer_pose.resume_encoder("data/checkpoints/enc_dec_S15678_no_rot")
