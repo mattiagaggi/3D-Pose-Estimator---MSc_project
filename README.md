@@ -5,17 +5,42 @@
 
 This is the Github repository of my MSc Thesis in Computational Statistics and MAchine Learning at University College London.
 The thesis aims at expanding on the work by Rhodin *et al* in the paper Unsupervised Geometry-Aware Representation for 3D Human Pose Estimation (https://arxiv.org/pdf/1804.01110.pdf).
+Here we provide an overview of the work done, more details can be found in my dissertation.
 
 This works is divided in two parts:
 
 1) Reproducing the work from Rhodin that leverages multiple views at training time to estimate the 3D pose from monocular images.
 This is done by training an encoder decoder architecture to reproduce images from different angles given an in input image.
+In the first stage the encoder decoder is trained on the multiple views. In the second stage the weights of the encoder are fixed and a shallow network is trained on top of the encoder to minimise the L2 distance between the outputs and the 3D joints.
+With this protocol, we can reduce the pose data needed to solve the regression problem with an acceptable error - More details on the original paper (https://arxiv.org/pdf/1804.01110.pdf).
 
 <img src="images/encoder_decoder.png" width=500>
 
+2) Expand on the work done by Rhodin and learn pose and shape parameters of the SMPL model (https://smpl.is.tue.mpg.de/)
+which is a realistic body model in order to locate not only the joints but also the body shape of the person.
+As there are no ground truths available in the dataset we devise an architecture that exploits: the 3D joints location, the silhouettes images present in the dataset and
+with a prior for the body model parameters.
+
+After training the encoder the same way as in 1) we also train a GAN on realistic pose and shape parameters (&theta; and &beta; below ) of the SMPL model using data from the SURREAL dataset (https://www.di.ens.fr/willow/research/surreal/data/).
+After training, we will discard the generator and only use the discriminator. In the body model estimation the weights of the discriminator will be fixed and the loss of the discriminator will act as a 
+regulariser constraining the SMPL parameters to be realistic.
+
+Then we construct the final network as in the image below.
+The network aims to minimise a linear combination of three losses:
+
+1) L<sub>pose</sub>: the loss distance between the joints of the SMPL model and the ground truths (available in the dataset).
+
+2) L<sub>verts</sub>: the loss between the rasterised vertices and the ground truth silhouettes (available in the dataset).
+
+3) L<sub>gan</sub>: the loss on the SMPL parameters &theta; and &beta; which acts as a regulariser in SMPL parameters space (trained previously).
+
+img src="images/encoder_SMPL.png" width=500>
 
 
 
+The whole architecture is differentiable (including the resteriser - https://arxiv.org/abs/1711.07566). 
+
+## Overview
 
 
 ## Structure
