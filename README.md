@@ -34,7 +34,7 @@ The network aims to minimise a linear combination of three losses:
 
 3) L<sub>gan</sub>: the loss on the SMPL parameters &theta; and &beta; which acts as a regulariser in SMPL parameters space (trained previously).
 
-img src="images/encoder_SMPL.png" width=500>
+<img src="images/encoder_SMPL.png" width=500>
 
 
 
