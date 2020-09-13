@@ -60,7 +60,7 @@ This is due to the uncontrained nature of the SMPL parameters prediction, especi
 - There is a mismatch between the 3D pose points used in the H3.6M dataset and the 3D pose point of the SMPL model.
 this means that the hip-joints could not be used as ground truths. These joints are vital to make sure that the predicted poses have correct orientation.
 
--The SMPL parameters are inherently unconstrained.
+- The SMPL parameters are inherently unconstrained.
 Linear blend skinning of the SMPL model gives good vertices location when the blended transformations are not very different. 
 However we might have issues if we need to blend transformations that are very far from one another in their rotation component. 
 These large rotations are not uncommon in the human body because shoulders, wrists, or even elbows exhibit a rather large range of motion. 
