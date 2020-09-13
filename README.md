@@ -40,7 +40,7 @@ The network aims to minimise a linear combination of three losses:
 The whole architecture is differentiable (including the resteriser - https://arxiv.org/abs/1711.07566 and the SMPL model). 
 
 
-## Results.
+## Results
 
 The encoder decoder architecture was trained on images subjects 1,3,5,7 but the pose regressor and the SMPL parameters regressor only levaraged the 3D poses of 1 subject (subject 1).
 Our 3D pose architecture yield comparable results to Rhodin's results. One key difference between our approach and Rhodin's is that we most likely used different augmentations (the angle for the in-plane rotations was not reported in Rhodin's approach).
