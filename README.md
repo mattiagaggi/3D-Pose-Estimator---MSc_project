@@ -1,9 +1,9 @@
 
-# MSc project - 3D Human Pose and SMPL model parameters  Estimation
+# MSc project - 3D Human Pose and Shape Estimation 
 
 ## Overview
 
-This is the Github repository of my MSc Thesis in Computational Statistics and MAchine Learning at University College London.
+This is the Github repository of my MSc Thesis in Computational Statistics and Machine Learning at University College London.
 The thesis aims at expanding on the work by Rhodin *et al* in the paper Unsupervised Geometry-Aware Representation for 3D Human Pose Estimation (https://arxiv.org/pdf/1804.01110.pdf).
 Here we provide an overview of the work done, more details can be found in my dissertation.
 
@@ -37,13 +37,44 @@ The network aims to minimise a linear combination of three losses:
 <img src="images/encoder_SMPL.png" width=1000>
 
 
-
-The whole architecture is differentiable (including the resteriser - https://arxiv.org/abs/1711.07566). 
-
-## Overview
+The whole architecture is differentiable (including the resteriser - https://arxiv.org/abs/1711.07566 and the SMPL model). 
 
 
-## Structure
+## Results.
+
+The encoder decoder architecture was trained on images subjects 1,3,5,7 but the pose regressor and the SMPL parameters regressor only levaraged the 3D poses of 1 subject (subject 1).
+Our 3D pose architecture yield comparable results to Rhodin's results. One key difference between our approach and Rhodin's is that we most likely used different augmentations (the angle for the in-plane rotations was not reported in Rhodin's approach).
+Therefore, our approach might be more stable to poses at different angle although the N-MPJ on the test set is higher (152 mm vs 146 mm). NA means that the value was not reported in the paper.
+The results of the Mean per Joint Error (MPJ), Normalised 
+MPJ and Procustes Aligned MPJ is reported above.
+
+<img src="images/results1.png" width=1000>
+
+Regarding the results from the SMPL parameters regressor we aren't able to provide quantitative results because the ground truth SMPL parameters were not available during this research.
+However we can provide qualitative examples. Below we see two predictions from the monocular images from the test set. In the first picture the shape and pose of the person appears correctly (at least through visual inspection),
+while in the second picture it appears distorted. This is because in the first picture the subject is facing the camera which is a pose closer to the zero pose (subject facing the camera in resting pose). In the second picture the subject is facing away from the camera so the 
+resulting prediction requires a 180 degrees rotation from the rest pose.
+In these cases the L<sub>verts</sub> and L<sub>pose</sub> optimisation take over the L<sub>gan</sub> loss optimisation so the poses produced look unrealistic.
+This is due to the uncontrained nature of the SMPL parameters prediction, especially by three issues:
+
+- There is a mismatch between the 3D pose points used in the H3.6M dataset and the 3D pose point of the SMPL model.
+this means that the hip-joints could not be used as ground truths. These joints are vital to make sure that the predicted poses have correct orientation.
+
+-The SMPL parameters are inherently unconstrained.
+Linear blend skinning of the SMPL model gives good vertices location when the blended transformations are not very different. 
+However we might have issues if we need to blend transformations that are very far from one another in their rotation component. 
+These large rotations are not uncommon in the human body because shoulders, wrists, or even elbows exhibit a rather large range of motion. 
+As a consequence, the linear blending formulation is inherently unconstrained and can generate unrealistic shapes given by extreme joints rotation.
+
+- The vertex prediction is unconstrained. Projecting the vertices over 4 masks is an heavily uncontrained supervised problem.
+
+In spite of these three issues, these results look promising and show that the SMPL paramterers prediction might be possible
+even when only leveraging poses from one subject. This was never attempted before in the literature (at least to our knowledge).
+This might be achievable in future work though better balancing of the losses or by modifying the initialisation of the base pose and shape.
+
+<img src="images/results2.png" width=1000>
+
+<img src="images/results3.png" width=1000>
 
 
 
@@ -60,14 +91,15 @@ The whole architecture is differentiable (including the resteriser - https://arx
     (Download the SMPL model files [here](http://smplify.is.tue.mpg.de/downloads).
     Here we use the neutral model
 
-
-    -  Install all the prerequisites. This can be done using the command
-    conda create --name ** ENV_NAME ** --file requirements.txt
+    -  Install all the prerequisites. This can be done using the command:
+            
+            conda create --name ** ENV_NAME ** --file requirements.txt
+    
     This will not install packages installed using pip so you might need to do:
     
-    pip install chumpy    #used for the SMPL model
+            pip install chumpy    #used for the SMPL model
     
-    pip install neural-renderer-pytorch
+            pip install neural-renderer-pytorch
     
     Alternatively you can recreate the environment from requirements.yml, although that will give an error when encountering the pip packages
     
