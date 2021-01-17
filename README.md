@@ -84,17 +84,18 @@ even when only leveraging poses from one subject. This was never attempted befor
 This might be achievable in future work though better balancing of the losses or by modifying the initialisation of the base pose and shape.
 <p>
 <img src="images/results2.png" width=1000>
-    <em>Figure 4: Two examples of input^{*} and output from the SMPL model regressor architecture.</em>
+    <em>Figure 4: Two examples of input<sup>*</sup> and output from the SMPL model regressor architecture.</em>
     The predictions seem reasonable, although with a few imperfections (position of the head).
     
 </p>
 <p>
 <img src="images/results3.png" width=1000>
-    <em>Figure 5: Figure 4: One example of input^{*} and output from the SMPL model regressor architecture.
+    <em>Figure 5: Figure 4: One example of input<sup>*</sup> and output from the SMPL model regressor architecture.
     The prediction here is off most likely for the reasons explained above.</em>
 </p>
 
-
+<sup>*</sup> I apologised for the bluish images, here the RGB color were messed up when I was getting this the night before my thesis submission.
+I did not realise because I set up a blue light on my screen (I know, hilarious).
 # Usage
 
 ## Setup - Python 3.6
