@@ -95,7 +95,7 @@ This might be achievable in future work though better balancing of the losses or
 </p>
 
 <sup>*</sup> I apologised for the bluish images, here the RGB color were messed up when I was getting this the night before my thesis submission.
-I did not realise because I set up a blue light on my screen (I know, hilarious).
+I didn't realise because I set up a blue light on my screen (I know, hilarious). 
 # Usage
 
 ## Setup - Python 3.6
