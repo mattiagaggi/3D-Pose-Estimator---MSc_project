@@ -15,7 +15,7 @@ In the first stage the encoder decoder is trained on the multiple views. In the 
 With this protocol, we can reduce the pose data needed to solve the regression problem with an acceptable error - More details on the original paper (https://arxiv.org/pdf/1804.01110.pdf).
 
 <figure class="image">
-<img src="images/encoder_decoder.png" width=700>
+<img src="images/encoder_decoder.png" alt="{{ include.description }}">
  <figcaption>{{ include.description }}</figcaption>
  </figure>
 
