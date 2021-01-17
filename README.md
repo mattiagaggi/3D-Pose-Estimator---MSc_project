@@ -7,11 +7,17 @@ This is the Github repository of my MSc Thesis in Computational Statistics and M
 The thesis aims at expanding on the work by Rhodin *et al* in the paper Unsupervised Geometry-Aware Representation for 3D Human Pose Estimation (https://arxiv.org/pdf/1804.01110.pdf).
 Here we provide an overview of the work done, more details can be found in my dissertation.
 
+I will be trying to be as faithful as possible to the work done without "embellishing" the results as seems to be common practice in the research community.
+I will also keep a very informal tone, otherwise reading this would be super boring - thanks for getting this far by the way. 
+After all I am not trying to get funding or anything like that. Ok getting serious now.
+
+
 This works is divided in two parts:
 
 1) Reproducing the work from Rhodin that leverages multiple cameras at training time to estimate the 3D pose from monocular images.
 This is done by training an encoder-decoder architecture to reproduce images from different angles given an in input image.
-In the first stage the encoder-decoder is trained on the multiple views. In the second stage the weights of the encoder are fixed and a shallow network is trained on top of the encoder to minimise the L2 distance between the outputs and the 3D joints.
+In the first stage, the encoder-decoder is trained on the multiple views by feeding as input image, the image from a different camera and the 3D rotation between the root joints in the two images. 
+In the second stage, the weights of the encoder are fixed and a shallow network is trained on top of the encoder to minimise the L2 distance between the outputs and the 3D joints.
 With this protocol, we can reduce the pose data needed to solve the regression problem with an error reported below - More details on the original paper (https://arxiv.org/pdf/1804.01110.pdf).
 
 <p>
@@ -46,10 +52,6 @@ Same as before, only the 3D poses from subject 1 were used.
 </p>
 
 
-
- 
-
-
 ## Results
 
 The encoder-decoder architecture was trained on images subjects 1,3,5,7 but the pose regressor and the SMPL parameters regressor only leveraged the 3D poses of 1 subject (subject 1).
@@ -77,11 +79,11 @@ However we might have issues if we need to blend transformations that are very f
 These large rotations are not uncommon in the human body because shoulders, wrists, or even elbows exhibit a rather large range of motion. 
 As a consequence, the linear blending formulation is inherently unconstrained and can generate unrealistic shapes given by extreme joints rotation.
 
-- The vertex prediction is unconstrained. Projecting the vertices over 4 masks is an heavily uncontrained supervised problem.
+- The vertex prediction is unconstrained. Projecting the vertices over 4 masks is an heavily unconstrained supervised problem.
 
 In spite of these three issues, these results look promising and show that the SMPL paramterers prediction might be possible
 even when only leveraging poses from one subject. This was never attempted before in the literature (at least to our knowledge).
-This might be achievable in future work though better balancing of the losses or by modifying the initialisation of the base pose and shape.
+A better balancing of the losses or  modifying the initialisation of the base pose and shape could mitigate the issue presented above.
 <p>
 <img src="images/results2.png" width=1000>
     <em>Figure 4: Two examples of input<sup>*</sup> and output from the SMPL model regressor architecture.</em>
@@ -96,6 +98,31 @@ This might be achievable in future work though better balancing of the losses or
 
 <sup>*</sup> I apologised for the bluish images, here the RGB color were messed up when I was getting this the night before my thesis submission.
 I didn't realise because I set up a blue light on my screen (I know, hilarious). 
+
+## Further Discussion and Limitation
+
+The approach used here is not directly applicable to a real-world scenario for several reasons:
+
+- At training time, in addition to assuming the use of 4 calibrated cameras, during the encoder decoder training we assume that we know the location of the root joint for each subject.
+This is effectvely cheating as we simplify the problem and actually I believe that the encoder-decoder architecture can only work with this assumption.
+By taking the rotation between the root joints in the two input images (and not just the rotation between the two cameras) we have a much wider of range of rotations since the subjects are moving in the picture.
+Therefore it would effectively be like we are leveraging data from more than the 4 views available.
+
+- Real time prediction is really slow as we are optimising to use as little data as possible.
+
+- In a real world application, we would like an approach that does not exploit sensors since they create a bias in the input image.
+In addition we would need some form of data in the wild, augmenting the images or anything to reduce domain variance for this to work in the real world.
+
+- Getting more supervised data would make a much more accurate model.
+
+Thanks for reading!
+
+
+
+
+
+
+
 # Usage
 
 ## Setup - Python 3.6
