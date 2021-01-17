@@ -15,8 +15,11 @@ In the first stage the encoder decoder is trained on the multiple views. In the 
 With this protocol, we can reduce the pose data needed to solve the regression problem with an acceptable error - More details on the original paper (https://arxiv.org/pdf/1804.01110.pdf).
 
 <figure class="image">
-<img src="images/encoder_decoder.png" alt=" lllll">
- </figure>
+  <img src="{{ include.url }}" alt="{{ include.description }}">
+  <figcaption>{{ include.description }}</figcaption>
+</figure>
+
+{% include image.html url="images/encoder_decoder.png" description="My cat, Robert Downey Jr." %}
 
 2) Expand on the work done by Rhodin and learn pose and shape parameters of the SMPL model (https://smpl.is.tue.mpg.de/)
 which is a realistic body model in order to locate not only the joints but also the body shape of the person.
