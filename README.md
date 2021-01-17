@@ -35,10 +35,12 @@ The network aims to minimise a linear combination of three losses:
 
 3) L<sub>gan</sub>: the loss on the SMPL parameters &theta; and &beta; which acts as a regulariser in SMPL parameters space (trained previously).
 
+Same as before, only the 3D poses from subject 1 were used.
+
 <p>
     <img src="images/encoder_SMPL.png" alt>
     <em>Figure 2: Diagram of the architecture blocks used in the body model prediction from monocular images. 
-    At training time we leverage the silhouttes and a discriminator previously trained on the allowed poses. 
+    At training time we leverage the silhouttes and a discriminator previously trained on the allowed poses and the encoder previously trained. 
     The whole architecture is differentiable (including the resteriser - https://arxiv.org/abs/1711.07566 and the SMPL model).</em>
     
 </p>
@@ -50,17 +52,18 @@ The network aims to minimise a linear combination of three losses:
 
 ## Results
 
-The encoder decoder architecture was trained on images subjects 1,3,5,7 but the pose regressor and the SMPL parameters regressor only levaraged the 3D poses of 1 subject (subject 1).
+The encoder-decoder architecture was trained on images subjects 1,3,5,7 but the pose regressor and the SMPL parameters regressor only leveraged the 3D poses of 1 subject (subject 1).
 Our 3D pose architecture yield comparable results to Rhodin's results. One key difference between our approach and Rhodin's is that we most likely used different augmentations (the angle for the in-plane rotations was not reported in Rhodin's approach).
 Therefore, our approach might be more stable to poses at different angle although the N-MPJ on the test set is higher (152 mm vs 146 mm). NA means that the value was not reported in the paper.
 The results of the Mean per Joint Error (MPJ), Normalised 
 MPJ and Procustes Aligned MPJ is reported above.
-
-<img src="images/results1.png" width=1000>
-
-Regarding the results from the SMPL parameters regressor we aren't able to provide quantitative results because the ground truth SMPL parameters were not available during this research.
+<p>
+    <img src="images/results1.png" width=1000>
+    <em>Figure 3: Quantitative results from the 3D joints prediction task.</em>
+</p>
+Regarding the results from the SMPL parameters regressor we aren't able to provide quantitative results because the ground truth SMPL parameters for the human3.6M were not available during this research.
 However we can provide qualitative examples. Below we see two predictions from the monocular images from the test set. In the first picture the shape and pose of the person appears correctly (at least through visual inspection),
-while in the second picture it appears distorted. This is because in the first picture the subject is facing the camera which is a pose closer to the zero pose (subject facing the camera in resting pose). In the second picture the subject is facing away from the camera so the 
+while in the second picture it appears distorted. This is ikely to happen because in the first picture the subject is facing the camera which is a pose closer to the zero pose (subject facing the camera in resting pose). In the second picture the subject is facing away from the camera so the 
 resulting prediction requires a 180 degrees rotation from the rest pose.
 In these cases the L<sub>verts</sub> and L<sub>pose</sub> optimisation take over the L<sub>gan</sub> loss optimisation so the poses produced look unrealistic.
 This is due to the uncontrained nature of the SMPL parameters prediction, especially by three issues:
@@ -79,12 +82,17 @@ As a consequence, the linear blending formulation is inherently unconstrained an
 In spite of these three issues, these results look promising and show that the SMPL paramterers prediction might be possible
 even when only leveraging poses from one subject. This was never attempted before in the literature (at least to our knowledge).
 This might be achievable in future work though better balancing of the losses or by modifying the initialisation of the base pose and shape.
-
+<p>
 <img src="images/results2.png" width=1000>
-
+    <em>Figure 4: Two examples of input^{*} and output from the SMPL model regressor architecture.</em>
+    The predictions seem reasonable, although with a few imperfections (position of the head).
+    
+</p>
+<p>
 <img src="images/results3.png" width=1000>
-
-
+    <em>Figure 5: Figure 4: One example of input^{*} and output from the SMPL model regressor architecture.
+    The prediction here is off most likely for the reasons explained above.</em>
+</p>
 
 
 # Usage
