@@ -16,7 +16,7 @@ With this protocol, we can reduce the pose data needed to solve the regression p
 
 <p>
     <img src="images/encoder_decoder.png" alt>
-    <em>image_caption</em>
+    <em>Figure 1: Training stages of the architecture by Rhodin at al. In stage 1 we train on predicting the image from a different camera. In stage 2 we train on predicting the 3D pose.</em>
 </p>
 2) Expand on the work done by Rhodin and learn pose and shape parameters of the SMPL model (https://smpl.is.tue.mpg.de/)
 which is a realistic body model in order to locate not only the joints but also the body shape of the person.
