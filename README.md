@@ -9,21 +9,20 @@ Here we provide an overview of the work done, more details can be found in my di
 
 This works is divided in two parts:
 
-1) Reproducing the work from Rhodin that leverages multiple views at training time to estimate the 3D pose from monocular images.
-This is done by training an encoder decoder architecture to reproduce images from different angles given an in input image.
-In the first stage the encoder decoder is trained on the multiple views. In the second stage the weights of the encoder are fixed and a shallow network is trained on top of the encoder to minimise the L2 distance between the outputs and the 3D joints.
-With this protocol, we can reduce the pose data needed to solve the regression problem with an acceptable error - More details on the original paper (https://arxiv.org/pdf/1804.01110.pdf).
+1) Reproducing the work from Rhodin that leverages multiple cameras at training time to estimate the 3D pose from monocular images.
+This is done by training an encoder-decoder architecture to reproduce images from different angles given an in input image.
+In the first stage the encoder-decoder is trained on the multiple views. In the second stage the weights of the encoder are fixed and a shallow network is trained on top of the encoder to minimise the L2 distance between the outputs and the 3D joints.
+With this protocol, we can reduce the pose data needed to solve the regression problem with an error reported below - More details on the original paper (https://arxiv.org/pdf/1804.01110.pdf).
 
 <p>
     <img src="images/encoder_decoder.png" alt>
-    <em>Figure 1: Training stages of the architecture by Rhodin at al. In stage 1 we train on predicting the image from a different camera. In stage 2 we train on predicting the 3D pose.</em>
+    <em>Figure 1: Training stages of the architecture by Rhodin at al. In stage 1, we train on predicting the image from a different camera. In stage 2, we train on predicting the 3D pose.</em>
 </p>
 2) Expand on the work done by Rhodin and learn pose and shape parameters of the SMPL model (https://smpl.is.tue.mpg.de/)
-which is a realistic body model in order to locate not only the joints but also the body shape of the person.
-As there are no ground truths available in the dataset we devise an architecture that exploits: the 3D joints location, the silhouettes images present in the dataset and
-with a prior for the body model parameters.
+which is a realistic body model.
+As there are no ground truths available, we devise a training protocol that exploits: the 3D joints location, the silhouettes images present in the dataset and a prior for the body model parameters.
 
-After training the encoder the same way as in 1) we also train a GAN on realistic pose and shape parameters (&theta; and &beta; below ) of the SMPL model using data from the SURREAL dataset (https://www.di.ens.fr/willow/research/surreal/data/).
+After training the encoder the same way as in 1) we also train a GAN on realistic pose and shape parameters (&theta; and &beta; below) of the SMPL model using data from the SURREAL dataset (https://www.di.ens.fr/willow/research/surreal/data/).
 After training, we will discard the generator and only use the discriminator. In the body model estimation the weights of the discriminator will be fixed and the loss of the discriminator will act as a 
 regulariser constraining the SMPL parameters to be realistic.
 
@@ -36,10 +35,17 @@ The network aims to minimise a linear combination of three losses:
 
 3) L<sub>gan</sub>: the loss on the SMPL parameters &theta; and &beta; which acts as a regulariser in SMPL parameters space (trained previously).
 
-<img src="images/encoder_SMPL.png" width=1000>
+<p>
+    <img src="images/encoder_SMPL.png" alt>
+    <em>Figure 2: Diagram of the architecture blocks used in the body model prediction from monocular images. 
+    At training time we leverage the silhouttes and a discriminator previously trained on the allowed poses. 
+    The whole architecture is differentiable (including the resteriser - https://arxiv.org/abs/1711.07566 and the SMPL model).</em>
+    
+</p>
 
 
-The whole architecture is differentiable (including the resteriser - https://arxiv.org/abs/1711.07566 and the SMPL model). 
+
+ 
 
 
 ## Results
