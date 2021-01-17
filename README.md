@@ -16,7 +16,7 @@ With this protocol, we can reduce the pose data needed to solve the regression p
 
 <figure class="image">
 <img src="images/encoder_decoder.png" alt="{{ include.description }}">
- <figcaption>{{ include.description }}</figcaption>
+ <figcaption>{{ Figure 1 }}</figcaption>
  </figure>
 
 2) Expand on the work done by Rhodin and learn pose and shape parameters of the SMPL model (https://smpl.is.tue.mpg.de/)
