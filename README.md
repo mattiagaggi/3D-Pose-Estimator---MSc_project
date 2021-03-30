@@ -93,7 +93,7 @@ A better balancing of the losses or  modifying the initialisation of the base po
 <p>
 <img src="images/results3.png" width=1000>
     <em>Figure 5: Figure 4: One example of input<sup>*</sup> and output from the SMPL model regressor architecture.
-    The prediction here is off most likely for the reasons explained above. Below the predicted silhouettes and the predicted vertices on the ground truth silhouettes. </em>
+    The prediction here is off most likely for the reasons explained above.</em>
 </p>
 
 <sup>*</sup> I apologised for the bluish images, here the RGB color were messed up when I was getting this the night before my thesis submission.
@@ -113,7 +113,7 @@ Therefore it would effectively be like we are leveraging data from more than the
 - In a real world application, we would like an approach that does not exploit sensors since they create a bias in the input image.
 In addition we would need some form of data in the wild, augmenting the images or anything to reduce domain variance for this to work in the real world.
 
-- Getting more supervised data would make a much more accurate prediction.
+- Getting more supervised data would make a much more accurate model.
 
 Thanks for reading!
 
