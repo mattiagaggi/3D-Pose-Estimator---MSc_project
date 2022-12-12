@@ -54,7 +54,7 @@ Same as before, only the 3D poses and silhuettes from subject 1 were used during
     <img src="images/encoder_SMPL.png" alt>
     <em>Figure 2: Diagram of the architecture blocks used in the body model prediction from monocular images. 
     At training time we leverage the silhouttes and a discriminator previously trained on the allowed poses and the encoder previously trained. 
-    The whole architecture is differentiable (including the resteriser - https://arxiv.org/abs/1711.07566 and the SMPL model).</em>
+    The whole architecture is differentiable (including the rasteriser - https://arxiv.org/abs/1711.07566 and the SMPL model).</em>
     
 </p>
 
@@ -64,9 +64,7 @@ Same as before, only the 3D poses and silhuettes from subject 1 were used during
 The first part of the project, simply reproduced the work by Rhodin, by rebuilding the code from scratch. When we wanted to reproduce the full mesh from single image, the most sensible approach seemed to use a body model (the SMPL model) as a prior and add a loss on the mesh vertices of the model.
 The loss on the vertices is a binary loss that encourages the predicted mesh to match the silhuette of the subject. With this setup we still found that the predicted output was too unconstrained and the meshes looked unrealistic.
     So we needed to constrain the output mesh even futher to make sure that the output meshes were realistic. In order to do this, we used a pretrained discriminator that was able to differentiate between realistic and unrealistic meshes, and we used the discriminator loss in the total loss function. This makes sure that the prediction converges to only realistic meshes. Arguably there might be better approaches to do this.
-    
     We tuned the network pamaters appropriately, but due to time and resources contraints (thanks UCL for providing very little support on available GPUs) we did not have time to find the most optimal parameters.
-    
     For the same reasons, we did not have time to try different methods, benchmarks different approaches and add a quantitative analysis on the quality of the output meshes - we probably could have find a method to fit the SMPL model meshes to the testing data offline. So we only provide qualitative analysis.
     That being said, everything done here was original work (including training the discriminator on realistic poses) and all the code was implemented from scratch. I had roughly 4 months for this work which included writing the thesis, it was kind of challenging as it was my first big project in Computer Vision. I hope this is up to the reader's standard, if not, deal with it.
 
