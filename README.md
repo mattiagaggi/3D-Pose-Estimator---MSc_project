@@ -1,7 +1,7 @@
 
 # MSc project - 3D Human Pose and Shape Estimation 
 
-## Overview 
+## Premise
 
 This is the Github repository of my MSc Thesis in Computational Statistics and Machine Learning at University College London.
 The thesis aims at expanding on the work by Rhodin *et al* in the paper Unsupervised Geometry-Aware Representation for 3D Human Pose Estimation (https://arxiv.org/pdf/1804.01110.pdf).
@@ -11,10 +11,16 @@ I will be trying to be as faithful as possible to the work done without "embelli
 I will also keep a very informal tone, otherwise reading this would be super boring - thanks for getting this far by the way. 
 After all I am not trying to get funding or anything like that. Ok getting serious now.
 
+## Overview
+
+The whole idea of the work done here is to attept at predicting a full body mesh from monocular image using as little data as possible. The recent paper from Rhodin is able to predict realistic poses using ground truths from only one subject in the Human3.6M Dataset. They are able to achieve this by leveraging unsupervised data available at training time. Specifically, given a view of a subject, they train an encoder decoder to predict how that subject looks like from a different view. This allows the encoder to learn a useful representation.
+    Then they discard the decoder, build a shallow network on top on the trained encoder and train the shallow network with supervision on the 3D poses. Using this approach, the surpass the sota on 3D pose regression on the Human3.6M Dataset when 3D groundtruths from only one subject are available. We expand this and predict a full mesh using 3D poses from only one subject, the image of the subject from all camera views and the silhuettes from all camera views at training time.
+
+## Method
 
 This works is divided in two parts:
 
-1) Reproducing the work from Rhodin that leverages multiple cameras at training time to estimate the 3D pose from monocular images.
+1 - Reproducing the work from Rhodin that leverages multiple cameras at training time to estimate the 3D pose from monocular images.
 This is done by training an encoder-decoder architecture to reproduce images from different angles given an in input image.
 In the first stage, the encoder-decoder is trained on the multiple views by feeding as input image, the image from a different camera and the 3D rotation between the root joints in the two images. 
 In the second stage, the weights of the encoder are fixed and a shallow network is trained on top of the encoder to minimise the L2 distance between the outputs and the 3D joints.
@@ -24,7 +30,8 @@ With this protocol, we can reduce the pose data needed to solve the regression p
     <img src="images/encoder_decoder.png" alt>
     <em>Figure 1: Training stages of the architecture by Rhodin at al. In stage 1, we train on predicting the image from a different camera. In stage 2, we train on predicting the 3D pose.</em>
 </p>
-2) Expand on the work done by Rhodin and learn pose and shape parameters of the SMPL model (https://smpl.is.tue.mpg.de/)
+
+2 - Expanding on the work done by Rhodin and learn pose and shape parameters of the SMPL model (https://smpl.is.tue.mpg.de/)
 which is a realistic body model.
 As there are no ground truths available, we devise a training protocol that exploits: the 3D joints location, the silhouettes images present in the dataset and a prior for the body model parameters.
 
@@ -41,7 +48,7 @@ The network aims to minimise a linear combination of three losses:
 
 3) L<sub>gan</sub>: the loss on the SMPL parameters &theta; and &beta; which acts as a regulariser in SMPL parameters space (trained previously).
 
-Same as before, only the 3D poses from subject 1 were used.
+Same as before, only the 3D poses and silhuettes from subject 1 were used during training.
 
 <p>
     <img src="images/encoder_SMPL.png" alt>
@@ -50,6 +57,18 @@ Same as before, only the 3D poses from subject 1 were used.
     The whole architecture is differentiable (including the resteriser - https://arxiv.org/abs/1711.07566 and the SMPL model).</em>
     
 </p>
+
+## Challenges of the Project
+
+
+The first part of the project, simply reproduced the work by Rhodin, by rebuilding the code from scratch. When we wanted to reproduce the full mesh from single image, the most sensible approach seemed to use a body model (the SMPL model) as a prior and add a loss on the mesh vertices of the model.
+The loss on the vertices is a binary loss that encourages the predicted mesh to match the silhuette of the subject. With this setup we still found that the predicted output was too unconstrained and the meshes looked unrealistic.
+    So we needed to constrain the output mesh even futher to make sure that the output meshes were realistic. In order to do this, we used a pretrained discriminator that was able to differentiate between realistic and unrealistic meshes, and we used the discriminator loss in the total loss function. This makes sure that the prediction converges to only realistic meshes. Arguably there might be better approaches to do this.
+    
+    We tuned the network pamaters appropriately, but due to time and resources contraints (thanks UCL for providing very little support on available GPUs) we did not have time to find the most optimal parameters.
+    
+    For the same reasons, we did not have time to try different methods, benchmarks different approaches and add a quantitative analysis on the quality of the output meshes - we probably could have find a method to fit the SMPL model meshes to the testing data offline. So we only provide qualitative analysis.
+    That being said, everything done here was original work (including training the discriminator on realistic poses) and all the code was implemented from scratch. I had roughly 4 months for this work which included writing the thesis, it was kind of challenging as it was my first big project in Computer Vision. I hope this is up to the reader's standard, if not, deal with it.
 
 
 ## Results
@@ -68,7 +87,7 @@ However we can provide qualitative examples. Below we see two predictions from t
 while in the second picture it appears distorted. This is ikely to happen because in the first picture the subject is facing the camera which is a pose closer to the zero pose (subject facing the camera in resting pose). In the second picture the subject is facing away from the camera so the 
 resulting prediction requires a 180 degrees rotation from the rest pose.
 In these cases the L<sub>verts</sub> and L<sub>pose</sub> optimisation take over the L<sub>gan</sub> loss optimisation so the poses produced look unrealistic.
-This is due to the uncontrained nature of the SMPL parameters prediction, especially by three issues:
+This is due to the unconstrained nature of the SMPL parameters prediction, especially by three issues:
 
 - There is a mismatch between the 3D pose points used in the H3.6M dataset and the 3D pose point of the SMPL model.
 this means that the hip-joints could not be used as ground truths. These joints are vital to make sure that the predicted poses have correct orientation.
